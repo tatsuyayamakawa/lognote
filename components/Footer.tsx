@@ -19,10 +19,8 @@ const Footer = () => {
 export default Footer
 
 const wrapperStyle = css`
-	background-color: var(--gray-10);
 	margin-top: auto;
 	padding: var(--space-xl) 0;
-	border-top: 1px solid var(--color-border);
 `
 
 const innerStyle = css`
