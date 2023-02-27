@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import portrait from 'images/portrait.png'
+import portrait from 'images/portrait.jpg'
 import { css } from '@emotion/react'
 
 type Props = {
