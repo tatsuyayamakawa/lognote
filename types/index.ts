@@ -3,8 +3,6 @@ import { Database } from './database.types'
 // Database Types
 export type Tables<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row']
-export type Enums<T extends keyof Database['public']['Enums']> =
-  Database['public']['Enums'][T]
 
 // Post Types
 export type Post = Tables<'posts'>
