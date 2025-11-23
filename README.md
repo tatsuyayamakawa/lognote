@@ -121,4 +121,4 @@ Private
 
 ## 開発者
 
-Tatsuya Yumin
+Tatsuya Yamakawa

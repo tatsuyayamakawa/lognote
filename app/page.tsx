@@ -1,19 +1,23 @@
-import Image from "next/image"
-import Link from "next/link"
-import { getPublishedPosts, getCategories, getFeaturedPosts } from "@/lib/posts"
-import { ArticleCard } from "@/app/(public)/_components/article-card"
-import { WebsiteJsonLd } from "@/components/seo/json-ld"
-import { getBaseURL } from "@/lib/utils"
-import { Sidebar } from "@/components/home/sidebar"
+import Image from "next/image";
+import Link from "next/link";
+import {
+  getPublishedPosts,
+  getCategories,
+  getFeaturedPosts,
+} from "@/lib/posts";
+import { ArticleCard } from "@/app/(public)/_components/article-card";
+import { WebsiteJsonLd } from "@/components/seo/json-ld";
+import { getBaseURL } from "@/lib/utils";
+import { Sidebar } from "@/components/home/sidebar";
 
 export default async function Home() {
   const [featuredPosts, recentPosts, categories] = await Promise.all([
     getFeaturedPosts(3), // 特集記事を取得（最大3件）
     getPublishedPosts(6), // 最新記事を取得（6件）
     getCategories(),
-  ])
+  ]);
 
-  const siteUrl = getBaseURL()
+  const siteUrl = getBaseURL();
 
   return (
     <>
@@ -47,7 +51,7 @@ export default async function Home() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold">特集記事</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                注目の最新記事をピックアップ
+                注目の記事をピックアップ
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
@@ -78,8 +82,8 @@ export default async function Home() {
                   href={`/category/${category.slug}`}
                   className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
                   style={{
-                    borderColor: category.color || '#e5e7eb',
-                    color: category.color || '#374151',
+                    borderColor: category.color || "#e5e7eb",
+                    color: category.color || "#374151",
                   }}
                 >
                   {category.name}
@@ -120,5 +124,5 @@ export default async function Home() {
         </div>
       </div>
     </>
-  )
+  );
 }

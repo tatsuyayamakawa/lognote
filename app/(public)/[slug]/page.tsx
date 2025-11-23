@@ -11,6 +11,8 @@ import { TiptapRenderer } from "@/components/editor/tiptap-renderer";
 import { ShareButtons } from "@/components/post/share-buttons";
 import { RelatedPosts } from "@/components/post/related-posts";
 import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
+import { AdSense } from "@/components/ads/adsense";
+import { getAdsByLocation } from "@/lib/ads";
 import type { Metadata } from "next";
 
 interface PostPageProps {
@@ -79,9 +81,12 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  // 関連記事を取得
+  // 関連記事と広告を取得
   const categoryIds = post.categories?.map((c) => c.id) || [];
-  const relatedPosts = await getRelatedPosts(post.id, categoryIds, 3);
+  const [relatedPosts, articleBottomAd] = await Promise.all([
+    getRelatedPosts(post.id, categoryIds, 3),
+    getAdsByLocation("article_bottom"),
+  ]);
 
   const postUrl = `${getBaseURL()}/${post.slug}`;
 
@@ -184,6 +189,17 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* 記事本文 */}
         {post.content && <TiptapRenderer content={post.content} />}
+
+        {/* 記事下広告 */}
+        {articleBottomAd && (
+          <div className="my-12">
+            <AdSense
+              adSlot={articleBottomAd.ad_slot}
+              adFormat="auto"
+              fullWidthResponsive={true}
+            />
+          </div>
+        )}
 
         {/* シェアボタン */}
         <div className="mt-12 border-t pt-8">

@@ -27,3 +27,6 @@ export type PostWithCategories = Post & {
 export type AnalyticsCache = Tables<'analytics_cache'>
 export type AnalyticsCacheInsert = Database['public']['Tables']['analytics_cache']['Insert']
 export type AnalyticsCacheUpdate = Database['public']['Tables']['analytics_cache']['Update']
+
+// Ad Types
+export * from './ad'

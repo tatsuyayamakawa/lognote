@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   LogOut,
+  DollarSign,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -31,6 +32,11 @@ const menuItems = [
     title: "画像管理",
     href: "/admin/media",
     icon: ImageIcon,
+  },
+  {
+    title: "広告管理",
+    href: "/admin/ads",
+    icon: DollarSign,
   },
 ]
 

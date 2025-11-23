@@ -21,32 +21,49 @@ export async function GET(request: NextRequest) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#18181b',
-            backgroundImage: 'linear-gradient(135deg, #18181b 0%, #27272a 100%)',
+            backgroundColor: '#f8f9fa',
+            backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f1f3f5 100%)',
             position: 'relative',
           }}
         >
-          {/* 装飾的な円 */}
+          {/* 幾何学模様の背景 */}
           <div
             style={{
               position: 'absolute',
-              top: '-100px',
-              right: '-100px',
-              width: '400px',
-              height: '400px',
+              top: '0',
+              left: '0',
+              right: '0',
+              bottom: '0',
+              opacity: 0.08,
+              backgroundImage: `
+                repeating-linear-gradient(45deg, transparent, transparent 40px, #dee2e6 40px, #dee2e6 41px),
+                repeating-linear-gradient(-45deg, transparent, transparent 40px, #dee2e6 40px, #dee2e6 41px)
+              `,
+            }}
+          />
+          {/* 装飾の円 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-80px',
+              right: '-80px',
+              width: '300px',
+              height: '300px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0) 70%)',
+              border: '1px solid #dee2e6',
+              opacity: 0.3,
             }}
           />
           <div
             style={{
               position: 'absolute',
-              bottom: '-150px',
-              left: '-150px',
-              width: '500px',
-              height: '500px',
+              bottom: '-100px',
+              left: '-100px',
+              width: '350px',
+              height: '350px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(168,85,247,0) 70%)',
+              border: '1px solid #dee2e6',
+              opacity: 0.3,
             }}
           />
 
@@ -66,11 +83,11 @@ export async function GET(request: NextRequest) {
               style={{
                 fontSize: 64,
                 fontWeight: 'bold',
-                color: '#ffffff',
+                color: '#212529',
                 textAlign: 'center',
-                lineHeight: 1.2,
-                marginBottom: '40px',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                lineHeight: 1.3,
+                marginBottom: '48px',
+                letterSpacing: '-0.02em',
               }}
             >
               {truncatedTitle}
@@ -86,27 +103,28 @@ export async function GET(request: NextRequest) {
             >
               <div
                 style={{
-                  width: '40px',
-                  height: '4px',
-                  backgroundColor: '#3b82f6',
-                  borderRadius: '2px',
+                  width: '32px',
+                  height: '2px',
+                  backgroundColor: '#adb5bd',
+                  borderRadius: '1px',
                 }}
               />
               <div
                 style={{
-                  fontSize: 32,
-                  color: '#d4d4d8',
+                  fontSize: 28,
+                  color: '#495057',
                   fontWeight: 500,
+                  letterSpacing: '0.05em',
                 }}
               >
                 整えて、創る。
               </div>
               <div
                 style={{
-                  width: '40px',
-                  height: '4px',
-                  backgroundColor: '#a855f7',
-                  borderRadius: '2px',
+                  width: '32px',
+                  height: '2px',
+                  backgroundColor: '#adb5bd',
+                  borderRadius: '1px',
                 }}
               />
             </div>

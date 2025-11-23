@@ -82,6 +82,11 @@ export default async function RootLayout({
           title="整えて、創る。 RSS Feed"
           href="/feed.xml"
         />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7839828582645189"
+          crossOrigin="anonymous"
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
