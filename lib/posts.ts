@@ -6,9 +6,13 @@ import { Post, Category, PostWithCategories } from '@/types'
  * 静的生成用のSupabaseクライアント（認証不要）
  */
 function createStaticClient() {
+  // ビルド時に環境変数がない場合のフォールバック
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+  
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    supabaseUrl,
+    supabaseAnonKey
   )
 }
 
