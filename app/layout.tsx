@@ -27,10 +27,10 @@ export const metadata: Metadata = {
   title: {
     default: "整えて、創る。",
     template: "%s | 整えて、創る。",
-    absolute: "整えて、創る。 | 身体を整え、思考を整え、コードを書く。",
+    absolute: "整えて、創る。 | ネット集客に強い整体院サイトを制作",
   },
   description:
-    "身体を整え、思考を整え、コードを書く。日常・技術・気づきを発信します。",
+    "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
   keywords: ["ブログ", "技術", "日常", "思考", "プログラミング", "整える"],
   authors: [{ name: "整えて、創る。" }],
   openGraph: {
@@ -39,14 +39,14 @@ export const metadata: Metadata = {
     url: getBaseURL(),
     title: "整えて、創る。",
     description:
-      "身体を整え、思考を整え、コードを書く。日常・技術・気づきを発信します。",
+      "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
     siteName: "整えて、創る。",
   },
   twitter: {
     card: "summary_large_image",
     title: "整えて、創る。",
     description:
-      "身体を整え、思考を整え、コードを書く。日常・技術・気づきを発信します。",
+      "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
   },
   robots: {
     index: true,
