@@ -190,7 +190,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* 記事上広告 */}
         {articleTopAd && (
-          <div className="my-8">
+          <div className="mb-8">
             <AdSense
               adSlot={articleTopAd.ad_slot}
               adFormat="auto"
@@ -204,7 +204,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* 記事下広告 */}
         {articleBottomAd && (
-          <div className="my-12">
+          <div className="mt-8">
             <AdSense
               adSlot={articleBottomAd.ad_slot}
               adFormat="auto"
