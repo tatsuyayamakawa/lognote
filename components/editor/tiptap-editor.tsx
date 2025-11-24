@@ -51,6 +51,7 @@ export function TiptapEditor({
         heading: {
           levels: [2, 3, 4],
         },
+        link: false, // Link拡張を無効化して、後で個別に設定
       }),
       Link.configure({
         openOnClick: false,

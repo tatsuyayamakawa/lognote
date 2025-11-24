@@ -21,7 +21,9 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: false, // Link拡張を無効化して、後で個別に設定
+      }),
       Link.configure({
         HTMLAttributes: {
           class: "text-primary underline hover:opacity-80",
