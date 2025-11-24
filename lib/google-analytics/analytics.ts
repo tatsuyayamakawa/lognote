@@ -1,4 +1,5 @@
 import { BetaAnalyticsDataClient } from "@google-analytics/data"
+import path from "path"
 
 let analyticsDataClient: BetaAnalyticsDataClient | null = null
 
@@ -9,6 +10,15 @@ export function getAnalyticsClient() {
   }
 
   if (!analyticsDataClient) {
+    // 相対パスの場合は絶対パスに変換
+    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    const absolutePath = path.isAbsolute(credentialsPath)
+      ? credentialsPath
+      : path.resolve(process.cwd(), credentialsPath)
+
+    // 環境変数を絶対パスに上書き
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = absolutePath
+
     analyticsDataClient = new BetaAnalyticsDataClient()
   }
 

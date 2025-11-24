@@ -7,6 +7,7 @@ import Footer from "@/components/layout/footer";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { getBaseURL } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AdSenseConfig } from "@/components/ads/adsense-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,19 +88,6 @@ export default async function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7839828582645189"
           crossOrigin="anonymous"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (adsbygoogle = window.adsbygoogle || []).push({
-                google_ad_client: "ca-pub-7839828582645189",
-                enable_page_level_ads: true,
-                overlays: {bottom: false},
-                anchor_top: false,
-                anchor_bottom: false
-              });
-            `,
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -111,6 +99,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <GoogleAnalytics />
+          <AdSenseConfig />
           <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
             {!isAdminOrAuth && <Header />}
             <main>{children}</main>
