@@ -87,6 +87,19 @@ export default async function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7839828582645189"
           crossOrigin="anonymous"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (adsbygoogle = window.adsbygoogle || []).push({
+                google_ad_client: "ca-pub-7839828582645189",
+                enable_page_level_ads: true,
+                overlays: {bottom: false},
+                anchor_top: false,
+                anchor_bottom: false
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

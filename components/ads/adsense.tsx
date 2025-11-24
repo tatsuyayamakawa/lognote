@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 interface AdSenseProps {
-  adSlot: string
-  adFormat?: string
-  fullWidthResponsive?: boolean
-  className?: string
+  adSlot: string;
+  adFormat?: string;
+  fullWidthResponsive?: boolean;
+  className?: string;
   /**
    * スケルトンの高さ（デフォルト: 280px）
    */
-  skeletonHeight?: string | number
+  skeletonHeight?: string | number;
   /**
    * スケルトンを表示するかどうか（デフォルト: true）
    */
-  showSkeleton?: boolean
+  showSkeleton?: boolean;
 }
 
 export function AdSense({
@@ -25,34 +25,39 @@ export function AdSense({
   skeletonHeight = "280px",
   showSkeleton = true,
 }: AdSenseProps) {
-  const [isMounted, setIsMounted] = useState(false)
-  const [hasError, setHasError] = useState(false)
+  const [isMounted, setIsMounted] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     // クライアントサイドでのみマウント
-    setIsMounted(true)
-  }, [])
+    queueMicrotask(() => {
+      setIsMounted(true);
+    });
+  }, []);
 
   useEffect(() => {
     if (isMounted) {
       try {
-        // @ts-ignore
-        ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (err) {
-        console.error("AdSense error:", err)
-        setHasError(true)
+        console.error("AdSense error:", err);
+        queueMicrotask(() => {
+          setHasError(true);
+        });
       }
     }
-  }, [isMounted])
+  }, [isMounted]);
 
   // 高さの正規化
   const normalizedHeight =
-    typeof skeletonHeight === "number" ? `${skeletonHeight}px` : skeletonHeight
+    typeof skeletonHeight === "number" ? `${skeletonHeight}px` : skeletonHeight;
 
   // サーバーサイドレンダリング時はスケルトンを表示
   if (!isMounted) {
     if (!showSkeleton) {
-      return <div className={className} style={{ minHeight: normalizedHeight }} />
+      return (
+        <div className={className} style={{ minHeight: normalizedHeight }} />
+      );
     }
 
     return (
@@ -72,7 +77,7 @@ export function AdSense({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // エラー時の表示
@@ -92,7 +97,7 @@ export function AdSense({
           </span>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -107,5 +112,5 @@ export function AdSense({
         suppressHydrationWarning
       />
     </div>
-  )
+  );
 }

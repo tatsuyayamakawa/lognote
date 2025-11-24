@@ -18,13 +18,11 @@ export async function Sidebar({ categories }: SidebarProps) {
 
       {/* 広告 */}
       {sidebarAd && (
-        <div className="rounded-lg border bg-card p-4">
-          <AdSense
-            adSlot={sidebarAd.ad_slot}
-            adFormat="auto"
-            fullWidthResponsive={true}
-          />
-        </div>
+        <AdSense
+          adSlot={sidebarAd.ad_slot}
+          adFormat="auto"
+          fullWidthResponsive={true}
+        />
       )}
 
       {/* カテゴリ一覧 */}

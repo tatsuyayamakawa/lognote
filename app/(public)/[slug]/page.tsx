@@ -83,8 +83,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
   // 関連記事と広告を取得
   const categoryIds = post.categories?.map((c) => c.id) || [];
-  const [relatedPosts, articleBottomAd] = await Promise.all([
+  const [relatedPosts, articleTopAd, articleBottomAd] = await Promise.all([
     getRelatedPosts(post.id, categoryIds, 3),
+    getAdsByLocation("article_top"),
     getAdsByLocation("article_bottom"),
   ]);
 
@@ -186,6 +187,17 @@ export default async function PostPage({ params }: PostPageProps) {
             priority
           />
         </div>
+
+        {/* 記事上広告 */}
+        {articleTopAd && (
+          <div className="my-8">
+            <AdSense
+              adSlot={articleTopAd.ad_slot}
+              adFormat="auto"
+              fullWidthResponsive={true}
+            />
+          </div>
+        )}
 
         {/* 記事本文 */}
         {post.content && <TiptapRenderer content={post.content} />}
