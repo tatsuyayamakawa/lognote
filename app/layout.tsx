@@ -7,7 +7,6 @@ import Footer from "@/components/layout/footer";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { getBaseURL } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AdSenseConfig } from "@/components/ads/adsense-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -99,7 +98,6 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <GoogleAnalytics />
-          <AdSenseConfig />
           <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
             {!isAdminOrAuth && <Header />}
             <main>{children}</main>
