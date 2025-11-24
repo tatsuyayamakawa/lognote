@@ -2,12 +2,29 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // 🚨 応急処置: Vercelの画像最適化上限に達したため、最適化を無効化
+    // TODO: 将来的にCloudflare Workers + Image Resizing または Cloudinary に移行
+    unoptimized: true,
+
+    // 外部画像の許可設定
     remotePatterns: [
       {
         protocol: "https",
         hostname: "*.supabase.co",
         port: "",
         pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "imagedelivery.net",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "pics.dmm.co.jp",
+        port: "",
+        pathname: "/**",
       },
     ],
     localPatterns: [
