@@ -42,11 +42,20 @@ interface OrganicSearchStat {
   avgDuration: number
 }
 
+interface SearchKeyword {
+  query: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
 interface AnalyticsChartsProps {
   pageViews: PageViewData[]
   topPages: TopPage[]
   searchQueries: SearchQuery[]
   organicSearchStats: OrganicSearchStat[]
+  searchKeywords: SearchKeyword[]
 }
 
 export function AnalyticsCharts({
@@ -54,6 +63,7 @@ export function AnalyticsCharts({
   topPages,
   searchQueries,
   organicSearchStats,
+  searchKeywords,
 }: AnalyticsChartsProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -103,15 +113,31 @@ export function AnalyticsCharts({
     return `${month}/${day}`
   }
 
-  const formattedPageViews = pageViews.map((item) => ({
-    ...item,
-    dateFormatted: formatDate(item.date),
-  }))
+  // Sort data by date in ascending order (oldest to newest)
+  const formattedPageViews = pageViews
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((item) => ({
+      ...item,
+      dateFormatted: formatDate(item.date),
+    }))
 
-  const formattedOrganicStats = organicSearchStats.map((item) => ({
-    ...item,
-    dateFormatted: formatDate(item.date),
-  }))
+  const formattedOrganicStats = organicSearchStats
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((item) => ({
+      ...item,
+      dateFormatted: formatDate(item.date),
+    }))
+
+  // Calculate appropriate tick interval for X-axis
+  const getTickInterval = (dataLength: number) => {
+    if (dataLength <= 7) return 0 // Show all ticks
+    if (dataLength <= 14) return 1 // Show every other tick
+    if (dataLength <= 30) return Math.floor(dataLength / 7) // Show ~7 ticks
+    return Math.floor(dataLength / 10) // Show ~10 ticks for longer periods
+  }
+
+  const pageViewsTickInterval = getTickInterval(formattedPageViews.length)
+  const organicStatsTickInterval = getTickInterval(formattedOrganicStats.length)
 
   return (
     <div className="space-y-6">
@@ -150,6 +176,10 @@ export function AnalyticsCharts({
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
+                  interval={pageViewsTickInterval}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                 />
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -186,6 +216,10 @@ export function AnalyticsCharts({
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
+                  interval={organicStatsTickInterval}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                 />
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -249,34 +283,34 @@ export function AnalyticsCharts({
           </CardContent>
         </Card>
 
-        {/* 検索クエリ */}
+        {/* 流入キーワード */}
         <Card>
           <CardHeader>
-            <CardTitle>検索トラフィック</CardTitle>
-            <CardDescription>Google検索からの流入</CardDescription>
+            <CardTitle>流入キーワード</CardTitle>
+            <CardDescription>検索エンジンからの流入キーワード</CardDescription>
           </CardHeader>
           <CardContent>
-            {searchQueries.length > 0 ? (
+            {searchKeywords.length > 0 ? (
               <div className="space-y-3">
-                {searchQueries.slice(0, 10).map((query, index) => (
+                {searchKeywords.slice(0, 10).map((keyword, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between gap-4 pb-3 border-b last:border-0 last:pb-0"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">
-                        {query.source} / {query.medium}
+                      <p className="font-medium text-sm wrap-break-word">
+                        {keyword.query}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {query.referrer}
+                      <p className="text-xs text-muted-foreground">
+                        平均掲載順位: {keyword.position.toFixed(1)}位 • CTR: {(keyword.ctr * 100).toFixed(1)}%
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="font-bold text-sm">
-                        {query.sessions.toLocaleString()}
+                        {keyword.clicks.toLocaleString()}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        エンゲージ: {query.engagedSessions}
+                        表示: {keyword.impressions.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -285,6 +319,11 @@ export function AnalyticsCharts({
             ) : (
               <p className="text-sm text-muted-foreground py-8 text-center">
                 データがありません
+                {searchKeywords.length === 0 && (
+                  <span className="block mt-2 text-xs">
+                    Search Console APIを設定してください
+                  </span>
+                )}
               </p>
             )}
           </CardContent>
