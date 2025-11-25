@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -44,6 +44,9 @@ export function TiptapEditor({
   disabled = false,
 }: TiptapEditorProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [isSticky, setIsSticky] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -93,6 +96,20 @@ export function TiptapEditor({
     },
   });
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current || !toolbarRef.current) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const shouldBeSticky = containerRect.top < 0 && containerRect.bottom > 0;
+
+      setIsSticky(shouldBeSticky);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   if (!editor) {
     return null;
   }
@@ -114,9 +131,16 @@ export function TiptapEditor({
 
   return (
     <>
-      <div className="rounded-md border">
+      <div ref={containerRef} className="rounded-md border">
         {/* ツールバー */}
-        <div className="flex flex-wrap gap-1 border-b bg-muted/50 p-2">
+        <div
+          ref={toolbarRef}
+          className={cn(
+            "flex flex-wrap gap-1 border-b bg-muted/50 p-2 transition-all",
+            isSticky &&
+              "fixed top-0 left-0 right-0 z-50 shadow-md rounded-none border-t-0"
+          )}
+        >
           <Button
             type="button"
             variant="ghost"
@@ -125,7 +149,9 @@ export function TiptapEditor({
               editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
             className={
-              editor.isActive("heading", { level: 2 }) ? "bg-muted" : ""
+              editor.isActive("heading", { level: 2 })
+                ? "bg-accent border-2 border-primary"
+                : ""
             }
             disabled={disabled}
           >
@@ -139,7 +165,9 @@ export function TiptapEditor({
               editor.chain().focus().toggleHeading({ level: 3 }).run()
             }
             className={
-              editor.isActive("heading", { level: 3 }) ? "bg-muted" : ""
+              editor.isActive("heading", { level: 3 })
+                ? "bg-accent border-2 border-primary"
+                : ""
             }
             disabled={disabled}
           >
@@ -153,7 +181,9 @@ export function TiptapEditor({
               editor.chain().focus().toggleHeading({ level: 4 }).run()
             }
             className={
-              editor.isActive("heading", { level: 4 }) ? "bg-muted" : ""
+              editor.isActive("heading", { level: 4 })
+                ? "bg-accent border-2 border-primary"
+                : ""
             }
             disabled={disabled}
           >
@@ -165,7 +195,9 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={editor.isActive("bold") ? "bg-muted" : ""}
+            className={
+              editor.isActive("bold") ? "bg-accent border-2 border-primary" : ""
+            }
             disabled={disabled}
           >
             <Bold className="h-4 w-4" />
@@ -175,7 +207,11 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={editor.isActive("italic") ? "bg-muted" : ""}
+            className={
+              editor.isActive("italic")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
             disabled={disabled}
           >
             <Italic className="h-4 w-4" />
@@ -188,7 +224,7 @@ export function TiptapEditor({
             onClick={() => editor.chain().focus().setColor("#dc2626").run()}
             className={
               editor.isActive("textStyle", { color: "#dc2626" })
-                ? "bg-muted"
+                ? "bg-accent border-2 border-primary"
                 : ""
             }
             disabled={disabled}
@@ -205,7 +241,7 @@ export function TiptapEditor({
             onClick={() => editor.chain().focus().setColor("#2563eb").run()}
             className={
               editor.isActive("textStyle", { color: "#2563eb" })
-                ? "bg-muted"
+                ? "bg-accent border-2 border-primary"
                 : ""
             }
             disabled={disabled}
@@ -219,7 +255,15 @@ export function TiptapEditor({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => editor.chain().focus().unsetAllMarks().run()}
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .clearNodes()
+                .unsetAllMarks()
+                .unsetColor()
+                .run()
+            }
             disabled={disabled}
             title="装飾解除"
           >
@@ -231,7 +275,11 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={editor.isActive("bulletList") ? "bg-muted" : ""}
+            className={
+              editor.isActive("bulletList")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
             disabled={disabled}
           >
             <List className="h-4 w-4" />
@@ -241,7 +289,11 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={editor.isActive("orderedList") ? "bg-muted" : ""}
+            className={
+              editor.isActive("orderedList")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
             disabled={disabled}
           >
             <ListOrdered className="h-4 w-4" />
@@ -251,7 +303,11 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={editor.isActive("blockquote") ? "bg-muted" : ""}
+            className={
+              editor.isActive("blockquote")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
             disabled={disabled}
           >
             <Quote className="h-4 w-4" />
@@ -261,7 +317,11 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={editor.isActive("codeBlock") ? "bg-muted" : ""}
+            className={
+              editor.isActive("codeBlock")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
             disabled={disabled}
           >
             <Code className="h-4 w-4" />
@@ -272,7 +332,9 @@ export function TiptapEditor({
             variant="ghost"
             size="sm"
             onClick={addLink}
-            className={editor.isActive("link") ? "bg-muted" : ""}
+            className={
+              editor.isActive("link") ? "bg-accent border-2 border-primary" : ""
+            }
             disabled={disabled}
           >
             <Link2 className="h-4 w-4" />
@@ -306,6 +368,9 @@ export function TiptapEditor({
             <Redo className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* ツールバーがstickyの時のスペーサー */}
+        {isSticky && <div style={{ height: toolbarRef.current?.offsetHeight }} />}
 
         {/* エディタエリア */}
         <EditorContent editor={editor} />
