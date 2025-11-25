@@ -4,25 +4,39 @@ import path from "path"
 let searchConsoleClient: any = null
 
 export function getSearchConsoleClient() {
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    console.warn("[Search Console] Credentials not configured")
-    return null
-  }
-
   if (!searchConsoleClient) {
-    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-    const absolutePath = path.isAbsolute(credentialsPath)
-      ? credentialsPath
-      : path.resolve(process.cwd(), credentialsPath)
-
     console.log("[Search Console] Initializing client")
-    console.log("[Search Console] Credentials path:", absolutePath)
 
     try {
-      const auth = new google.auth.GoogleAuth({
-        keyFile: absolutePath,
-        scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-      })
+      let auth: any
+
+      // Check if credentials are provided as JSON string (for Vercel/production)
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        console.log("[Search Console] Using GOOGLE_SERVICE_ACCOUNT_JSON")
+        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
+        auth = new google.auth.GoogleAuth({
+          credentials,
+          scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
+        })
+      }
+      // Fallback to file path (for local development)
+      else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        console.log("[Search Console] Using GOOGLE_APPLICATION_CREDENTIALS file path")
+        const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+        const absolutePath = path.isAbsolute(credentialsPath)
+          ? credentialsPath
+          : path.resolve(process.cwd(), credentialsPath)
+
+        console.log("[Search Console] Credentials path:", absolutePath)
+        auth = new google.auth.GoogleAuth({
+          keyFile: absolutePath,
+          scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
+        })
+      }
+      else {
+        console.warn("[Search Console] No credentials configured")
+        return null
+      }
 
       searchConsoleClient = google.searchconsole({
         version: "v1",
@@ -32,6 +46,9 @@ export function getSearchConsoleClient() {
       console.log("[Search Console] Client initialized successfully")
     } catch (error) {
       console.error("[Search Console] Failed to initialize client:", error)
+      if (error instanceof Error) {
+        console.error("[Search Console] Error details:", error.message)
+      }
       return null
     }
   }

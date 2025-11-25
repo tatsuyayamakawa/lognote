@@ -4,30 +4,42 @@ import path from "path"
 let analyticsDataClient: BetaAnalyticsDataClient | null = null
 
 export function getAnalyticsClient() {
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    console.warn("Google Analytics credentials not configured")
-    return null
-  }
-
   if (!analyticsDataClient) {
-    // 相対パスの場合は絶対パスに変換
-    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-    const absolutePath = path.isAbsolute(credentialsPath)
-      ? credentialsPath
-      : path.resolve(process.cwd(), credentialsPath)
-
     console.log("[Analytics] Initializing GA4 client")
-    console.log("[Analytics] Credentials path:", absolutePath)
     console.log("[Analytics] GA4 Property ID:", process.env.GA4_PROPERTY_ID)
 
-    // 環境変数を絶対パスに上書き
-    process.env.GOOGLE_APPLICATION_CREDENTIALS = absolutePath
-
     try {
-      analyticsDataClient = new BetaAnalyticsDataClient()
+      // Check if credentials are provided as JSON string (for Vercel/production)
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        console.log("[Analytics] Using GOOGLE_SERVICE_ACCOUNT_JSON")
+        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
+        analyticsDataClient = new BetaAnalyticsDataClient({
+          credentials,
+        })
+      }
+      // Fallback to file path (for local development)
+      else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        console.log("[Analytics] Using GOOGLE_APPLICATION_CREDENTIALS file path")
+        const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+        const absolutePath = path.isAbsolute(credentialsPath)
+          ? credentialsPath
+          : path.resolve(process.cwd(), credentialsPath)
+
+        console.log("[Analytics] Credentials path:", absolutePath)
+        process.env.GOOGLE_APPLICATION_CREDENTIALS = absolutePath
+        analyticsDataClient = new BetaAnalyticsDataClient()
+      }
+      else {
+        console.warn("[Analytics] No credentials configured")
+        return null
+      }
+
       console.log("[Analytics] Client initialized successfully")
     } catch (error) {
       console.error("[Analytics] Failed to initialize client:", error)
+      if (error instanceof Error) {
+        console.error("[Analytics] Error details:", error.message)
+      }
       return null
     }
   }

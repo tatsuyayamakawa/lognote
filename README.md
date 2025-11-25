@@ -194,6 +194,8 @@ Supabaseを使用したPostgreSQLデータベース：
 
 ### 7. 環境変数の設定
 
+#### ローカル開発環境
+
 `.env.local`に以下を追加：
 
 ```bash
@@ -201,6 +203,25 @@ Supabaseを使用したPostgreSQLデータベース：
 GA4_PROPERTY_ID=264233355  # 自分のProperty IDに置き換え
 GOOGLE_APPLICATION_CREDENTIALS=ga4-analytics-key.json  # JSONファイルのパス
 ```
+
+#### Vercel本番環境
+
+Vercelではファイルシステムが読み取り専用のため、JSONファイルの内容を環境変数として設定する必要があります。
+
+1. Vercelプロジェクトの設定 > Environment Variablesに移動
+2. 以下の環境変数を追加：
+
+**GA4_PROPERTY_ID**
+```
+264233355
+```
+
+**GOOGLE_SERVICE_ACCOUNT_JSON**
+```json
+{"type":"service_account","project_id":"your-project-id","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"...@....iam.gserviceaccount.com","client_id":"...","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"..."}
+```
+
+> **注意**: `ga4-analytics-key.json`ファイルの内容を1行にして、そのまま環境変数の値として設定してください。改行は`\n`のままで問題ありません。
 
 ### トラブルシューティング
 

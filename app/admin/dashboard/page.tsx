@@ -21,7 +21,7 @@ export default async function DashboardPage({
 
   const gaConfigured =
     !!process.env.GA4_PROPERTY_ID &&
-    !!process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    (!!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !!process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
   // サイトのURLを取得
   const searchConsoleUrl = getBaseURL();
