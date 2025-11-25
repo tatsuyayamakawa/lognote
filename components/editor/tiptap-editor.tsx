@@ -20,6 +20,7 @@ import {
   Code,
   Heading2,
   Heading3,
+  Heading4,
   Link2,
   ImageIcon,
   Undo,
@@ -85,7 +86,8 @@ export function TiptapEditor({
           "prose prose-sm sm:prose lg:prose-lg dark:prose-invert",
           "!max-w-none focus:outline-none min-h-[400px] px-8 py-6",
           "prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-2",
-          "prose-h3:text-xl prose-h3:font-bold prose-h3:mt-6 prose-h3:mb-3"
+          "prose-h3:text-xl prose-h3:font-bold prose-h3:mt-6 prose-h3:mb-3",
+          "prose-h4:text-lg prose-h4:font-semibold prose-h4:mt-4 prose-h4:mb-2"
         ),
       },
     },
@@ -142,6 +144,20 @@ export function TiptapEditor({
             disabled={disabled}
           >
             <Heading3 className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 4 }).run()
+            }
+            className={
+              editor.isActive("heading", { level: 4 }) ? "bg-muted" : ""
+            }
+            disabled={disabled}
+          >
+            <Heading4 className="h-4 w-4" />
           </Button>
           <div className="mx-1 w-px bg-border" />
           <Button

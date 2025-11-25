@@ -28,7 +28,7 @@ async function getPosts(page: number = 1) {
       )
     `
     )
-    .order("created_at", { ascending: false })
+    .order("published_at", { ascending: false })
     .range(from, to);
 
   if (error) {
