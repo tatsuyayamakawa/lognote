@@ -174,9 +174,9 @@ export default async function PostPage({ params }: PostPageProps) {
           )}
         </div>
 
-        {/* 記事上広告 */}
+        {/* 記事上広告（タイトル下・ファーストビュー） */}
         {articleTopAd && (
-          <div className="mb-8">
+          <div className="my-10">
             <AdSense
               adSlot={articleTopAd.ad_slot}
               adFormat="auto"
@@ -188,9 +188,9 @@ export default async function PostPage({ params }: PostPageProps) {
         {/* 記事本文 */}
         {post.content && <TiptapRenderer content={post.content} />}
 
-        {/* 記事下広告 */}
+        {/* 記事下広告（コンテンツ後） */}
         {articleBottomAd && (
-          <div className="mt-8">
+          <div className="my-10">
             <AdSense
               adSlot={articleBottomAd.ad_slot}
               adFormat="auto"

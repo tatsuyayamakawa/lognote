@@ -47,8 +47,8 @@ interface AdsTableProps {
 
 const locationLabels: Record<AdLocation, string> = {
   sidebar: "サイドバー",
-  article_top: "記事上部",
-  article_bottom: "記事下部",
+  article_top: "記事上部（タイトル下）",
+  article_bottom: "記事下部（コンテンツ後）",
 }
 
 export function AdsTable({ initialAds }: AdsTableProps) {
