@@ -79,7 +79,7 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>タイトル下広告（ファーストビュー）</CardTitle>
             <CardDescription>
-              記事タイトル直下に表示 | PC: 記事内広告 / スマホ: スクエア
+              記事タイトル直下に表示 | PC: 記事内広告 / スマホ: ディスプレイ
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -96,7 +96,7 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="article_top_mobile_slot">スマホ用（スクエア）</Label>
+                <Label htmlFor="article_top_mobile_slot">スマホ用（ディスプレイ）</Label>
                 <Input
                   id="article_top_mobile_slot"
                   placeholder="1234567890"
@@ -115,7 +115,7 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>記事内広告（2つ目のH2上）</CardTitle>
             <CardDescription>
-              H2が2つ以上ある記事のみ表示 | PC: 記事内広告 / スマホ: スクエア
+              H2が2つ以上ある記事のみ表示 | PC: 記事内広告 / スマホ: ディスプレイ
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -132,7 +132,7 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="in_article_mobile_slot">スマホ用（スクエア）</Label>
+                <Label htmlFor="in_article_mobile_slot">スマホ用（ディスプレイ）</Label>
                 <Input
                   id="in_article_mobile_slot"
                   placeholder="1234567890"
@@ -151,12 +151,12 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>コンテンツ後広告</CardTitle>
             <CardDescription>
-              記事本文直後に表示 | PC: スクエア×2 横並び / スマホ: スクエア
+              記事本文直後に表示 | PC: ディスプレイ×2 横並び / スマホ: ディスプレイ
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              <Label>PC用（スクエア）</Label>
+              <Label>PC用（ディスプレイ）</Label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input
                   placeholder="1つ目: 1234567890"
@@ -175,7 +175,7 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="article_bottom_mobile_slot">スマホ用（スクエア）</Label>
+              <Label htmlFor="article_bottom_mobile_slot">スマホ用（ディスプレイ）</Label>
               <Input
                 id="article_bottom_mobile_slot"
                 placeholder="1234567890"
@@ -193,13 +193,13 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>サイドバー広告</CardTitle>
             <CardDescription>
-              サイドバーに表示 | PC: 縦長タイプ / スマホ: スクエア
+              サイドバーに表示 | PC: ディスプレイ / スマホ: ディスプレイ
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="sidebar_pc_slot">PC用（縦長タイプ）</Label>
+                <Label htmlFor="sidebar_pc_slot">PC用（ディスプレイ）</Label>
                 <Input
                   id="sidebar_pc_slot"
                   placeholder="1234567890"
@@ -210,7 +210,7 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sidebar_mobile_slot">スマホ用（スクエア）</Label>
+                <Label htmlFor="sidebar_mobile_slot">スマホ用（ディスプレイ）</Label>
                 <Input
                   id="sidebar_mobile_slot"
                   placeholder="1234567890"
