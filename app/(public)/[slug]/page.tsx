@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import {
   getPostBySlug,
@@ -173,21 +172,6 @@ export default async function PostPage({ params }: PostPageProps) {
               {post.view_count.toLocaleString()}
             </span>
           )}
-        </div>
-
-        {/* サムネイル */}
-        <div className="mb-8 aspect-video overflow-hidden rounded-lg">
-          <Image
-            src={
-              post.thumbnail_url ||
-              `/api/og?title=${encodeURIComponent(post.title)}`
-            }
-            alt={post.title}
-            width={1200}
-            height={630}
-            className="h-full w-full object-cover"
-            priority
-          />
         </div>
 
         {/* 記事上広告 */}
