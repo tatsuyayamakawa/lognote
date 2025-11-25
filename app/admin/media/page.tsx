@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Loader2, Copy, Trash2, Check } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Upload, Copy, Trash2, Check } from "lucide-react";
 import Image from "next/image";
 import { ImageUploadDialog } from "./_components/image-upload-dialog";
 
@@ -115,11 +116,21 @@ export default function MediaPage() {
       </div>
 
       {loading ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Card key={index} className="overflow-hidden py-0">
+              <Skeleton className="aspect-video w-full" />
+              <CardContent className="p-4">
+                <Skeleton className="mb-2 h-4 w-3/4" />
+                <Skeleton className="mb-3 h-3 w-1/2" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 flex-1" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : images.length === 0 ? (
         <Card>
           <CardHeader>

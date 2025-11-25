@@ -4,13 +4,22 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   Dialog,
   DialogContent,
@@ -44,11 +53,11 @@ const locationLabels: Record<AdLocation, string> = {
 
 export function AdsTable({ initialAds }: AdsTableProps) {
   const router = useRouter()
-  const [ads, setAds] = useState<Ad[]>(initialAds)
+  const ads = initialAds
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [editingAd, setEditingAd] = useState<Ad | null>(null)
-  const [deletingAdId, setDeletingAdId] = useState<string | null>(null)
+  const [deletingAd, setDeletingAd] = useState<Ad | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState<AdFormData>({
@@ -80,8 +89,8 @@ export function AdsTable({ initialAds }: AdsTableProps) {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    setDeletingAdId(id)
+  const handleDelete = (ad: Ad) => {
+    setDeletingAd(ad)
     setIsDeleteDialogOpen(true)
   }
 
@@ -119,11 +128,11 @@ export function AdsTable({ initialAds }: AdsTableProps) {
   }
 
   const confirmDelete = async () => {
-    if (!deletingAdId) return
+    if (!deletingAd) return
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`/api/ads/${deletingAdId}`, {
+      const response = await fetch(`/api/ads/${deletingAd.id}`, {
         method: "DELETE",
       })
 
@@ -132,7 +141,7 @@ export function AdsTable({ initialAds }: AdsTableProps) {
       }
 
       setIsDeleteDialogOpen(false)
-      setDeletingAdId(null)
+      setDeletingAd(null)
       router.refresh()
     } catch (error) {
       console.error("Error deleting ad:", error)
@@ -142,77 +151,178 @@ export function AdsTable({ initialAds }: AdsTableProps) {
     }
   }
 
+  if (ads.length === 0) {
+    return (
+      <>
+        {/* ページヘッダー */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold sm:text-3xl">広告管理</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">
+              Google AdSenseの広告スロットを管理します（0件）
+            </p>
+          </div>
+          <Button onClick={handleCreate} className="w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" />
+            新規作成
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>広告がありません</CardTitle>
+            <CardDescription>
+              新規作成ボタンから最初の広告を登録しましょう
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        {renderDialogs()}
+      </>
+    )
+  }
+
   return (
     <>
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          {ads.length}件の広告
+      {/* ページヘッダー */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold sm:text-3xl">広告管理</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Google AdSenseの広告スロットを管理します（{ads.length}件）
+          </p>
         </div>
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           新規作成
         </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>名前</TableHead>
-              <TableHead>広告スロットID</TableHead>
-              <TableHead>表示位置</TableHead>
-              <TableHead>状態</TableHead>
-              <TableHead className="text-right">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ads.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  広告が登録されていません
-                </TableCell>
-              </TableRow>
-            ) : (
-              ads.map((ad) => (
-                <TableRow key={ad.id}>
-                  <TableCell className="font-medium">{ad.name}</TableCell>
-                  <TableCell className="font-mono text-sm">{ad.ad_slot}</TableCell>
-                  <TableCell>{locationLabels[ad.location]}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        ad.is_active
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
-                      }`}
-                    >
-                      {ad.is_active ? "有効" : "無効"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(ad)}
+      {/* デスクトップ: テーブル表示 */}
+      <Card className="hidden md:block pb-0">
+        <CardHeader className="pb-3">
+          <CardTitle>広告一覧</CardTitle>
+        </CardHeader>
+        <CardContent className="px-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b bg-muted/50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-medium">名前</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">広告スロットID</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">表示位置</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">状態</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {ads.map((ad) => (
+                  <tr key={ad.id} className="transition-colors hover:bg-muted/50">
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{ad.name}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <code className="text-sm">{ad.ad_slot}</code>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm">{locationLabels[ad.location]}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          ad.is_active
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
                       >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(ad.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                        {ad.is_active ? "有効" : "無効"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(ad)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(ad)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* モバイル: カード表示 */}
+      <div className="space-y-4 md:hidden">
+        {ads.map((ad) => (
+          <Card key={ad.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-base">{ad.name}</CardTitle>
+                  <CardDescription className="mt-1">
+                    <code className="text-xs">{ad.ad_slot}</code>
+                  </CardDescription>
+                </div>
+                <span
+                  className={`shrink-0 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                    ad.is_active
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {ad.is_active ? "有効" : "無効"}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm text-muted-foreground">
+                表示位置: {locationLabels[ad.location]}
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleEdit(ad)}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  編集
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-destructive hover:text-destructive"
+                  onClick={() => handleDelete(ad)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  削除
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {renderDialogs()}
+    </>
+  )
+
+  function renderDialogs() {
+    return (
+      <>
 
       {/* 作成・編集ダイアログ */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -302,31 +412,30 @@ export function AdsTable({ initialAds }: AdsTableProps) {
       </Dialog>
 
       {/* 削除確認ダイアログ */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>広告を削除</DialogTitle>
-            <DialogDescription>
-              この広告を削除してもよろしいですか？この操作は取り消せません。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>広告を削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作は取り消せません。広告「{deletingAd?.name}
+              」を完全に削除します。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>
               キャンセル
-            </Button>
-            <Button
-              variant="destructive"
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmDelete}
               disabled={isSubmitting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isSubmitting ? "削除中..." : "削除"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </>
+    )
+  }
 }

@@ -117,9 +117,11 @@ export async function getSearchKeywords(
     console.log(`[Search Console] Search keywords fetched: ${result.length} keywords`)
     return result
   } catch (error) {
-    console.error("[Search Console] Error fetching search keywords:", error)
-    if (error instanceof Error) {
-      console.error("[Search Console] Error details:", error.message)
+    // Silently return empty array if permission error or other API errors
+    if (error instanceof Error && error.message.includes("permission")) {
+      console.warn("[Search Console] Permission denied - Please verify Search Console access")
+    } else {
+      console.error("[Search Console] Error fetching search keywords:", error)
     }
     return []
   }
@@ -176,9 +178,11 @@ export async function getSearchKeywordsByPage(
     console.log(`[Search Console] Keywords by page fetched: ${result.length} items`)
     return result
   } catch (error) {
-    console.error("[Search Console] Error fetching keywords by page:", error)
-    if (error instanceof Error) {
-      console.error("[Search Console] Error details:", error.message)
+    // Silently return empty array if permission error or other API errors
+    if (error instanceof Error && error.message.includes("permission")) {
+      console.warn("[Search Console] Permission denied - Please verify Search Console access")
+    } else {
+      console.error("[Search Console] Error fetching keywords by page:", error)
     }
     return []
   }
