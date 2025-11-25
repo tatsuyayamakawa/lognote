@@ -7,8 +7,15 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * URLを環境に応じて自動分岐させる
+ * 優先順位: NEXT_PUBLIC_SITE_URL > VERCEL_PROJECT_PRODUCTION_URL > localhost
  */
 export const getBaseURL = () => {
+  // カスタムドメインを使用する場合は環境変数で明示的に指定
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+
+  // Vercelのデフォルトドメイン
   const url = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
   return url
