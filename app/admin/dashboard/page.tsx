@@ -1,58 +1,16 @@
-import { createClient } from "@/lib/supabase/server";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { FileText, FolderOpen, Eye, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   getPageViews,
   getTopPages,
   getSearchQueries,
   getOrganicSearchStats,
 } from "@/lib/google-analytics/analytics";
+import { getSearchKeywords } from "@/lib/google-analytics/search-console";
 import { AnalyticsCharts } from "./analytics-charts";
-
-async function getStats() {
-  const supabase = await createClient();
-
-  // 記事数を取得
-  const { count: totalPosts } = await supabase
-    .from("posts")
-    .select("*", { count: "exact", head: true });
-
-  const { count: publishedPosts } = await supabase
-    .from("posts")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "published");
-
-  const { count: draftPosts } = await supabase
-    .from("posts")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "draft");
-
-  // カテゴリ数を取得
-  const { count: totalCategories } = await supabase
-    .from("categories")
-    .select("*", { count: "exact", head: true });
-
-  // 総閲覧数を取得
-  const { data: posts } = await supabase.from("posts").select("view_count");
-  const totalViews =
-    posts?.reduce((sum, post) => sum + (post.view_count || 0), 0) || 0;
-
-  return {
-    totalPosts: totalPosts || 0,
-    publishedPosts: publishedPosts || 0,
-    draftPosts: draftPosts || 0,
-    totalCategories: totalCategories || 0,
-    totalViews,
-  };
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getBaseURL } from "@/lib/utils";
 
 export default async function DashboardPage({
   searchParams,
@@ -62,10 +20,18 @@ export default async function DashboardPage({
   const { period = "30" } = await searchParams;
   const days = parseInt(period, 10);
 
-  const stats = await getStats();
   const gaConfigured =
     !!process.env.GA4_PROPERTY_ID &&
     !!process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+  // サイトのURLを取得
+  const searchConsoleUrl = getBaseURL();
+
+  console.log("[Dashboard] GA4 configured:", gaConfigured);
+  console.log("[Dashboard] Site URL:", searchConsoleUrl);
+  console.log("[Dashboard] GA4_PROPERTY_ID:", process.env.GA4_PROPERTY_ID);
+  console.log("[Dashboard] GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
+  console.log("[Dashboard] Fetching analytics data for period:", days, "days");
 
   // Fetch analytics data with selected period
   const pageViews = gaConfigured ? await getPageViews(days) : [];
@@ -75,12 +41,44 @@ export default async function DashboardPage({
     ? await getOrganicSearchStats(days)
     : [];
 
+  // Fetch Search Console keywords
+  const searchKeywords = gaConfigured
+    ? await getSearchKeywords(searchConsoleUrl, days, 20)
+    : [];
+
+  console.log("[Dashboard] Analytics data fetched:");
+  console.log("  - pageViews:", pageViews.length, "items");
+  console.log("  - topPages:", topPages.length, "items");
+  console.log("  - searchQueries:", searchQueries.length, "items");
+  console.log("  - organicSearchStats:", organicSearchStats.length, "items");
+  console.log("  - searchKeywords:", searchKeywords.length, "items");
+
   return (
     <div className="space-y-8">
       {/* ページヘッダー */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">ダッシュボード</h1>
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold sm:text-3xl">ダッシュボード</h1>
+            {gaConfigured && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                <svg
+                  className="h-3 w-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                GA4連携中
+              </span>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground sm:text-base">
             ブログの統計情報と最近の活動
           </p>
@@ -93,79 +91,6 @@ export default async function DashboardPage({
         </Button>
       </div>
 
-      {/* 統計カード */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">総記事数</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPosts}</div>
-            <p className="text-xs text-muted-foreground">
-              公開: {stats.publishedPosts} / 下書き: {stats.draftPosts}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">カテゴリ数</CardTitle>
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCategories}</div>
-            <p className="text-xs text-muted-foreground">アクティブ</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">総閲覧数</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalViews.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">全記事合計</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Analytics連携</CardTitle>
-            <svg
-              className="h-4 w-4 text-muted-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                gaConfigured ? "text-green-600" : ""
-              }`}
-            >
-              {gaConfigured ? "設定済み" : "未設定"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {gaConfigured
-                ? "Google Analytics連携中"
-                : "GA4を設定してください"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Analytics グラフセクション */}
       {gaConfigured ? (
         <AnalyticsCharts
@@ -173,6 +98,7 @@ export default async function DashboardPage({
           topPages={topPages}
           searchQueries={searchQueries}
           organicSearchStats={organicSearchStats}
+          searchKeywords={searchKeywords}
         />
       ) : (
         <Card>
