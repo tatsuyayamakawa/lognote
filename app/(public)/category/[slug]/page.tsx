@@ -96,16 +96,18 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <BreadcrumbListJsonLd items={breadcrumbItems} />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* パンくずリスト */}
-        <nav className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">
-          ホーム
-        </Link>
-        <span>/</span>
-        <Link href="/posts" className="hover:text-foreground">
-          記事一覧
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">{category.name}</span>
+        <nav className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <Link href="/" className="hover:text-foreground whitespace-nowrap">
+            ホーム
+          </Link>
+          <span className="select-none">/</span>
+          <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
+            記事一覧
+          </Link>
+          <span className="select-none">/</span>
+          <span className="text-foreground wrap-break-word min-w-0">
+            {category.name}
+          </span>
         </nav>
 
         {/* カテゴリヘッダー */}

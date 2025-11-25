@@ -104,16 +104,18 @@ export default async function PostPage({ params }: PostPageProps) {
       <BreadcrumbListJsonLd items={breadcrumbItems} />
       <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {/* パンくずリスト */}
-        <nav className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">
+        <nav className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <Link href="/" className="hover:text-foreground whitespace-nowrap">
             ホーム
           </Link>
-          <span>/</span>
-          <Link href="/posts" className="hover:text-foreground">
+          <span className="select-none">/</span>
+          <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
             記事一覧
           </Link>
-          <span>/</span>
-          <span className="text-foreground">{post.title}</span>
+          <span className="select-none">/</span>
+          <span className="text-foreground wrap-break-word min-w-0">
+            {post.title}
+          </span>
         </nav>
 
         {/* カテゴリ */}
