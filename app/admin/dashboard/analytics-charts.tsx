@@ -183,9 +183,25 @@ export function AnalyticsCharts({
               </AreaChart>
             </ChartContainer>
           ) : (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              データがありません
-            </p>
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                データがありません
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Google Analytics 4の設定が必要です。
+                <br />
+                詳しくは
+                <a
+                  href="https://github.com/tatsuyayamakawa/lognote#google-analytics--search-console連携設定"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-200"
+                >
+                  README
+                </a>
+                をご確認ください
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -230,9 +246,25 @@ export function AnalyticsCharts({
               </AreaChart>
             </ChartContainer>
           ) : (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              データがありません
-            </p>
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                データがありません
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Google Analytics 4の設定が必要です。
+                <br />
+                詳しくは
+                <a
+                  href="https://github.com/tatsuyayamakawa/lognote#google-analytics--search-console連携設定"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-200"
+                >
+                  README
+                </a>
+                をご確認ください
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -266,9 +298,25 @@ export function AnalyticsCharts({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                データがありません
-              </p>
+              <div className="py-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  データがありません
+                </p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Google Analytics 4の設定が必要です。
+                  <br />
+                  詳しくは
+                  <a
+                    href="https://github.com/tatsuyayamakawa/lognote#google-analytics--search-console連携設定"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-200"
+                  >
+                    README
+                  </a>
+                  をご確認ください
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
