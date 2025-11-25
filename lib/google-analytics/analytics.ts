@@ -16,10 +16,20 @@ export function getAnalyticsClient() {
       ? credentialsPath
       : path.resolve(process.cwd(), credentialsPath)
 
+    console.log("[Analytics] Initializing GA4 client")
+    console.log("[Analytics] Credentials path:", absolutePath)
+    console.log("[Analytics] GA4 Property ID:", process.env.GA4_PROPERTY_ID)
+
     // 環境変数を絶対パスに上書き
     process.env.GOOGLE_APPLICATION_CREDENTIALS = absolutePath
 
-    analyticsDataClient = new BetaAnalyticsDataClient()
+    try {
+      analyticsDataClient = new BetaAnalyticsDataClient()
+      console.log("[Analytics] Client initialized successfully")
+    } catch (error) {
+      console.error("[Analytics] Failed to initialize client:", error)
+      return null
+    }
   }
 
   return analyticsDataClient
@@ -27,9 +37,16 @@ export function getAnalyticsClient() {
 
 export async function getPageViews(days: number = 30) {
   const client = getAnalyticsClient()
-  if (!client || !process.env.GA4_PROPERTY_ID) {
+  if (!client) {
+    console.warn("[Analytics] getPageViews: Client not initialized")
     return []
   }
+  if (!process.env.GA4_PROPERTY_ID) {
+    console.warn("[Analytics] getPageViews: GA4_PROPERTY_ID not set")
+    return []
+  }
+
+  console.log(`[Analytics] Fetching page views for last ${days} days`)
 
   try {
     const [response] = await client.runReport({
@@ -44,23 +61,38 @@ export async function getPageViews(days: number = 30) {
       metrics: [{ name: "screenPageViews" }],
     })
 
-    return (
-      response.rows?.map((row) => ({
-        date: row.dimensionValues?.[0]?.value || "",
-        views: parseInt(row.metricValues?.[0]?.value || "0"),
-      })) || []
-    )
+    const result = response.rows?.map((row) => ({
+      date: row.dimensionValues?.[0]?.value || "",
+      views: parseInt(row.metricValues?.[0]?.value || "0"),
+    })) || []
+
+    // Sort by date in ascending order (oldest to newest)
+    result.sort((a, b) => a.date.localeCompare(b.date))
+
+    console.log(`[Analytics] Page views fetched: ${result.length} data points`)
+    return result
   } catch (error) {
-    console.error("Error fetching page views:", error)
+    console.error("[Analytics] Error fetching page views:", error)
+    if (error instanceof Error) {
+      console.error("[Analytics] Error details:", error.message)
+      console.error("[Analytics] Error stack:", error.stack)
+    }
     return []
   }
 }
 
 export async function getTopPages(limit: number = 10) {
   const client = getAnalyticsClient()
-  if (!client || !process.env.GA4_PROPERTY_ID) {
+  if (!client) {
+    console.warn("[Analytics] getTopPages: Client not initialized")
     return []
   }
+  if (!process.env.GA4_PROPERTY_ID) {
+    console.warn("[Analytics] getTopPages: GA4_PROPERTY_ID not set")
+    return []
+  }
+
+  console.log(`[Analytics] Fetching top ${limit} pages`)
 
   try {
     const [response] = await client.runReport({
@@ -118,24 +150,35 @@ export async function getTopPages(limit: number = 10) {
       limit,
     })
 
-    return (
-      response.rows?.map((row) => ({
-        title: row.dimensionValues?.[0]?.value || "",
-        path: row.dimensionValues?.[1]?.value || "",
-        views: parseInt(row.metricValues?.[0]?.value || "0"),
-      })) || []
-    )
+    const result = response.rows?.map((row) => ({
+      title: row.dimensionValues?.[0]?.value || "",
+      path: row.dimensionValues?.[1]?.value || "",
+      views: parseInt(row.metricValues?.[0]?.value || "0"),
+    })) || []
+
+    console.log(`[Analytics] Top pages fetched: ${result.length} pages`)
+    return result
   } catch (error) {
-    console.error("Error fetching top pages:", error)
+    console.error("[Analytics] Error fetching top pages:", error)
+    if (error instanceof Error) {
+      console.error("[Analytics] Error details:", error.message)
+    }
     return []
   }
 }
 
 export async function getSearchQueries(limit: number = 20) {
   const client = getAnalyticsClient()
-  if (!client || !process.env.GA4_PROPERTY_ID) {
+  if (!client) {
+    console.warn("[Analytics] getSearchQueries: Client not initialized")
     return []
   }
+  if (!process.env.GA4_PROPERTY_ID) {
+    console.warn("[Analytics] getSearchQueries: GA4_PROPERTY_ID not set")
+    return []
+  }
+
+  console.log(`[Analytics] Fetching top ${limit} search queries`)
 
   try {
     const [response] = await client.runReport({
@@ -169,26 +212,37 @@ export async function getSearchQueries(limit: number = 20) {
       limit,
     })
 
-    return (
-      response.rows?.map((row) => ({
-        source: row.dimensionValues?.[0]?.value || "",
-        medium: row.dimensionValues?.[1]?.value || "",
-        referrer: row.dimensionValues?.[2]?.value || "",
-        sessions: parseInt(row.metricValues?.[0]?.value || "0"),
-        engagedSessions: parseInt(row.metricValues?.[1]?.value || "0"),
-      })) || []
-    )
+    const result = response.rows?.map((row) => ({
+      source: row.dimensionValues?.[0]?.value || "",
+      medium: row.dimensionValues?.[1]?.value || "",
+      referrer: row.dimensionValues?.[2]?.value || "",
+      sessions: parseInt(row.metricValues?.[0]?.value || "0"),
+      engagedSessions: parseInt(row.metricValues?.[1]?.value || "0"),
+    })) || []
+
+    console.log(`[Analytics] Search queries fetched: ${result.length} queries`)
+    return result
   } catch (error) {
-    console.error("Error fetching search queries:", error)
+    console.error("[Analytics] Error fetching search queries:", error)
+    if (error instanceof Error) {
+      console.error("[Analytics] Error details:", error.message)
+    }
     return []
   }
 }
 
 export async function getOrganicSearchStats(days: number = 30) {
   const client = getAnalyticsClient()
-  if (!client || !process.env.GA4_PROPERTY_ID) {
+  if (!client) {
+    console.warn("[Analytics] getOrganicSearchStats: Client not initialized")
     return []
   }
+  if (!process.env.GA4_PROPERTY_ID) {
+    console.warn("[Analytics] getOrganicSearchStats: GA4_PROPERTY_ID not set")
+    return []
+  }
+
+  console.log(`[Analytics] Fetching organic search stats for last ${days} days`)
 
   try {
     const [response] = await client.runReport({
@@ -229,16 +283,23 @@ export async function getOrganicSearchStats(days: number = 30) {
       },
     })
 
-    return (
-      response.rows?.map((row) => ({
-        date: row.dimensionValues?.[0]?.value || "",
-        sessions: parseInt(row.metricValues?.[0]?.value || "0"),
-        engagedSessions: parseInt(row.metricValues?.[1]?.value || "0"),
-        avgDuration: parseFloat(row.metricValues?.[2]?.value || "0"),
-      })) || []
-    )
+    const result = response.rows?.map((row) => ({
+      date: row.dimensionValues?.[0]?.value || "",
+      sessions: parseInt(row.metricValues?.[0]?.value || "0"),
+      engagedSessions: parseInt(row.metricValues?.[1]?.value || "0"),
+      avgDuration: parseFloat(row.metricValues?.[2]?.value || "0"),
+    })) || []
+
+    // Sort by date in ascending order (oldest to newest)
+    result.sort((a, b) => a.date.localeCompare(b.date))
+
+    console.log(`[Analytics] Organic search stats fetched: ${result.length} data points`)
+    return result
   } catch (error) {
-    console.error("Error fetching organic search stats:", error)
+    console.error("[Analytics] Error fetching organic search stats:", error)
+    if (error instanceof Error) {
+      console.error("[Analytics] Error details:", error.message)
+    }
     return []
   }
 }
