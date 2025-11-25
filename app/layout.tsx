@@ -100,7 +100,7 @@ export default async function RootLayout({
           <GoogleAnalytics />
           <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
             {!isAdminOrAuth && <Header />}
-            <main>{children}</main>
+            <main className="flex-1">{children}</main>
             {!isAdminOrAuth && <Footer />}
           </div>
         </ThemeProvider>
