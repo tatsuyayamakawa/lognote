@@ -317,7 +317,7 @@ export function AnalyticsCharts({
                     <br />
                     詳しくは
                     <a
-                      href="https://github.com/your-repo/lognote#google-analytics--search-console連携設定"
+                      href="https://github.com/tatsuyayamakawa/lognote#google-analytics--search-console連携設定"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-200"

@@ -110,7 +110,7 @@ export default async function DashboardPage({
                 <p className="text-sm text-blue-700 dark:text-blue-300">
                   Google Analytics / Search Consoleの連携設定については、
                   <a
-                    href="https://github.com/your-repo/lognote#google-analytics--search-console連携設定"
+                    href="https://github.com/tatsuyayamakawa/lognote#google-analytics--search-console連携設定"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-medium underline hover:text-blue-900 dark:hover:text-blue-100"
