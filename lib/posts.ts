@@ -277,3 +277,123 @@ export async function getRelatedPosts(
     categories: post.categories?.map((pc: any) => pc.category).filter(Boolean) || [],
   }))
 }
+
+/**
+ * Google Analyticsの閲覧数をデータベースに同期（キャッシュ付き）
+ * @param forceRefresh キャッシュを無視して強制的に同期する
+ */
+export async function syncViewCountsFromAnalytics(forceRefresh: boolean = false) {
+  const supabase = await createClient()
+  const CACHE_KEY = 'view_counts_sync'
+  const CACHE_DURATION_HOURS = 1 // 1時間キャッシュ
+
+  // キャッシュをチェック（強制更新でない場合）
+  if (!forceRefresh) {
+    const { data: cache } = await supabase
+      .from('analytics_cache')
+      .select('*')
+      .eq('cache_key', CACHE_KEY)
+      .single()
+
+    if (cache) {
+      const expiresAt = new Date(cache.expires_at)
+      const now = new Date()
+
+      if (expiresAt > now) {
+        console.log('[Posts] Using cached view counts sync result')
+        return cache.data as { updated: number; errors: number }
+      }
+    }
+  }
+
+  console.log('[Posts] Fetching fresh view counts from Google Analytics')
+
+  // Google Analyticsから記事ごとの閲覧数を取得
+  const { getPostViewCounts } = await import('@/lib/google-analytics/analytics')
+  const viewCounts = await getPostViewCounts()
+
+  if (viewCounts.length === 0) {
+    console.log('[Posts] No view counts to sync')
+    const result = { updated: 0, errors: 0 }
+    await saveSyncResultToCache(supabase, CACHE_KEY, result, CACHE_DURATION_HOURS)
+    return result
+  }
+
+  let updated = 0
+  let errors = 0
+
+  // データベース内の全記事を取得
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('id, slug')
+
+  if (!posts) {
+    console.error('[Posts] Failed to fetch posts from database')
+    return { updated: 0, errors: 1 }
+  }
+
+  // スラッグをキーにしたマップを作成
+  const postsBySlug = new Map(posts.map(post => [post.slug, post.id]))
+
+  // 閲覧数を更新
+  for (const { slug, views } of viewCounts) {
+    const postId = postsBySlug.get(slug)
+
+    if (!postId) {
+      // スラッグに対応する記事が見つからない場合はスキップ
+      continue
+    }
+
+    const { error } = await supabase
+      .from('posts')
+      .update({ view_count: views })
+      .eq('id', postId)
+
+    if (error) {
+      console.error(`[Posts] Failed to update view count for slug: ${slug}`, error)
+      errors++
+    } else {
+      updated++
+    }
+  }
+
+  const result = { updated, errors }
+  console.log(`[Posts] View counts synced: ${updated} updated, ${errors} errors`)
+
+  // 結果をキャッシュに保存
+  await saveSyncResultToCache(supabase, CACHE_KEY, result, CACHE_DURATION_HOURS)
+
+  return result
+}
+
+/**
+ * 同期結果をキャッシュに保存
+ */
+async function saveSyncResultToCache(
+  supabase: any,
+  cacheKey: string,
+  data: any,
+  hours: number
+) {
+  const now = new Date()
+  const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000)
+
+  // 既存のキャッシュを削除
+  await supabase
+    .from('analytics_cache')
+    .delete()
+    .eq('cache_key', cacheKey)
+
+  // 新しいキャッシュを挿入
+  const { error } = await supabase
+    .from('analytics_cache')
+    .insert({
+      cache_key: cacheKey,
+      data,
+      expires_at: expiresAt.toISOString(),
+    })
+
+  if (error) {
+    console.error('[Posts] Failed to save cache:', error)
+  }
+}

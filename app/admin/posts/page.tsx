@@ -3,12 +3,21 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PostsTable } from "./posts-table";
+import { syncViewCountsFromAnalytics } from "@/lib/posts";
 import type { Post, Category } from "@/types";
 
 const POSTS_PER_PAGE = 10;
 
 async function getPosts(page: number = 1) {
   const supabase = await createClient();
+
+  // Google Analyticsから閲覧数を同期（キャッシュ処理は後で追加予定）
+  try {
+    await syncViewCountsFromAnalytics();
+  } catch (error) {
+    console.error("Failed to sync view counts:", error);
+    // 同期に失敗してもページは表示する
+  }
 
   // まず総件数を取得
   const { count } = await supabase

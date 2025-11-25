@@ -315,3 +315,138 @@ export async function getOrganicSearchStats(days: number = 30) {
     return []
   }
 }
+
+/**
+ * 記事ごとの閲覧数を取得（全期間）
+ */
+export async function getPostViewCounts() {
+  const client = getAnalyticsClient()
+  if (!client) {
+    console.warn("[Analytics] getPostViewCounts: Client not initialized")
+    return []
+  }
+  if (!process.env.GA4_PROPERTY_ID) {
+    console.warn("[Analytics] getPostViewCounts: GA4_PROPERTY_ID not set")
+    return []
+  }
+
+  console.log("[Analytics] Fetching view counts for all posts")
+
+  try {
+    const [response] = await client.runReport({
+      property: `properties/${process.env.GA4_PROPERTY_ID}`,
+      dateRanges: [
+        {
+          startDate: "2020-01-01", // 十分に古い日付から集計
+          endDate: "today",
+        },
+      ],
+      dimensions: [{ name: "pagePath" }],
+      metrics: [{ name: "screenPageViews" }],
+      // 記事ページのみ取得（/で始まり、/admin、/auth、/apiなどを除外）
+      dimensionFilter: {
+        andGroup: {
+          expressions: [
+            {
+              filter: {
+                fieldName: "pagePath",
+                stringFilter: {
+                  matchType: "BEGINS_WITH",
+                  value: "/",
+                },
+              },
+            },
+            {
+              notExpression: {
+                orGroup: {
+                  expressions: [
+                    {
+                      filter: {
+                        fieldName: "pagePath",
+                        stringFilter: {
+                          matchType: "BEGINS_WITH",
+                          value: "/admin",
+                        },
+                      },
+                    },
+                    {
+                      filter: {
+                        fieldName: "pagePath",
+                        stringFilter: {
+                          matchType: "BEGINS_WITH",
+                          value: "/auth",
+                        },
+                      },
+                    },
+                    {
+                      filter: {
+                        fieldName: "pagePath",
+                        stringFilter: {
+                          matchType: "BEGINS_WITH",
+                          value: "/api",
+                        },
+                      },
+                    },
+                    {
+                      filter: {
+                        fieldName: "pagePath",
+                        stringFilter: {
+                          matchType: "EXACT",
+                          value: "/",
+                        },
+                      },
+                    },
+                    {
+                      filter: {
+                        fieldName: "pagePath",
+                        stringFilter: {
+                          matchType: "BEGINS_WITH",
+                          value: "/posts",
+                        },
+                      },
+                    },
+                    {
+                      filter: {
+                        fieldName: "pagePath",
+                        stringFilter: {
+                          matchType: "BEGINS_WITH",
+                          value: "/category",
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      orderBys: [
+        {
+          metric: { metricName: "screenPageViews" },
+          desc: true,
+        },
+      ],
+    })
+
+    const result = response.rows?.map((row) => {
+      const pagePath = row.dimensionValues?.[0]?.value || ""
+      // スラッグを抽出（先頭の/を除去）
+      const slug = pagePath.startsWith("/") ? pagePath.substring(1) : pagePath
+
+      return {
+        slug,
+        views: parseInt(row.metricValues?.[0]?.value || "0"),
+      }
+    }) || []
+
+    console.log(`[Analytics] Post view counts fetched: ${result.length} posts`)
+    return result
+  } catch (error) {
+    console.error("[Analytics] Error fetching post view counts:", error)
+    if (error instanceof Error) {
+      console.error("[Analytics] Error details:", error.message)
+    }
+    return []
+  }
+}
