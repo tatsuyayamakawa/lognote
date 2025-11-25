@@ -4,7 +4,6 @@ import { Plus } from "lucide-react";
 import {
   getPageViews,
   getTopPages,
-  getSearchQueries,
   getOrganicSearchStats,
 } from "@/lib/google-analytics/analytics";
 import { getSearchKeywords } from "@/lib/google-analytics/search-console";
@@ -36,7 +35,6 @@ export default async function DashboardPage({
   // Fetch analytics data with selected period
   const pageViews = gaConfigured ? await getPageViews(days) : [];
   const topPages = gaConfigured ? await getTopPages(10) : [];
-  const searchQueries = gaConfigured ? await getSearchQueries(20) : [];
   const organicSearchStats = gaConfigured
     ? await getOrganicSearchStats(days)
     : [];
@@ -49,7 +47,6 @@ export default async function DashboardPage({
   console.log("[Dashboard] Analytics data fetched:");
   console.log("  - pageViews:", pageViews.length, "items");
   console.log("  - topPages:", topPages.length, "items");
-  console.log("  - searchQueries:", searchQueries.length, "items");
   console.log("  - organicSearchStats:", organicSearchStats.length, "items");
   console.log("  - searchKeywords:", searchKeywords.length, "items");
 
@@ -58,27 +55,7 @@ export default async function DashboardPage({
       {/* ページヘッダー */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold sm:text-3xl">ダッシュボード</h1>
-            {gaConfigured && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                <svg
-                  className="h-3 w-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                GA4連携中
-              </span>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold sm:text-3xl">ダッシュボード</h1>
           <p className="text-sm text-muted-foreground sm:text-base">
             ブログの統計情報と最近の活動
           </p>
@@ -96,17 +73,15 @@ export default async function DashboardPage({
         <AnalyticsCharts
           pageViews={pageViews}
           topPages={topPages}
-          searchQueries={searchQueries}
           organicSearchStats={organicSearchStats}
           searchKeywords={searchKeywords}
         />
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Google Analytics連携</CardTitle>
+            <CardTitle>アナリティクス連携</CardTitle>
             <CardDescription>
-              リアルタイムアナリティクスを表示するには、Google Analytics
-              4を設定してください
+              リアルタイムアナリティクスを表示するには、Google Analytics 4とGoogle Search Consoleの設定が必要です
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -128,6 +103,23 @@ export default async function DashboardPage({
                   - サービスアカウントの認証情報ファイルパス
                 </li>
               </ul>
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  📖 詳しい設定方法
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Google Analytics / Search Consoleの連携設定については、
+                  <a
+                    href="https://github.com/your-repo/lognote#google-analytics--search-console連携設定"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline hover:text-blue-900 dark:hover:text-blue-100"
+                  >
+                    README
+                  </a>
+                  をご確認ください。
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

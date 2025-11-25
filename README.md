@@ -27,7 +27,13 @@ Next.js 16 + Supabase + TypeScriptで構築された、モダンなブログプ�
   - リンク、画像挿入
 - 📂 カテゴリー管理
 - 🖼️ メディアライブラリ（最大10MB）
-- 📈 Google Analyticsダッシュボード
+- 📈 アナリティクスダッシュボード
+  - Google Analytics 4連携
+  - Google Search Console連携
+  - ページビュー推移グラフ
+  - オーガニック検索統計
+  - 人気ページランキング
+  - 流入キーワード分析
 - 👁️ 閲覧数トラッキング
 
 ## 技術スタック
@@ -47,6 +53,7 @@ Next.js 16 + Supabase + TypeScriptで構築された、モダンなブログプ�
 
 ### その他
 - **Google Analytics Data API** - アクセス解析
+- **Google Search Console API** - 検索キーワード分析
 - **date-fns** - 日付処理
 - **lowlight** - シンタックスハイライト
 
@@ -67,17 +74,31 @@ cd lognote
 npm install
 
 # 環境変数の設定
-# .env.localファイルを作成し、以下の変数を設定
-# NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-# GOOGLE_ANALYTICS_PROPERTY_ID=your-ga-property-id
-# GOOGLE_APPLICATION_CREDENTIALS=path-to-service-account-json
+cp .env.example .env.local
+# .env.localファイルを編集して必要な環境変数を設定
 
 # 開発サーバーの起動
 npm run dev
 ```
 
 ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
+
+### 環境変数
+
+`.env.local`ファイルに以下の環境変数を設定してください：
+
+```bash
+# Supabase設定（必須）
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Google Tag Manager（任意）
+NEXT_PUBLIC_GTM_ID=your-gtm-id
+
+# Google Analytics 4設定（任意 - ダッシュボード機能用）
+GA4_PROPERTY_ID=your-ga4-property-id
+GOOGLE_APPLICATION_CREDENTIALS=path-to-service-account-json
+```
 
 ### ビルド
 
@@ -114,6 +135,92 @@ Supabaseを使用したPostgreSQLデータベース：
 - **categories** - カテゴリーデータ
 - **post_categories** - 記事とカテゴリーの中間テーブル
 - **page_views** - ページビュー統計
+
+## Google Analytics / Search Console連携設定
+
+管理ダッシュボードでアナリティクスデータを表示するには、Google Analytics 4とGoogle Search Consoleの設定が必要です。
+
+### 1. Google Cloud プロジェクトの作成
+
+1. [Google Cloud Console](https://console.cloud.google.com/)にアクセス
+2. 新しいプロジェクトを作成（例: `lognote-analytics`）
+
+### 2. APIの有効化
+
+以下のAPIを有効にします：
+
+1. **Google Analytics Data API**
+   - [APIライブラリ](https://console.cloud.google.com/apis/library)で「Google Analytics Data API」を検索
+   - 「有効にする」をクリック
+
+2. **Google Search Console API**
+   - 同様に「Google Search Console API」を検索して有効化
+
+### 3. サービスアカウントの作成
+
+1. [IAMと管理 > サービスアカウント](https://console.cloud.google.com/iam-admin/serviceaccounts)に移動
+2. 「サービスアカウントを作成」をクリック
+3. サービスアカウント名を入力（例: `analytics-reader`）
+4. 「作成して続行」をクリック
+5. ロールは設定せずに「続行」→「完了」
+
+### 4. 認証キーの生成
+
+1. 作成したサービスアカウントをクリック
+2. 「キー」タブに移動
+3. 「鍵を追加」→「新しい鍵を作成」
+4. JSON形式を選択してダウンロード
+5. ダウンロードしたJSONファイルをプロジェクトルートに配置（例: `ga4-analytics-key.json`）
+
+### 5. Google Analytics 4の設定
+
+1. [Google Analytics](https://analytics.google.com/)にログイン
+2. 管理 > プロパティアクセス管理に移動
+3. 「+」ボタンから「ユーザーを追加」
+4. サービスアカウントのメールアドレスを追加（例: `analytics-reader@lognote-analytics.iam.gserviceaccount.com`）
+5. 役割を「閲覧者」に設定して保存
+
+**GA4 Property IDの確認方法：**
+- 管理 > プロパティ設定で「プロパティID」を確認（例: `264233355`）
+
+### 6. Google Search Consoleの設定
+
+1. [Google Search Console](https://search.google.com/search-console)にアクセス
+2. 対象のプロパティを選択
+3. 設定 > ユーザーと権限に移動
+4. 「ユーザーを追加」をクリック
+5. サービスアカウントのメールアドレスを追加
+6. 権限を「オーナー」または「フル」に設定して保存
+
+### 7. 環境変数の設定
+
+`.env.local`に以下を追加：
+
+```bash
+# Google Analytics 4
+GA4_PROPERTY_ID=264233355  # 自分のProperty IDに置き換え
+GOOGLE_APPLICATION_CREDENTIALS=ga4-analytics-key.json  # JSONファイルのパス
+```
+
+### トラブルシューティング
+
+**ダッシュボードにデータが表示されない場合：**
+
+1. ブラウザのコンソールログを確認
+2. 以下の点をチェック：
+   - サービスアカウントがGA4プロパティに追加されているか
+   - サービスアカウントがSearch Consoleに追加されているか
+   - JSON認証ファイルのパスが正しいか
+   - GA4 Property IDが正しいか
+   - APIが有効化されているか
+
+3. 開発サーバーを再起動してください：
+   ```bash
+   # サーバーを停止（Ctrl+C）
+   npm run dev
+   ```
+
+4. それでも解決しない場合は、このREADMEの設定手順を最初から確認してください
 
 ## ライセンス
 
