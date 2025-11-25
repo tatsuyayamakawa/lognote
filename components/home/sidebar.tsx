@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Profile } from "./profile";
-import { AdSense } from "@/components/ads/adsense";
-import { getAdsByLocation } from "@/lib/ads";
+import { ResponsiveAd } from "@/components/ads/responsive-ad";
+import { getAdSettings } from "@/lib/ad-settings";
 import type { Category } from "@/types";
 
 interface SidebarProps {
@@ -9,21 +9,32 @@ interface SidebarProps {
 }
 
 export async function Sidebar({ categories }: SidebarProps) {
-  const sidebarAd = await getAdsByLocation("sidebar");
+  const adSettings = await getAdSettings();
 
   return (
     <aside className="space-y-6">
-      {/* プロフィール */}
-      <Profile />
-
-      {/* 広告 */}
-      {sidebarAd && (
-        <AdSense
-          adSlot={sidebarAd.ad_slot}
-          adFormat="auto"
-          fullWidthResponsive={true}
+      {/* サイドバー広告 */}
+      {(adSettings?.sidebar_pc_slot || adSettings?.sidebar_mobile_slot) && (
+        <ResponsiveAd
+          pcSlot={adSettings?.sidebar_pc_slot}
+          mobileSlot={adSettings?.sidebar_mobile_slot}
+          pcConfig={{
+            width: "300px",
+            height: "600px",
+            adFormat: "rectangle",
+            fullWidthResponsive: false,
+          }}
+          mobileConfig={{
+            width: "300px",
+            height: "250px",
+            adFormat: "rectangle",
+            fullWidthResponsive: false,
+          }}
         />
       )}
+
+      {/* プロフィール */}
+      <Profile />
 
       {/* カテゴリ一覧 */}
       <div className="rounded-lg border bg-card p-6">

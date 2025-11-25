@@ -15,6 +15,14 @@ interface AdSenseProps {
    * スケルトンを表示するかどうか（デフォルト: true）
    */
   showSkeleton?: boolean;
+  /**
+   * 固定サイズの幅（例: "300px"）
+   */
+  width?: string;
+  /**
+   * 固定サイズの高さ（例: "250px"）
+   */
+  height?: string;
 }
 
 export function AdSense({
@@ -24,6 +32,8 @@ export function AdSense({
   className = "",
   skeletonHeight = "280px",
   showSkeleton = true,
+  width,
+  height,
 }: AdSenseProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -100,11 +110,16 @@ export function AdSense({
     );
   }
 
+  // 固定サイズの広告の場合のスタイル
+  const adStyle: React.CSSProperties = width && height
+    ? { display: "inline-block", width, height }
+    : { display: "block" };
+
   return (
     <div className={className} suppressHydrationWarning>
       <ins
         className="adsbygoogle"
-        style={{ display: "block" }}
+        style={adStyle}
         data-ad-client="ca-pub-7839828582645189"
         data-ad-slot={adSlot}
         data-ad-format={adFormat}

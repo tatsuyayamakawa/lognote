@@ -6,12 +6,14 @@ import {
   getRelatedPosts,
 } from "@/lib/posts";
 import { formatDate, getBaseURL } from "@/lib/utils";
-import { TiptapRenderer } from "@/components/editor/tiptap-renderer";
+import { TiptapRendererWithAds } from "@/components/editor/tiptap-renderer-with-ads";
 import { ShareButtons } from "@/components/post/share-buttons";
 import { RelatedPosts } from "@/components/post/related-posts";
 import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
+import { ResponsiveAd } from "@/components/ads/responsive-ad";
+import { DualAd } from "@/components/ads/dual-ad";
 import { AdSense } from "@/components/ads/adsense";
-import { getAdsByLocation } from "@/lib/ads";
+import { getAdSettings } from "@/lib/ad-settings";
 import type { Metadata } from "next";
 
 interface PostPageProps {
@@ -80,12 +82,11 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  // 関連記事と広告を取得
+  // 関連記事と広告設定を取得
   const categoryIds = post.categories?.map((c) => c.id) || [];
-  const [relatedPosts, articleTopAd, articleBottomAd] = await Promise.all([
+  const [relatedPosts, adSettings] = await Promise.all([
     getRelatedPosts(post.id, categoryIds, 3),
-    getAdsByLocation("article_top"),
-    getAdsByLocation("article_bottom"),
+    getAdSettings(),
   ]);
 
   const postUrl = `${getBaseURL()}/${post.slug}`;
@@ -175,27 +176,61 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
 
         {/* 記事上広告（タイトル下・ファーストビュー） */}
-        {articleTopAd && (
+        {(adSettings?.article_top_pc_slot || adSettings?.article_top_mobile_slot) && (
           <div className="my-10">
-            <AdSense
-              adSlot={articleTopAd.ad_slot}
-              adFormat="auto"
-              fullWidthResponsive={true}
+            <ResponsiveAd
+              pcSlot={adSettings?.article_top_pc_slot}
+              mobileSlot={adSettings?.article_top_mobile_slot}
+              pcConfig={{
+                adFormat: "fluid",
+                fullWidthResponsive: true,
+              }}
+              mobileConfig={{
+                width: "300px",
+                height: "250px",
+                adFormat: "rectangle",
+                fullWidthResponsive: false,
+              }}
             />
           </div>
         )}
 
-        {/* 記事本文 */}
-        {post.content && <TiptapRenderer content={post.content} />}
+        {/* 記事本文（記事内広告対応） */}
+        {post.content && (
+          <TiptapRendererWithAds
+            content={post.content}
+            inArticlePcSlot={adSettings?.in_article_pc_slot}
+            inArticleMobileSlot={adSettings?.in_article_mobile_slot}
+          />
+        )}
 
         {/* 記事下広告（コンテンツ後） */}
-        {articleBottomAd && (
+        {(adSettings?.article_bottom_pc_slot_1 ||
+          adSettings?.article_bottom_pc_slot_2 ||
+          adSettings?.article_bottom_mobile_slot) && (
           <div className="my-10">
-            <AdSense
-              adSlot={articleBottomAd.ad_slot}
-              adFormat="auto"
-              fullWidthResponsive={true}
+            {/* PC: 336x280 2つ横並び */}
+            <DualAd
+              slot1={adSettings?.article_bottom_pc_slot_1}
+              slot2={adSettings?.article_bottom_pc_slot_2}
+              width="336px"
+              height="280px"
             />
+            {/* スマホ: 300x250 1つ */}
+            {adSettings?.article_bottom_mobile_slot && (
+              <div className="block md:hidden text-center">
+                <span className="text-xs text-muted-foreground block mb-1">
+                  スポンサーリンク
+                </span>
+                <AdSense
+                  adSlot={adSettings.article_bottom_mobile_slot}
+                  width="300px"
+                  height="250px"
+                  adFormat="rectangle"
+                  fullWidthResponsive={false}
+                />
+              </div>
+            )}
           </div>
         )}
 
