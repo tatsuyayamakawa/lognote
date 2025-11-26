@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor, EditorContent } from "@tiptap/react"
+import { useEditor, EditorContent, type JSONContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import Image from "@tiptap/extension-image"
@@ -22,7 +22,7 @@ function generateId(text: string): string {
 }
 
 interface TiptapRendererWithAdsProps {
-  content: any
+  content: string | JSONContent
   inArticlePcSlot?: string
   inArticleMobileSlot?: string
   className?: string
@@ -111,7 +111,7 @@ export function TiptapRendererWithAds({
     const content = editor.getJSON()
     let count = 0
 
-    const countH2 = (node: any) => {
+    const countH2 = (node: JSONContent) => {
       if (node.type === "heading" && node.attrs?.level === 2) {
         count++
       }

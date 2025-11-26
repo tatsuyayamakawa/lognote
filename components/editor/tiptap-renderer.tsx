@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor, EditorContent } from "@tiptap/react"
+import { useEditor, EditorContent, type JSONContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import Image from "@tiptap/extension-image"
@@ -21,7 +21,7 @@ function generateId(text: string): string {
 }
 
 interface TiptapRendererProps {
-  content: any
+  content: string | JSONContent
   className?: string
 }
 

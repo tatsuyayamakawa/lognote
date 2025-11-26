@@ -70,9 +70,9 @@ export function ImageUpload({
       } = supabase.storage.from(bucketName).getPublicUrl(data.path)
 
       onChange(publicUrl)
-    } catch (err: any) {
+    } catch (err) {
       console.error("Upload error:", err)
-      setError(err.message || "アップロードに失敗しました")
+      setError(err instanceof Error ? err.message : "アップロードに失敗しました")
     } finally {
       setUploading(false)
       // input要素をリセット

@@ -1,6 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createBrowserClient } from '@supabase/supabase-js'
+import { createClient as createBrowserClient, SupabaseClient } from '@supabase/supabase-js'
 import { Post, Category, PostWithCategories } from '@/types'
+import type { Database } from '@/types/database.types'
+
+// Supabaseのクエリ結果の型定義
+type PostWithPostCategories = Post & {
+  post_categories: Array<{
+    category: Category
+  }>
+}
+
+// Supabaseクライアント型
+type SupabaseClientType = SupabaseClient<Database>
 
 /**
  * 静的生成用のSupabaseクライアント（認証不要）
@@ -47,9 +58,9 @@ export async function getPublishedPosts(limit?: number): Promise<PostWithCategor
   }
 
   // データを整形
-  return (data || []).map((post: any) => ({
+  return (data || []).map((post: PostWithPostCategories): PostWithCategories => ({
     ...post,
-    categories: post.post_categories?.map((pc: any) => pc.category).filter(Boolean) || [],
+    categories: post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
   }))
 }
 
@@ -85,9 +96,9 @@ export async function getFeaturedPosts(limit?: number): Promise<PostWithCategori
   }
 
   // データを整形
-  return (data || []).map((post: any) => ({
+  return (data || []).map((post: PostWithPostCategories): PostWithCategories => ({
     ...post,
-    categories: post.post_categories?.map((pc: any) => pc.category).filter(Boolean) || [],
+    categories: post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
   }))
 }
 
@@ -117,7 +128,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithCategories | 
 
   return {
     ...data,
-    categories: data.post_categories?.map((pc: any) => pc.category).filter(Boolean) || [],
+    categories: data.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
   }
 }
 
@@ -146,9 +157,9 @@ export async function getPostsByCategory(categorySlug: string): Promise<PostWith
     return []
   }
 
-  return (data || []).map((post: any) => ({
+  return (data || []).map((post: PostWithPostCategories): PostWithCategories => ({
     ...post,
-    categories: post.post_categories?.map((pc: any) => pc.category).filter(Boolean) || [],
+    categories: post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
   }))
 }
 
@@ -272,9 +283,9 @@ export async function getRelatedPosts(
   }
 
   // カテゴリデータを整形
-  return posts.map((post) => ({
+  return posts.map((post: any): PostWithCategories => ({
     ...post,
-    categories: post.categories?.map((pc: any) => pc.category).filter(Boolean) || [],
+    categories: post.categories?.map((pc: { category: Category }) => pc.category).filter(Boolean) || [],
   }))
 }
 
@@ -370,9 +381,9 @@ export async function syncViewCountsFromAnalytics(forceRefresh: boolean = false)
  * 同期結果をキャッシュに保存
  */
 async function saveSyncResultToCache(
-  supabase: any,
+  supabase: SupabaseClientType,
   cacheKey: string,
-  data: any,
+  data: Record<string, number>,
   hours: number
 ) {
   const now = new Date()

@@ -85,9 +85,9 @@ export function ImageUploadDialog({
       // 成功したらダイアログを閉じて親コンポーネントに通知
       onUploadComplete()
       handleClose()
-    } catch (err: any) {
+    } catch (err) {
       console.error("Upload error:", err)
-      setError(err.message || "アップロードに失敗しました")
+      setError(err instanceof Error ? err.message : "アップロードに失敗しました")
     } finally {
       setUploading(false)
     }
