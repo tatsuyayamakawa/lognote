@@ -46,8 +46,23 @@ export function AdSense({
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
+    if (!isMounted) return;
+
+    // DOM要素が完全にレンダリングされるまで待つ
+    const timer = setTimeout(() => {
       try {
+        const adContainers = document.querySelectorAll('.adsbygoogle');
+        const lastContainer = adContainers[adContainers.length - 1];
+
+        // コンテナの幅をチェック
+        if (lastContainer) {
+          const containerWidth = (lastContainer as HTMLElement).clientWidth;
+          if (containerWidth === 0) {
+            console.warn("AdSense container has 0 width, skipping ad push");
+            return;
+          }
+        }
+
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (err) {
         console.error("AdSense error:", err);
@@ -55,7 +70,9 @@ export function AdSense({
           setHasError(true);
         });
       }
-    }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [isMounted]);
 
   // 高さの正規化

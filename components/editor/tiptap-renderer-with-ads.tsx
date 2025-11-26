@@ -186,7 +186,24 @@ function InArticleAdPortal({
     if (!mounted) return
 
     const container = document.querySelector(`[data-in-article-ad="true"]`)
-    if (container && container.children.length === 0) {
+    if (!container || container.children.length > 0) return
+
+    // コンテナの幅を確認（レンダリング完了を待つ）
+    const containerWidth = container.clientWidth
+    if (containerWidth === 0) {
+      // まだレンダリングされていない場合は少し待つ
+      const timer = setTimeout(() => {
+        const retryContainer = document.querySelector(`[data-in-article-ad="true"]`)
+        if (retryContainer && retryContainer.clientWidth > 0 && retryContainer.children.length === 0) {
+          insertAds(retryContainer)
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+
+    insertAds(container)
+
+    function insertAds(container: Element) {
       // PC用広告
       if (pcSlot) {
         const pcDiv = document.createElement("div")
@@ -232,18 +249,20 @@ function InArticleAdPortal({
         container.appendChild(mobileDiv)
       }
 
-      // AdSense スクリプトを実行
-      try {
-        ;(window as any).adsbygoogle = (window as any).adsbygoogle || []
-        if (pcSlot) {
-          ;(window as any).adsbygoogle.push({})
+      // AdSense スクリプトを実行（少し遅延させる）
+      requestAnimationFrame(() => {
+        try {
+          ;(window as any).adsbygoogle = (window as any).adsbygoogle || []
+          if (pcSlot) {
+            ;(window as any).adsbygoogle.push({})
+          }
+          if (mobileSlot) {
+            ;(window as any).adsbygoogle.push({})
+          }
+        } catch (err) {
+          console.error("AdSense error:", err)
         }
-        if (mobileSlot) {
-          ;(window as any).adsbygoogle.push({})
-        }
-      } catch (err) {
-        console.error("AdSense error:", err)
-      }
+      })
     }
   }, [mounted, pcSlot, mobileSlot])
 
