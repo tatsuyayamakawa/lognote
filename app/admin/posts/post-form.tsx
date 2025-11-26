@@ -155,12 +155,11 @@ export function PostForm({ categories, post }: PostFormProps) {
         await supabase.from("post_categories").insert(postCategories);
       }
 
-      // 成功したら記事一覧へリダイレクト
+      // 成功したら記事一覧へリダイレクト（ローディングは継続）
       router.push("/admin/posts");
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "保存に失敗しました");
-    } finally {
       setLoading(false);
     }
   };

@@ -81,11 +81,11 @@ export function CategoryForm({ category }: CategoryFormProps) {
         if (insertError) throw insertError
       }
 
+      // 成功したらカテゴリ一覧へリダイレクト（ローディングは継続）
       router.push("/admin/categories")
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : "保存に失敗しました")
-    } finally {
       setLoading(false)
     }
   }
