@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   },
 };
 
+// ISRの再検証時間（秒） - 24時間ごとに再検証
+export const revalidate = 86400;
+
 export default async function PostsPage() {
   const [posts, categories] = await Promise.all([
     getPublishedPosts(),

@@ -68,6 +68,9 @@ export async function generateMetadata({
   };
 }
 
+// ISRの再検証時間（秒） - 24時間ごとに再検証
+export const revalidate = 86400;
+
 // 静的パスの生成
 export async function generateStaticParams() {
   const slugs = await getPublishedPostSlugs();

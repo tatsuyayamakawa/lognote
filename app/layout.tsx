@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -61,18 +60,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
-
-  // 管理画面とログイン画面ではヘッダー・フッターを非表示
-  const isAdminOrAuth =
-    pathname.startsWith("/admin") || pathname.startsWith("/auth");
-
   return (
     <html lang="ja" suppressHydrationWarning>
       <head>
@@ -98,11 +90,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <GoogleAnalytics />
-          <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
-            {!isAdminOrAuth && <Header />}
-            <main className="flex-1">{children}</main>
-            {!isAdminOrAuth && <Footer />}
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>

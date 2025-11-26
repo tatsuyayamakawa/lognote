@@ -362,6 +362,9 @@ export function PostForm({ categories, post }: PostFormProps) {
           <Card>
             <CardHeader>
               <CardTitle>公開日時</CardTitle>
+              <CardDescription>
+                記事が公開される日時を設定します。未来の日時を設定すると予約投稿になります
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <input
@@ -378,15 +381,15 @@ export function PostForm({ categories, post }: PostFormProps) {
                 }}
                 disabled={loading}
               />
-              <p className="mt-2 text-xs text-muted-foreground">
-                公開ステータスが「公開」の場合に表示される日時
-              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>サムネイル画像</CardTitle>
+              <CardDescription>
+                記事一覧やSNSシェア時に表示される画像です。推奨サイズ: 1200×630px
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ImageUpload
@@ -401,6 +404,9 @@ export function PostForm({ categories, post }: PostFormProps) {
           <Card>
             <CardHeader>
               <CardTitle>特集記事</CardTitle>
+              <CardDescription>
+                トップページの特集セクションに表示する記事として設定します
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center space-x-2">
@@ -416,16 +422,18 @@ export function PostForm({ categories, post }: PostFormProps) {
                   この記事を特集記事として表示
                 </Label>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                ホームページの特集セクションに表示されます
-              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>カテゴリ</CardTitle>
+                <div>
+                  <CardTitle>カテゴリ</CardTitle>
+                  <CardDescription>
+                    記事を分類するカテゴリを選択します。複数選択可能です
+                  </CardDescription>
+                </div>
                 <Dialog
                   open={createCategoryOpen}
                   onOpenChange={setCreateCategoryOpen}

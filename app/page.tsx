@@ -10,6 +10,9 @@ import { WebsiteJsonLd } from "@/components/seo/json-ld";
 import { getBaseURL } from "@/lib/utils";
 import { Sidebar } from "@/components/home/sidebar";
 
+// ISRの再検証時間（秒） - 24時間ごとに再検証
+export const revalidate = 86400;
+
 export default async function Home() {
   const [featuredPosts, recentPosts, categories] = await Promise.all([
     getFeaturedPosts(3), // 特集記事を取得（最大3件）
