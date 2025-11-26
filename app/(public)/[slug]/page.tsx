@@ -14,6 +14,8 @@ import { ResponsiveAd } from "@/components/ads/responsive-ad";
 import { DualAd } from "@/components/ads/dual-ad";
 import { AdSense } from "@/components/ads/adsense";
 import { getAdSettings } from "@/lib/ad-settings";
+import { TableOfContents } from "@/components/post/table-of-contents";
+import { Profile } from "@/components/home/profile";
 import type { Metadata } from "next";
 
 interface PostPageProps {
@@ -102,82 +104,109 @@ export default async function PostPage({ params }: PostPageProps) {
     <>
       <ArticleJsonLd post={post} url={postUrl} />
       <BreadcrumbListJsonLd items={breadcrumbItems} />
-      <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* パンくずリスト */}
-        <nav className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground whitespace-nowrap">
-            ホーム
-          </Link>
-          <span className="select-none">/</span>
-          <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
-            記事一覧
-          </Link>
-          <span className="select-none">/</span>
-          <span className="text-foreground wrap-break-word min-w-0">
-            {post.title}
-          </span>
-        </nav>
 
-        {/* カテゴリ */}
-        {post.categories && post.categories.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {post.categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
-                style={{
-                  backgroundColor: category.color
-                    ? `${category.color}20`
-                    : "#e5e7eb",
-                  color: category.color || "#374151",
-                }}
-              >
-                {category.name}
+      <div className="min-h-screen">
+        {/* ヘッダーセクション（タイトル・メタ情報） */}
+        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+            {/* パンくずリスト */}
+            <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              <Link href="/" className="hover:text-foreground whitespace-nowrap">
+                ホーム
               </Link>
-            ))}
-          </div>
-        )}
+              <span className="select-none">/</span>
+              <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
+                記事一覧
+              </Link>
+              <span className="select-none">/</span>
+              <span className="text-foreground wrap-break-word min-w-0">
+                {post.title}
+              </span>
+            </nav>
 
-        {/* タイトル */}
-        <h1 className="mb-4 text-4xl font-bold leading-tight md:text-5xl">
-          {post.title}
-        </h1>
+            {/* カテゴリ */}
+            {post.categories && post.categories.length > 0 && (
+              <div className="mb-6 flex flex-wrap justify-center gap-2">
+                {post.categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/category/${category.slug}`}
+                    className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
+                    style={{
+                      backgroundColor: category.color
+                        ? `${category.color}20`
+                        : "#e5e7eb",
+                      color: category.color || "#374151",
+                    }}
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            )}
 
-        {/* メタ情報 */}
-        <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <time dateTime={post.published_at || post.created_at}>
-            {formatDate(post.published_at || post.created_at)}
-          </time>
-          {post.view_count > 0 && (
-            <span className="flex items-center gap-1">
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-              {post.view_count.toLocaleString()}
-            </span>
-          )}
+            {/* タイトル（左揃え） */}
+            <h1 className="mb-6 text-left text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
+              {post.title}
+            </h1>
+
+            {/* メタ情報（中央揃え） */}
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <time dateTime={post.published_at || post.created_at}>
+                    公開: {formatDate(post.published_at || post.created_at)}
+                  </time>
+                </div>
+                {post.updated_at && post.updated_at !== post.published_at && (
+                  <div className="hidden md:flex items-center gap-1">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <time dateTime={post.updated_at}>
+                      更新: {formatDate(post.updated_at)}
+                    </time>
+                  </div>
+                )}
+              </div>
+              {post.view_count > 0 && (
+                <span className="flex items-center gap-1">
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  {post.view_count.toLocaleString()}
+                </span>
+              )}
+            </div>
         </div>
+
+        {/* コンテンツセクション */}
+        <div className="mx-auto max-w-7xl pb-8 md:px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 xl:grid-cols-[1fr_320px]">
+            {/* メインコンテンツ */}
+            <article className="min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
 
         {/* 記事上広告（タイトル下・ファーストビュー） */}
         {(adSettings?.article_top_pc_slot || adSettings?.article_top_mobile_slot) && (
-          <div className="my-10">
+          <div className="mb-10">
             <ResponsiveAd
               pcSlot={adSettings?.article_top_pc_slot}
               mobileSlot={adSettings?.article_top_mobile_slot}
@@ -234,18 +263,34 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         )}
 
-        {/* シェアボタン */}
-        <div className="mt-12 border-t pt-8">
-          <ShareButtons
-            url={postUrl}
-            title={post.title}
-            description={post.excerpt || post.title}
-          />
-        </div>
+              {/* シェアボタン */}
+              <div className="mt-12 border-t pt-8">
+                <ShareButtons
+                  url={postUrl}
+                  title={post.title}
+                  description={post.excerpt || post.title}
+                />
+              </div>
 
-        {/* 関連記事 */}
-        <RelatedPosts posts={relatedPosts} />
-      </article>
+              {/* 関連記事 */}
+              <RelatedPosts posts={relatedPosts} />
+            </article>
+
+            {/* 右サイドバー - プロフィール・目次（PCのみ）320px固定 */}
+            <aside className="hidden xl:block">
+              <div className="sticky top-4 space-y-6">
+                {/* プロフィール */}
+                <Profile />
+
+                {/* 目次 */}
+                <div className="bg-card rounded-lg border p-5">
+                  <TableOfContents />
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

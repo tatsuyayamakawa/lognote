@@ -8,6 +8,17 @@ import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Highlight } from "@tiptap/extension-highlight"
 import { cn } from "@/lib/utils"
+import Heading from "@tiptap/extension-heading"
+
+// 見出しにIDを自動生成する関数
+function generateId(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim()
+}
 
 interface TiptapRendererProps {
   content: any
@@ -23,6 +34,24 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
     extensions: [
       StarterKit.configure({
         link: false, // Link拡張を無効化して、後で個別に設定
+        heading: false, // デフォルトのHeadingを無効化
+      }),
+      Heading.configure({
+        levels: [1, 2, 3, 4, 5, 6],
+      }).extend({
+        renderHTML({ node, HTMLAttributes }) {
+          const level = this.options.levels.includes(node.attrs.level)
+            ? node.attrs.level
+            : this.options.levels[0]
+          const text = node.textContent
+          const id = generateId(text)
+
+          return [
+            `h${level}`,
+            { ...HTMLAttributes, id },
+            0,
+          ]
+        },
       }),
       Link.configure({
         HTMLAttributes: {
