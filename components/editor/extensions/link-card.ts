@@ -52,12 +52,29 @@ export const LinkCard = Node.create<LinkCardOptions>({
     ]
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ node, HTMLAttributes }) {
+    const { href, title, description } = node.attrs
+
+    const contentChildren = []
+
+    // タイトルを表示（ない場合はhrefをフォールバック）
+    // h3ではなくdivを使用して目次から除外
+    const displayTitle = title || href || 'Untitled'
+    contentChildren.push(['div', { class: 'text-lg font-semibold line-clamp-2' }, displayTitle])
+
+    // 説明文（記事抜粋）を表示
+    if (description) {
+      contentChildren.push(['p', { class: 'text-sm text-muted-foreground line-clamp-2' }, description])
+    }
+
     return [
-      'div',
+      'a',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-link-card': '',
+        'data-type': 'internal',
+        'href': href || '#',
       }),
+      ['div', { class: 'space-y-1' }, ...contentChildren]
     ]
   },
 

@@ -110,6 +110,46 @@ export function TiptapEditor({
           "prose-h4:text-lg prose-h4:font-semibold prose-h4:mt-4 prose-h4:mb-2"
         ),
       },
+      handlePaste(view, event) {
+        const items = event.clipboardData?.items;
+        if (!items) return false;
+
+        // クリップボードに画像があるかチェック
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.type.indexOf('image') !== -1) {
+            event.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+              // 画像をアップロード
+              const formData = new FormData();
+              formData.append('file', file);
+
+              fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+              })
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.url) {
+                    // 画像を挿入
+                    view.dispatch(
+                      view.state.tr.replaceSelectionWith(
+                        view.state.schema.nodes.image.create({ src: data.url })
+                      )
+                    );
+                  }
+                })
+                .catch((error) => {
+                  console.error('Failed to upload image:', error);
+                  alert('画像のアップロードに失敗しました');
+                });
+            }
+            return true;
+          }
+        }
+        return false;
+      },
     },
   });
 
@@ -148,14 +188,47 @@ export function TiptapEditor({
       }
     } else {
       // リンクカード（内部リンク専用）
-      // NodeViewが自動的にデータをフェッチするため、hrefのみ渡す
-      editor
-        .chain()
-        .focus()
-        .setLinkCard({
-          href: data.href,
-        })
-        .run();
+      // APIからデータを取得して保存
+      const fetchAndInsertLinkCard = async () => {
+        try {
+          const slug = data.href.startsWith("/") ? data.href.slice(1) : data.href;
+          const response = await fetch(`/api/posts/by-slug?slug=${slug}`);
+
+          if (response.ok) {
+            const postData = await response.json();
+            editor
+              .chain()
+              .focus()
+              .setLinkCard({
+                href: data.href,
+                title: postData.title,
+                description: postData.description,
+              })
+              .run();
+          } else {
+            // データ取得失敗時はhrefのみで挿入
+            editor
+              .chain()
+              .focus()
+              .setLinkCard({
+                href: data.href,
+              })
+              .run();
+          }
+        } catch (error) {
+          console.error("Failed to fetch link card data:", error);
+          // エラー時もhrefのみで挿入
+          editor
+            .chain()
+            .focus()
+            .setLinkCard({
+              href: data.href,
+            })
+            .run();
+        }
+      };
+
+      fetchAndInsertLinkCard();
     }
   };
 

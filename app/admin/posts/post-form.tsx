@@ -24,16 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
-import { Plus, X, CalendarIcon } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Plus, X } from "lucide-react";
 import { format } from "date-fns";
-import { ja } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import type { Category, Post } from "@/types";
 
 interface PostFormProps {
@@ -372,35 +364,20 @@ export function PostForm({ categories, post }: PostFormProps) {
               <CardTitle>公開日時</CardTitle>
             </CardHeader>
             <CardContent>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !publishedAt && "text-muted-foreground"
-                    )}
-                    disabled={loading}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {publishedAt ? (
-                      format(publishedAt, "PPP", { locale: ja })
-                    ) : (
-                      <span>日付を選択</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={publishedAt}
-                    onSelect={setPublishedAt}
-                    disabled={loading}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <input
+                type="datetime-local"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={publishedAt ? format(publishedAt, "yyyy-MM-dd'T'HH:mm") : ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value) {
+                    setPublishedAt(new Date(value));
+                  } else {
+                    setPublishedAt(undefined);
+                  }
+                }}
+                disabled={loading}
+              />
               <p className="mt-2 text-xs text-muted-foreground">
                 公開ステータスが「公開」の場合に表示される日時
               </p>

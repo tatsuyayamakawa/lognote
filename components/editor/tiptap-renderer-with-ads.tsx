@@ -47,7 +47,7 @@ export function TiptapRendererWithAds({
     extensions: [
       StarterKit.configure({
         link: false,
-        heading: false, // デフォルトのHeadingを無効化
+        heading: false,
       }),
       Heading.configure({
         levels: [1, 2, 3, 4, 5, 6],

@@ -311,7 +311,6 @@ export async function syncViewCountsFromAnalytics(forceRefresh: boolean = false)
       const now = new Date()
 
       if (expiresAt > now) {
-        console.log('[Posts] Using cached view counts sync result')
         return cache.data as { updated: number; errors: number }
       }
     }
