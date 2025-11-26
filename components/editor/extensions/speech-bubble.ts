@@ -4,6 +4,7 @@ import { SpeechBubbleView } from '../node-views/speech-bubble-view'
 
 export interface SpeechBubbleOptions {
   HTMLAttributes: Record<string, unknown>
+  enableNodeView?: boolean
 }
 
 declare module '@tiptap/core' {
@@ -70,6 +71,9 @@ export const SpeechBubble = Node.create<SpeechBubbleOptions>({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(SpeechBubbleView)
+    if (this.options.enableNodeView) {
+      return ReactNodeViewRenderer(SpeechBubbleView)
+    }
+    return null
   },
 })

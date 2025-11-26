@@ -83,8 +83,12 @@ export function TiptapEditor({
         multicolor: true,
       }),
       Underline,
-      SpeechBubble,
-      LinkCard,
+      SpeechBubble.configure({
+        enableNodeView: true,
+      }),
+      LinkCard.configure({
+        enableNodeView: true,
+      }),
     ],
     content,
     editable: !disabled,

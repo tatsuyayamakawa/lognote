@@ -4,6 +4,7 @@ import { LinkCardView } from '../node-views/link-card-view'
 
 export interface LinkCardOptions {
   HTMLAttributes: Record<string, unknown>
+  enableNodeView?: boolean
 }
 
 declare module '@tiptap/core' {
@@ -74,6 +75,9 @@ export const LinkCard = Node.create<LinkCardOptions>({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(LinkCardView)
+    if (this.options.enableNodeView) {
+      return ReactNodeViewRenderer(LinkCardView)
+    }
+    return null
   },
 })

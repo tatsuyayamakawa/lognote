@@ -76,11 +76,13 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
         HTMLAttributes: {
           class: "speech-bubble",
         },
+        enableNodeView: false,
       }),
       LinkCard.configure({
         HTMLAttributes: {
           class: "link-card",
         },
+        enableNodeView: false,
       }),
     ],
     content: parsedContent,
