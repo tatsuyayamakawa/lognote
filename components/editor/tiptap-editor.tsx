@@ -10,6 +10,9 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
+import { Underline } from "@tiptap/extension-underline";
+import { SpeechBubble } from "./extensions/speech-bubble";
+import { LinkCard } from "./extensions/link-card";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -26,9 +29,13 @@ import {
   Undo,
   Redo,
   RemoveFormatting,
+  Underline as UnderlineIcon,
+  MessageSquare,
+  MessageSquareText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
+import { LinkDialog } from "./link-dialog";
 
 interface TiptapEditorProps {
   content: JSONContent | null;
@@ -44,6 +51,7 @@ export function TiptapEditor({
   disabled = false,
 }: TiptapEditorProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -74,6 +82,9 @@ export function TiptapEditor({
       Highlight.configure({
         multicolor: true,
       }),
+      Underline,
+      SpeechBubble,
+      LinkCard,
     ],
     content,
     editable: !disabled,
@@ -103,10 +114,7 @@ export function TiptapEditor({
   }
 
   const addLink = () => {
-    const url = window.prompt("URLを入力してください");
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
+    setLinkDialogOpen(true);
   };
 
   const addImage = () => {
@@ -115,6 +123,36 @@ export function TiptapEditor({
 
   const handleImageSelect = (url: string) => {
     editor.chain().focus().setImage({ src: url }).run();
+  };
+
+  const handleLinkInsert = async (data: {
+    href: string;
+    text?: string;
+    type: "simple" | "card";
+    linkTarget?: "internal" | "external";
+  }) => {
+    if (data.type === "simple") {
+      // 通常のリンク（内部・外部両方対応）
+      if (data.text) {
+        editor
+          .chain()
+          .focus()
+          .insertContent(`<a href="${data.href}">${data.text}</a>`)
+          .run();
+      } else {
+        editor.chain().focus().setLink({ href: data.href }).run();
+      }
+    } else {
+      // リンクカード（内部リンク専用）
+      // NodeViewが自動的にデータをフェッチするため、hrefのみ渡す
+      editor
+        .chain()
+        .focus()
+        .setLinkCard({
+          href: data.href,
+        })
+        .run();
+    }
   };
 
   return (
@@ -196,6 +234,20 @@ export function TiptapEditor({
             disabled={disabled}
           >
             <Italic className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={
+              editor.isActive("underline")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
+            disabled={disabled}
+          >
+            <UnderlineIcon className="h-4 w-4" />
           </Button>
           <div className="mx-1 w-px bg-border" />
           <Button
@@ -326,6 +378,37 @@ export function TiptapEditor({
             type="button"
             variant="ghost"
             size="sm"
+            onClick={() => editor.chain().focus().toggleSpeechBubble("left").run()}
+            className={
+              editor.isActive("speechBubble", { position: "left" })
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
+            disabled={disabled}
+            title="吹き出し（左）"
+          >
+            <MessageSquare className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleSpeechBubble("right").run()}
+            className={
+              editor.isActive("speechBubble", { position: "right" })
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
+            disabled={disabled}
+            title="吹き出し（右）"
+          >
+            <MessageSquareText className="h-4 w-4" />
+          </Button>
+          <div className="mx-1 w-px bg-border" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={addLink}
             className={
               editor.isActive("link") ? "bg-accent border-2 border-primary" : ""
@@ -372,6 +455,11 @@ export function TiptapEditor({
         open={imageDialogOpen}
         onOpenChange={setImageDialogOpen}
         onSelect={handleImageSelect}
+      />
+      <LinkDialog
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
+        onInsert={handleLinkInsert}
       />
     </>
   );

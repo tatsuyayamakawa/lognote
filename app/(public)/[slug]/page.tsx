@@ -229,7 +229,7 @@ export default async function PostPage({ params }: PostPageProps) {
         {/* 記事本文（記事内広告対応） */}
         {post.content && (
           <TiptapRendererWithAds
-            content={post.content}
+            content={post.content as string}
             inArticlePcSlot={adSettings?.in_article_pc_slot}
             inArticleMobileSlot={adSettings?.in_article_mobile_slot}
           />

@@ -7,8 +7,11 @@ import Image from "@tiptap/extension-image"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Highlight } from "@tiptap/extension-highlight"
+import { Underline } from "@tiptap/extension-underline"
 import { cn } from "@/lib/utils"
 import Heading from "@tiptap/extension-heading"
+import { SpeechBubble } from "./extensions/speech-bubble"
+import { LinkCard } from "./extensions/link-card"
 
 // 見出しにIDを自動生成する関数
 function generateId(text: string): string {
@@ -67,6 +70,17 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
       Color,
       Highlight.configure({
         multicolor: true,
+      }),
+      Underline,
+      SpeechBubble.configure({
+        HTMLAttributes: {
+          class: "speech-bubble",
+        },
+      }),
+      LinkCard.configure({
+        HTMLAttributes: {
+          class: "link-card",
+        },
       }),
     ],
     content: parsedContent,

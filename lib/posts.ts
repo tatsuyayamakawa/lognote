@@ -128,7 +128,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithCategories | 
 
   return {
     ...data,
-    categories: data.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+    categories: data.post_categories?.map((pc: { category: Category }) => pc.category).filter(Boolean) || [],
   }
 }
 
@@ -389,22 +389,27 @@ async function saveSyncResultToCache(
   const now = new Date()
   const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000)
 
-  // 既存のキャッシュを削除
-  await supabase
-    .from('analytics_cache')
-    .delete()
-    .eq('cache_key', cacheKey)
+  try {
+    // 既存のキャッシュを削除
+    await supabase
+      .from('analytics_cache')
+      .delete()
+      .eq('cache_key', cacheKey)
 
-  // 新しいキャッシュを挿入
-  const { error } = await supabase
-    .from('analytics_cache')
-    .insert({
-      cache_key: cacheKey,
-      data,
-      expires_at: expiresAt.toISOString(),
-    })
+    // 新しいキャッシュを挿入
+    const { error } = await (supabase
+      .from('analytics_cache') as any)
+      .insert({
+        cache_key: cacheKey,
+        data,
+        expires_at: expiresAt.toISOString(),
+      })
 
-  if (error) {
-    console.error('[Posts] Failed to save cache:', error)
+    if (error) {
+      console.error('[Posts] Failed to save cache:', error)
+    }
+  } catch (err) {
+    // analytics_cacheテーブルが存在しない場合などはスキップ
+    console.warn('[Posts] Cache save skipped:', err)
   }
 }
