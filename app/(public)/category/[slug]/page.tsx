@@ -94,7 +94,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         numberOfItems={posts.length}
       />
       <BreadcrumbListJsonLd items={breadcrumbItems} />
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="flex-1 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* パンくずリスト */}
         <nav className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground whitespace-nowrap">

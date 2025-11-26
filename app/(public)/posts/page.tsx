@@ -31,7 +31,7 @@ export default async function PostsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex-1 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="mb-4 text-3xl font-bold">すべての記事</h1>
         <p className="text-muted-foreground">

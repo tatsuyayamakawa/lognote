@@ -35,15 +35,15 @@ export function LoginForm() {
 
       if (error) {
         setError("メールアドレスまたはパスワードが正しくありません")
+        setLoading(false)
         return
       }
 
-      // ログイン成功後、管理画面へリダイレクト
+      // ログイン成功後、管理画面へリダイレクト（ローディングは継続）
       router.push("/admin/dashboard")
       router.refresh()
     } catch (err) {
       setError("ログインに失敗しました")
-    } finally {
       setLoading(false)
     }
   }

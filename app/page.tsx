@@ -56,7 +56,7 @@ export default async function Home() {
             </div>
             <div className="grid gap-6 md:grid-cols-3">
               {featuredPosts.map((post) => (
-                <ArticleCard key={post.id} post={post} />
+                <ArticleCard key={post.id} post={post} priority />
               ))}
             </div>
           </div>

@@ -105,24 +105,26 @@ export default async function PostPage({ params }: PostPageProps) {
       <ArticleJsonLd post={post} url={postUrl} />
       <BreadcrumbListJsonLd items={breadcrumbItems} />
 
-      <div className="min-h-screen">
-        {/* ヘッダーセクション（タイトル・メタ情報） */}
-        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-            {/* パンくずリスト */}
-            <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-              <Link href="/" className="hover:text-foreground whitespace-nowrap">
-                ホーム
-              </Link>
-              <span className="select-none">/</span>
-              <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
-                記事一覧
-              </Link>
-              <span className="select-none">/</span>
-              <span className="text-foreground wrap-break-word min-w-0">
-                {post.title}
-              </span>
-            </nav>
+      <div className="flex-1">
+        {/* パンくずリスト（max-w-7xl） */}
+        <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+          <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-foreground whitespace-nowrap">
+              ホーム
+            </Link>
+            <span className="select-none">/</span>
+            <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
+              記事一覧
+            </Link>
+            <span className="select-none">/</span>
+            <span className="text-foreground wrap-break-word min-w-0">
+              {post.title}
+            </span>
+          </nav>
+        </div>
 
+        {/* ヘッダーセクション（タイトル・メタ情報 - max-w-4xl） */}
+        <div className="mx-auto max-w-4xl px-4 pb-8 sm:px-6 lg:px-8">
             {/* カテゴリ */}
             {post.categories && post.categories.length > 0 && (
               <div className="mb-6 flex flex-wrap justify-center gap-2">

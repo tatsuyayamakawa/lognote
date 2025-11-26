@@ -6,9 +6,10 @@ import { formatDate } from "@/lib/utils";
 interface ArticleCardProps {
   post: Post & { categories?: Category[] };
   showExcerpt?: boolean;
+  priority?: boolean;
 }
 
-export function ArticleCard({ post, showExcerpt = true }: ArticleCardProps) {
+export function ArticleCard({ post, showExcerpt = true, priority = false }: ArticleCardProps) {
   // サムネイルURLを決定（カスタムサムネイルまたは動的生成）
   const thumbnailUrl =
     post.thumbnail_url || `/api/og?title=${encodeURIComponent(post.title)}`;
@@ -24,6 +25,7 @@ export function ArticleCard({ post, showExcerpt = true }: ArticleCardProps) {
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={priority}
           />
         </div>
 
