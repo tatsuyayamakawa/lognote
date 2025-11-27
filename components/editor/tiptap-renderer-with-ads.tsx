@@ -235,6 +235,8 @@ function InArticleAdPortal({
             adSlot={pcSlot}
             adFormat="fluid"
             fullWidthResponsive={true}
+            skeletonHeight="280px"
+            showSkeleton={true}
           />
         </div>
       )}
@@ -250,6 +252,8 @@ function InArticleAdPortal({
             height="250px"
             adFormat="rectangle"
             fullWidthResponsive={false}
+            skeletonHeight="250px"
+            showSkeleton={true}
           />
         </div>
       )}

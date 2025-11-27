@@ -79,13 +79,15 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>タイトル下広告（ファーストビュー）</CardTitle>
             <CardDescription>
-              記事タイトル直下に表示 | PC: 記事内広告 / スマホ: ディスプレイ
+              記事タイトル直下に表示される広告
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="article_top_pc_slot">PC用（記事内広告）</Label>
+                <Label htmlFor="article_top_pc_slot">
+                  PC用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - 横長バナー）</span>
+                </Label>
                 <Input
                   id="article_top_pc_slot"
                   placeholder="1234567890"
@@ -94,9 +96,14 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     setFormData({ ...formData, article_top_pc_slot: e.target.value })
                   }
                 />
+                <p className="text-xs text-muted-foreground">
+                  推奨サイズ: 728×90（horizontal）
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="article_top_mobile_slot">スマホ用（ディスプレイ）</Label>
+                <Label htmlFor="article_top_mobile_slot">
+                  スマホ用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア）</span>
+                </Label>
                 <Input
                   id="article_top_mobile_slot"
                   placeholder="1234567890"
@@ -105,6 +112,9 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     setFormData({ ...formData, article_top_mobile_slot: e.target.value })
                   }
                 />
+                <p className="text-xs text-muted-foreground">
+                  推奨サイズ: 300×250（rectangle）
+                </p>
               </div>
             </div>
           </CardContent>
@@ -115,13 +125,15 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>記事内広告（2つ目のH2上）</CardTitle>
             <CardDescription>
-              H2が2つ以上ある記事のみ表示 | PC: 記事内広告 / スマホ: ディスプレイ
+              H2が2つ以上ある記事の2つ目のH2の前に自動挿入される広告
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="in_article_pc_slot">PC用（記事内広告）</Label>
+                <Label htmlFor="in_article_pc_slot">
+                  PC用 <span className="text-xs text-muted-foreground">（記事内広告）</span>
+                </Label>
                 <Input
                   id="in_article_pc_slot"
                   placeholder="1234567890"
@@ -130,9 +142,14 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     setFormData({ ...formData, in_article_pc_slot: e.target.value })
                   }
                 />
+                <p className="text-xs text-muted-foreground">
+                  AdSense管理画面で「記事内広告」を作成してください
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="in_article_mobile_slot">スマホ用（ディスプレイ）</Label>
+                <Label htmlFor="in_article_mobile_slot">
+                  スマホ用 <span className="text-xs text-muted-foreground">（記事内広告）</span>
+                </Label>
                 <Input
                   id="in_article_mobile_slot"
                   placeholder="1234567890"
@@ -141,6 +158,9 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     setFormData({ ...formData, in_article_mobile_slot: e.target.value })
                   }
                 />
+                <p className="text-xs text-muted-foreground">
+                  AdSense管理画面で「記事内広告」を作成してください
+                </p>
               </div>
             </div>
           </CardContent>
@@ -151,31 +171,45 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>コンテンツ後広告</CardTitle>
             <CardDescription>
-              記事本文直後に表示 | PC: ディスプレイ×2 横並び / スマホ: ディスプレイ
+              記事本文の直後、シェアボタンの上に表示される広告
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              <Label>PC用（ディスプレイ）</Label>
+              <Label>
+                PC用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア × 2個横並び）</span>
+              </Label>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Input
-                  placeholder="1つ目: 1234567890"
-                  value={formData.article_bottom_pc_slot_1}
-                  onChange={(e) =>
-                    setFormData({ ...formData, article_bottom_pc_slot_1: e.target.value })
-                  }
-                />
-                <Input
-                  placeholder="2つ目: 1234567890"
-                  value={formData.article_bottom_pc_slot_2}
-                  onChange={(e) =>
-                    setFormData({ ...formData, article_bottom_pc_slot_2: e.target.value })
-                  }
-                />
+                <div className="space-y-2">
+                  <Input
+                    placeholder="1つ目: 1234567890"
+                    value={formData.article_bottom_pc_slot_1}
+                    onChange={(e) =>
+                      setFormData({ ...formData, article_bottom_pc_slot_1: e.target.value })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    推奨サイズ: 300×250（rectangle）
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="2つ目: 1234567890"
+                    value={formData.article_bottom_pc_slot_2}
+                    onChange={(e) =>
+                      setFormData({ ...formData, article_bottom_pc_slot_2: e.target.value })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    推奨サイズ: 300×250（rectangle）
+                  </p>
+                </div>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="article_bottom_mobile_slot">スマホ用（ディスプレイ）</Label>
+              <Label htmlFor="article_bottom_mobile_slot">
+                スマホ用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア）</span>
+              </Label>
               <Input
                 id="article_bottom_mobile_slot"
                 placeholder="1234567890"
@@ -184,6 +218,9 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                   setFormData({ ...formData, article_bottom_mobile_slot: e.target.value })
                 }
               />
+              <p className="text-xs text-muted-foreground">
+                推奨サイズ: 300×250（rectangle）
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -193,13 +230,15 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardHeader>
             <CardTitle>サイドバー広告</CardTitle>
             <CardDescription>
-              サイドバーに表示 | PC: ディスプレイ / スマホ: ディスプレイ
+              サイドバー（TOPページ・カテゴリページ）に表示される広告
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="sidebar_pc_slot">PC用（ディスプレイ）</Label>
+                <Label htmlFor="sidebar_pc_slot">
+                  PC用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - 縦長）</span>
+                </Label>
                 <Input
                   id="sidebar_pc_slot"
                   placeholder="1234567890"
@@ -208,9 +247,14 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     setFormData({ ...formData, sidebar_pc_slot: e.target.value })
                   }
                 />
+                <p className="text-xs text-muted-foreground">
+                  推奨サイズ: 300×600（vertical）
+                </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sidebar_mobile_slot">スマホ用（ディスプレイ）</Label>
+                <Label htmlFor="sidebar_mobile_slot">
+                  スマホ用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア）</span>
+                </Label>
                 <Input
                   id="sidebar_mobile_slot"
                   placeholder="1234567890"
@@ -219,6 +263,9 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     setFormData({ ...formData, sidebar_mobile_slot: e.target.value })
                   }
                 />
+                <p className="text-xs text-muted-foreground">
+                  推奨サイズ: 300×250（rectangle）
+                </p>
               </div>
             </div>
           </CardContent>

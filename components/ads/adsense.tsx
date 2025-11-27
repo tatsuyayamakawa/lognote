@@ -4,11 +4,11 @@ import { useEffect, useState, useRef } from "react";
 
 interface AdSenseProps {
   adSlot: string;
-  adFormat?: string;
+  adFormat?: "rectangle" | "horizontal" | "vertical" | "auto";
   fullWidthResponsive?: boolean;
   className?: string;
   /**
-   * スケルトンの高さ（デフォルト: 280px）
+   * スケルトンの高さ（デフォルト: adFormatから自動計算）
    */
   skeletonHeight?: string | number;
   /**
@@ -30,7 +30,7 @@ export function AdSense({
   adFormat = "auto",
   fullWidthResponsive = true,
   className = "",
-  skeletonHeight = "280px",
+  skeletonHeight,
   showSkeleton = true,
   width,
   height,
@@ -38,6 +38,32 @@ export function AdSense({
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
   const insRef = useRef<HTMLModElement>(null);
+
+  // adFormatに基づいてデフォルトのスケルトン高さを計算
+  const getDefaultSkeletonHeight = (): string => {
+    if (skeletonHeight) {
+      return typeof skeletonHeight === "number" ? `${skeletonHeight}px` : skeletonHeight;
+    }
+
+    // width/heightが指定されている場合はそれを使用
+    if (height) {
+      return height;
+    }
+
+    // adFormatに基づいてデフォルト高さを設定
+    switch (adFormat) {
+      case "rectangle":
+        return "250px"; // 300x250
+      case "horizontal":
+        return "90px"; // 728x90
+      case "vertical":
+        return "600px"; // 300x600
+      default:
+        return "280px"; // auto/その他
+    }
+  };
+
+  const normalizedHeight = getDefaultSkeletonHeight();
 
   useEffect(() => {
     // クライアントサイドでのみマウント
@@ -146,10 +172,6 @@ export function AdSense({
     return () => clearTimeout(timer);
   }, [isMounted, adSlot]);
 
-  // 高さの正規化
-  const normalizedHeight =
-    typeof skeletonHeight === "number" ? `${skeletonHeight}px` : skeletonHeight;
-
   // サーバーサイドレンダリング時はスケルトンを表示
   if (!isMounted) {
     if (!showSkeleton) {
@@ -198,13 +220,17 @@ export function AdSense({
     );
   }
 
-  // 固定サイズの広告の場合のスタイル
+  // 広告のスタイル：固定サイズまたはfluidでも高さを確保
   const adStyle: React.CSSProperties = width && height
     ? { display: "inline-block", width, height }
-    : { display: "block" };
+    : { display: "block", minHeight: normalizedHeight };
 
   return (
-    <div className={className} suppressHydrationWarning>
+    <div
+      className={className}
+      style={{ minHeight: normalizedHeight }}
+      suppressHydrationWarning
+    >
       <ins
         ref={insRef}
         className="adsbygoogle"

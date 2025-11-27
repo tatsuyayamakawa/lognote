@@ -17,8 +17,8 @@ export function DualAd({
   slot1,
   slot2,
   className = "",
-  width = "336px",
-  height = "280px",
+  width = "300px",
+  height = "250px",
 }: DualAdProps) {
   if (!slot1 && !slot2) {
     return null

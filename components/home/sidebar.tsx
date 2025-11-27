@@ -21,7 +21,7 @@ export async function Sidebar({ categories }: SidebarProps) {
           pcConfig={{
             width: "300px",
             height: "600px",
-            adFormat: "rectangle",
+            adFormat: "vertical",
             fullWidthResponsive: false,
           }}
           mobileConfig={{

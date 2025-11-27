@@ -216,8 +216,10 @@ export default async function PostPage({ params }: PostPageProps) {
               pcSlot={adSettings?.article_top_pc_slot}
               mobileSlot={adSettings?.article_top_mobile_slot}
               pcConfig={{
-                adFormat: "fluid",
-                fullWidthResponsive: true,
+                width: "728px",
+                height: "90px",
+                adFormat: "horizontal",
+                fullWidthResponsive: false,
               }}
               mobileConfig={{
                 width: "300px",
@@ -243,14 +245,14 @@ export default async function PostPage({ params }: PostPageProps) {
           adSettings?.article_bottom_pc_slot_2 ||
           adSettings?.article_bottom_mobile_slot) && (
           <div className="my-10">
-            {/* PC: 336x280 2つ横並び */}
+            {/* PC: rectangle 300x250 2つ横並び */}
             <DualAd
               slot1={adSettings?.article_bottom_pc_slot_1}
               slot2={adSettings?.article_bottom_pc_slot_2}
-              width="336px"
-              height="280px"
+              width="300px"
+              height="250px"
             />
-            {/* スマホ: 300x250 1つ */}
+            {/* スマホ: rectangle 300x250 1つ */}
             {adSettings?.article_bottom_mobile_slot && (
               <div className="block md:hidden text-center">
                 <span className="text-xs text-muted-foreground block mb-1">
