@@ -53,6 +53,9 @@ export function AdSense({
 
     const tryPushAd = () => {
       try {
+        // AdSenseスクリプトが読み込まれているか確認
+        if (typeof window === 'undefined') return;
+
         const adContainers = document.querySelectorAll('.adsbygoogle');
         const lastContainer = adContainers[adContainers.length - 1];
 
@@ -81,10 +84,13 @@ export function AdSense({
           }
         }
 
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        // adsbygoogle配列を初期化してpush
+        const adsbygoogle = (window.adsbygoogle = window.adsbygoogle || []);
+        adsbygoogle.push({});
       } catch (err) {
         // 開発環境ではAdSenseエラーが発生するため、静かにスキップ
         // 本番環境では正常に動作します
+        console.warn('AdSense error:', err);
         queueMicrotask(() => {
           setHasError(true);
         });

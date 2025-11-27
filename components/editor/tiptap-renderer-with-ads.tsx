@@ -10,9 +10,11 @@ import { Highlight } from "@tiptap/extension-highlight"
 import { Underline as TiptapUnderline } from "@tiptap/extension-underline"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
+import { AdSense } from "../ads/adsense"
 
 // 一意の名前でUnderline拡張を作成（重複警告を回避）
 const Underline = TiptapUnderline.extend({
@@ -207,86 +209,51 @@ function InArticleAdPortal({
     if (!mounted) return
 
     const container = document.querySelector(`[data-in-article-ad="true"]`)
-    if (!container || container.children.length > 0) return
+    if (!container) return
 
-    // コンテナの幅を確認（レンダリング完了を待つ）
-    const containerWidth = container.clientWidth
-    if (containerWidth === 0) {
-      // まだレンダリングされていない場合は少し待つ
-      const timer = setTimeout(() => {
-        const retryContainer = document.querySelector(`[data-in-article-ad="true"]`)
-        if (retryContainer && retryContainer.clientWidth > 0 && retryContainer.children.length === 0) {
-          insertAds(retryContainer)
-        }
-      }, 100)
-      return () => clearTimeout(timer)
-    }
+    // すでに広告が挿入されているかチェック
+    if (container.hasAttribute("data-ad-inserted")) return
 
-    insertAds(container)
-
-    function insertAds(container: Element) {
-      // PC用広告
-      if (pcSlot) {
-        const pcDiv = document.createElement("div")
-        pcDiv.className = "hidden md:block text-center"
-
-        // スポンサーリンクラベル
-        const pcLabel = document.createElement("span")
-        pcLabel.className = "text-xs text-muted-foreground block mb-1"
-        pcLabel.textContent = "スポンサーリンク"
-        pcDiv.appendChild(pcLabel)
-
-        const pcIns = document.createElement("ins")
-        pcIns.className = "adsbygoogle"
-        pcIns.style.display = "block"
-        pcIns.style.textAlign = "center"
-        pcIns.setAttribute("data-ad-client", "ca-pub-7839828582645189")
-        pcIns.setAttribute("data-ad-slot", pcSlot)
-        pcIns.setAttribute("data-ad-format", "fluid")
-        pcIns.setAttribute("data-full-width-responsive", "true")
-        pcDiv.appendChild(pcIns)
-        container.appendChild(pcDiv)
-      }
-
-      // モバイル用広告
-      if (mobileSlot) {
-        const mobileDiv = document.createElement("div")
-        mobileDiv.className = "block md:hidden text-center"
-
-        // スポンサーリンクラベル
-        const mobileLabel = document.createElement("span")
-        mobileLabel.className = "text-xs text-muted-foreground block mb-1"
-        mobileLabel.textContent = "スポンサーリンク"
-        mobileDiv.appendChild(mobileLabel)
-
-        const mobileIns = document.createElement("ins")
-        mobileIns.className = "adsbygoogle"
-        mobileIns.style.display = "inline-block"
-        mobileIns.style.width = "300px"
-        mobileIns.style.height = "250px"
-        mobileIns.setAttribute("data-ad-client", "ca-pub-7839828582645189")
-        mobileIns.setAttribute("data-ad-slot", mobileSlot)
-        mobileDiv.appendChild(mobileIns)
-        container.appendChild(mobileDiv)
-      }
-
-      // AdSense スクリプトを実行（少し遅延させる）
-      requestAnimationFrame(() => {
-        try {
-          ;(window as any).adsbygoogle = (window as any).adsbygoogle || []
-          if (pcSlot) {
-            ;(window as any).adsbygoogle.push({})
-          }
-          if (mobileSlot) {
-            ;(window as any).adsbygoogle.push({})
-          }
-        } catch (err) {
-          // 開発環境ではAdSenseエラーが発生するため、静かにスキップ
-          // 本番環境では正常に動作します
-        }
-      })
-    }
+    // 広告挿入済みフラグを設定
+    container.setAttribute("data-ad-inserted", "true")
   }, [mounted, pcSlot, mobileSlot])
 
-  return null
+  if (!mounted) return null
+
+  const container = document.querySelector(`[data-in-article-ad="true"]`)
+  if (!container) return null
+
+  return createPortal(
+    <>
+      {/* PC用広告 */}
+      {pcSlot && (
+        <div className="hidden md:block text-center">
+          <span className="text-xs text-muted-foreground block mb-1">
+            スポンサーリンク
+          </span>
+          <AdSense
+            adSlot={pcSlot}
+            adFormat="fluid"
+            fullWidthResponsive={true}
+          />
+        </div>
+      )}
+      {/* モバイル用広告 */}
+      {mobileSlot && (
+        <div className="block md:hidden text-center">
+          <span className="text-xs text-muted-foreground block mb-1">
+            スポンサーリンク
+          </span>
+          <AdSense
+            adSlot={mobileSlot}
+            width="300px"
+            height="250px"
+            adFormat="rectangle"
+            fullWidthResponsive={false}
+          />
+        </div>
+      )}
+    </>,
+    container
+  )
 }
