@@ -29,7 +29,7 @@ export function DualAd({
       <div className="text-center mb-1">
         <span className="text-xs text-muted-foreground">スポンサーリンク</span>
       </div>
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-4">
         {slot1 && (
           <AdSense
             adSlot={slot1}
@@ -37,6 +37,7 @@ export function DualAd({
             height={height}
             adFormat="rectangle"
             fullWidthResponsive={false}
+            showSkeleton={true}
           />
         )}
         {slot2 && (
@@ -46,6 +47,7 @@ export function DualAd({
             height={height}
             adFormat="rectangle"
             fullWidthResponsive={false}
+            showSkeleton={true}
           />
         )}
       </div>

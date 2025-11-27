@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { AdSettings, AdSettingsFormData } from "@/types/ad"
 import { Save } from "lucide-react"
+import { toast } from "sonner"
 
 interface AdSettingsFormProps {
   initialSettings: AdSettings | null
@@ -51,11 +52,12 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
         throw new Error("Failed to save ad settings")
       }
 
+      toast.success("広告設定を保存しました")
       router.refresh()
-      alert("広告設定を保存しました")
     } catch (error) {
       console.error("Error saving ad settings:", error)
-      alert(`広告設定の保存に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`)
+      const errorMessage = error instanceof Error ? error.message : '不明なエラー'
+      toast.error(`広告設定の保存に失敗しました: ${errorMessage}`)
     } finally {
       setIsSubmitting(false)
     }

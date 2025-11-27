@@ -58,6 +58,8 @@ export function AdSense({
         return "90px"; // 728x90
       case "vertical":
         return "600px"; // 300x600
+      case "fluid":
+        return "280px"; // 記事内広告（fluid）
       default:
         return "280px"; // auto/その他
     }
