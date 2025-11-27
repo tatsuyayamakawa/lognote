@@ -123,7 +123,6 @@ export function LinkDialog({ open, onOpenChange, onInsert }: LinkDialogProps) {
               />
               <p className="text-xs text-muted-foreground">
                 内部記事のスラッグ（例: /your-post-slug）を入力してください。
-                自動的にサムネイル付きカードで表示されます。
               </p>
             </div>
           </TabsContent>
