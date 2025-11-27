@@ -203,15 +203,9 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
         </div>
 
-        {/* コンテンツセクション */}
-        <div className="mx-auto max-w-7xl pb-8 md:px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 xl:grid-cols-[1fr_320px]">
-            {/* メインコンテンツ */}
-            <article className="min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
-
         {/* 記事上広告（タイトル下・ファーストビュー） */}
         {(adSettings?.article_top_pc_slot || adSettings?.article_top_mobile_slot) && (
-          <div className="mb-10">
+          <div className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
             <ResponsiveAd
               pcSlot={adSettings?.article_top_pc_slot}
               mobileSlot={adSettings?.article_top_mobile_slot}
@@ -230,6 +224,12 @@ export default async function PostPage({ params }: PostPageProps) {
             />
           </div>
         )}
+
+        {/* コンテンツセクション */}
+        <div className="mx-auto max-w-7xl pb-8 md:px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 xl:grid-cols-[1fr_320px]">
+            {/* メインコンテンツ */}
+            <article className="min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
 
         {/* 記事本文（記事内広告対応） */}
         {post.content && (
