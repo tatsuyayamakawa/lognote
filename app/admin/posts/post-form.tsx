@@ -26,6 +26,7 @@ import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { Plus, X } from "lucide-react";
 import { format } from "date-fns";
+import { getBaseURL } from "@/lib/utils";
 import type { Category, Post } from "@/types";
 
 interface PostFormProps {
@@ -323,7 +324,7 @@ export function PostForm({ categories, post }: PostFormProps) {
                   placeholder="url-friendly-slug"
                 />
                 <p className="text-xs text-muted-foreground">
-                  URL: /posts/{slug || "url-friendly-slug"}
+                  URL: {getBaseURL()}/{slug || "url-friendly-slug"}
                 </p>
               </div>
 
