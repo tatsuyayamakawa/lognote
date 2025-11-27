@@ -27,6 +27,7 @@ import { ImageUpload } from "@/components/admin/image-upload";
 import { Plus, X } from "lucide-react";
 import { format } from "date-fns";
 import { getBaseURL } from "@/lib/utils";
+import { toast } from "sonner";
 import type { Category, Post } from "@/types";
 
 interface PostFormProps {
@@ -148,11 +149,14 @@ export function PostForm({ categories, post }: PostFormProps) {
         await supabase.from("post_categories").insert(postCategories);
       }
 
-      // 成功したら記事一覧へリダイレクト（ローディングは継続）
-      router.push("/admin/posts");
+      // 成功メッセージを表示
+      toast.success(post ? "記事を更新しました" : "記事を作成しました");
+      setLoading(false);
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "保存に失敗しました");
+      const errorMessage = err instanceof Error ? err.message : "保存に失敗しました";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setLoading(false);
     }
   };
@@ -201,10 +205,11 @@ export function PostForm({ categories, post }: PostFormProps) {
       setNewCategoryName("");
       setNewCategorySlug("");
       setNewCategoryColor("#3b82f6");
+
+      toast.success("カテゴリを作成しました");
     } catch (err: unknown) {
-      alert(
-        err instanceof Error ? err.message : "カテゴリの作成に失敗しました"
-      );
+      const errorMessage = err instanceof Error ? err.message : "カテゴリの作成に失敗しました";
+      toast.error(errorMessage);
     } finally {
       setCreatingCategory(false);
     }
@@ -223,7 +228,7 @@ export function PostForm({ categories, post }: PostFormProps) {
         .eq("category_id", categoryId);
 
       if (count && count > 0) {
-        alert(
+        toast.error(
           `このカテゴリは${count}件の記事で使用されているため削除できません。`
         );
         return;
@@ -244,10 +249,11 @@ export function PostForm({ categories, post }: PostFormProps) {
       setSelectedCategories(
         selectedCategories.filter((id) => id !== categoryId)
       );
+
+      toast.success("カテゴリを削除しました");
     } catch (err: unknown) {
-      alert(
-        err instanceof Error ? err.message : "カテゴリの削除に失敗しました"
-      );
+      const errorMessage = err instanceof Error ? err.message : "カテゴリの削除に失敗しました";
+      toast.error(errorMessage);
     }
   };
 

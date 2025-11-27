@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { AdminSidebar } from "./_components/admin-sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 export default async function AdminLayout({
   children,
@@ -25,6 +26,7 @@ export default async function AdminLayout({
       <div className="flex-1 overflow-y-auto">
         <main className="p-4 sm:p-6 md:p-8">{children}</main>
       </div>
+      <Toaster />
     </div>
   )
 }

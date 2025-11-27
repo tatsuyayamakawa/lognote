@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { toast } from "sonner"
 import type { Category } from "@/types"
 
 interface CategoryFormProps {
@@ -81,11 +82,14 @@ export function CategoryForm({ category }: CategoryFormProps) {
         if (insertError) throw insertError
       }
 
-      // 成功したらカテゴリ一覧へリダイレクト（ローディングは継続）
-      router.push("/admin/categories")
+      // 成功メッセージを表示
+      toast.success(category ? "カテゴリを更新しました" : "カテゴリを作成しました")
+      setLoading(false)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "保存に失敗しました")
+      const errorMessage = err instanceof Error ? err.message : "保存に失敗しました"
+      setError(errorMessage)
+      toast.error(errorMessage)
       setLoading(false)
     }
   }
