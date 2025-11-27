@@ -41,6 +41,8 @@ import {
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
 import { LinkDialog } from "./link-dialog";
+import { ColorPicker } from "./color-picker";
+import { SpeechBubbleDialog } from "./speech-bubble-dialog";
 
 interface TiptapEditorProps {
   content: JSONContent | null;
@@ -57,6 +59,7 @@ export function TiptapEditor({
 }: TiptapEditorProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -170,8 +173,16 @@ export function TiptapEditor({
     setImageDialogOpen(true);
   };
 
+  const addSpeechBubble = () => {
+    setSpeechBubbleDialogOpen(true);
+  };
+
   const handleImageSelect = (url: string) => {
     editor.chain().focus().setImage({ src: url }).run();
+  };
+
+  const handleSpeechBubbleSelect = (position: "left" | "right") => {
+    editor.chain().focus().toggleSpeechBubble(position).run();
   };
 
   const handleLinkInsert = async (data: {
@@ -255,6 +266,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="見出し2"
           >
             <Heading2 className="h-4 w-4" />
           </Button>
@@ -271,6 +283,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="見出し3"
           >
             <Heading3 className="h-4 w-4" />
           </Button>
@@ -287,6 +300,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="見出し4"
           >
             <Heading4 className="h-4 w-4" />
           </Button>
@@ -300,6 +314,7 @@ export function TiptapEditor({
               editor.isActive("bold") ? "bg-accent border-2 border-primary" : ""
             }
             disabled={disabled}
+            title="太字"
           >
             <Bold className="h-4 w-4" />
           </Button>
@@ -314,6 +329,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="斜体"
           >
             <Italic className="h-4 w-4" />
           </Button>
@@ -328,44 +344,16 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="下線"
           >
             <UnderlineIcon className="h-4 w-4" />
           </Button>
           <div className="mx-1 w-px bg-border" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().setColor("#dc2626").run()}
-            className={
-              editor.isActive("textStyle", { color: "#dc2626" })
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
+          <ColorPicker
+            currentColor={editor.getAttributes("textStyle").color}
+            onColorChange={(color) => editor.chain().focus().setColor(color).run()}
             disabled={disabled}
-            title="赤色"
-          >
-            <span className="h-4 w-4 flex items-center justify-center font-bold text-red-600">
-              A
-            </span>
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().setColor("#2563eb").run()}
-            className={
-              editor.isActive("textStyle", { color: "#2563eb" })
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="青色"
-          >
-            <span className="h-4 w-4 flex items-center justify-center font-bold text-blue-600">
-              A
-            </span>
-          </Button>
+          />
           <Button
             type="button"
             variant="ghost"
@@ -410,6 +398,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="箇条書きリスト"
           >
             <List className="h-4 w-4" />
           </Button>
@@ -424,6 +413,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="番号付きリスト"
           >
             <ListOrdered className="h-4 w-4" />
           </Button>
@@ -438,6 +428,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="引用"
           >
             <Quote className="h-4 w-4" />
           </Button>
@@ -452,6 +443,7 @@ export function TiptapEditor({
                 : ""
             }
             disabled={disabled}
+            title="コードブロック"
           >
             <Code className="h-4 w-4" />
           </Button>
@@ -460,31 +452,16 @@ export function TiptapEditor({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => editor.chain().focus().toggleSpeechBubble("left").run()}
+            onClick={addSpeechBubble}
             className={
-              editor.isActive("speechBubble", { position: "left" })
+              editor.isActive("speechBubble")
                 ? "bg-accent border-2 border-primary"
                 : ""
             }
             disabled={disabled}
-            title="吹き出し（左）"
+            title="吹き出し"
           >
             <MessageSquare className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleSpeechBubble("right").run()}
-            className={
-              editor.isActive("speechBubble", { position: "right" })
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="吹き出し（右）"
-          >
-            <MessageSquareText className="h-4 w-4" />
           </Button>
           <div className="mx-1 w-px bg-border" />
           <Button
@@ -496,6 +473,7 @@ export function TiptapEditor({
               editor.isActive("link") ? "bg-accent border-2 border-primary" : ""
             }
             disabled={disabled}
+            title="リンク"
           >
             <Link2 className="h-4 w-4" />
           </Button>
@@ -505,6 +483,7 @@ export function TiptapEditor({
             size="sm"
             onClick={addImage}
             disabled={disabled}
+            title="画像"
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
@@ -515,6 +494,7 @@ export function TiptapEditor({
             size="sm"
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo() || disabled}
+            title="元に戻す"
           >
             <Undo className="h-4 w-4" />
           </Button>
@@ -524,6 +504,7 @@ export function TiptapEditor({
             size="sm"
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo() || disabled}
+            title="やり直す"
           >
             <Redo className="h-4 w-4" />
           </Button>
@@ -542,6 +523,11 @@ export function TiptapEditor({
         open={linkDialogOpen}
         onOpenChange={setLinkDialogOpen}
         onInsert={handleLinkInsert}
+      />
+      <SpeechBubbleDialog
+        open={speechBubbleDialogOpen}
+        onOpenChange={setSpeechBubbleDialogOpen}
+        onSelect={handleSpeechBubbleSelect}
       />
     </>
   );
