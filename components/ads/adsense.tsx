@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface AdSenseProps {
   adSlot: string;
@@ -37,6 +37,7 @@ export function AdSense({
 }: AdSenseProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const insRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
     // クライアントサイドでのみマウント
@@ -46,62 +47,104 @@ export function AdSense({
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || !insRef.current) return;
 
     let retryCount = 0;
     const maxRetries = 5;
+    let pushed = false;
 
     const tryPushAd = () => {
       try {
         // AdSenseスクリプトが読み込まれているか確認
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined' || !insRef.current) return;
 
-        const adContainers = document.querySelectorAll('.adsbygoogle');
-        const lastContainer = adContainers[adContainers.length - 1];
+        const container = insRef.current;
 
         // コンテナの幅をチェック（display:noneでないことも確認）
-        if (lastContainer) {
-          const element = lastContainer as HTMLElement;
-          const computedStyle = window.getComputedStyle(element);
-          const containerWidth = element.clientWidth;
+        const computedStyle = window.getComputedStyle(container);
+        const containerWidth = container.clientWidth;
+        const containerOffsetWidth = container.offsetWidth;
+        const boundingRect = container.getBoundingClientRect();
 
-          // display:noneの場合はスキップ（レスポンシブ広告の非表示側）
-          if (computedStyle.display === 'none') {
-            // これは意図的な非表示なのでエラーではない
+        // display:noneの場合はスキップ（レスポンシブ広告の非表示側）
+        if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+          console.log('AdSense: Container is hidden');
+          return;
+        }
+
+        // 親要素も含めて表示されているかチェック
+        let parent = container.parentElement;
+        while (parent) {
+          const parentStyle = window.getComputedStyle(parent);
+          if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') {
+            console.log('AdSense: Parent element is hidden');
             return;
           }
+          parent = parent.parentElement;
+        }
 
-          if (containerWidth === 0) {
+        // 複数の幅チェックを行う
+        if (containerWidth === 0 || containerOffsetWidth === 0 || boundingRect.width === 0) {
+          if (retryCount < maxRetries) {
             retryCount++;
-            if (retryCount < maxRetries) {
-              // 50ms後にリトライ
-              setTimeout(tryPushAd, 50);
-              return;
-            } else {
-              // リトライ後も幅が0の場合は静かにスキップ
-              return;
-            }
+            console.log(`AdSense: Container width is 0, retrying... (${retryCount}/${maxRetries})`, {
+              clientWidth: containerWidth,
+              offsetWidth: containerOffsetWidth,
+              boundingWidth: boundingRect.width
+            });
+            setTimeout(tryPushAd, 100);
+            return;
+          } else {
+            console.warn('AdSense: Container width still 0 after retries');
+            return;
           }
         }
 
+        // すでにpushされているかチェック
+        if (pushed) {
+          console.log('AdSense: Already pushed');
+          return;
+        }
+
+        // data-adsbygoogle-status属性をチェック（すでに処理済みか確認）
+        if (container.getAttribute('data-adsbygoogle-status')) {
+          console.log('AdSense: Already processed by AdSense script');
+          return;
+        }
+
         // adsbygoogle配列を初期化してpush
+        console.log('AdSense: Pushing ad to adsbygoogle queue', {
+          adSlot,
+          clientWidth: containerWidth,
+          offsetWidth: containerOffsetWidth,
+          boundingWidth: boundingRect.width,
+          display: computedStyle.display,
+          visibility: computedStyle.visibility
+        });
         const adsbygoogle = (window.adsbygoogle = window.adsbygoogle || []);
-        adsbygoogle.push({});
+
+        try {
+          adsbygoogle.push({});
+          pushed = true;
+          console.log('AdSense: Successfully pushed ad');
+        } catch (pushErr) {
+          console.error('AdSense push error:', pushErr);
+          // AdSenseのエラーでもコンポーネントは表示し続ける
+          // このエラーは開発環境や一時的な問題の可能性がある
+        }
       } catch (err) {
-        // 開発環境ではAdSenseエラーが発生するため、静かにスキップ
-        // 本番環境では正常に動作します
-        console.warn('AdSense error:', err);
+        console.error('AdSense fatal error:', err);
         queueMicrotask(() => {
           setHasError(true);
         });
       }
     };
 
-    // 初回実行は100ms後
-    const timer = setTimeout(tryPushAd, 100);
+    // 初回実行は500ms後（スクリプト読み込みとレイアウト完成を待つ）
+    const timer = setTimeout(tryPushAd, 500);
 
     return () => clearTimeout(timer);
-  }, [isMounted]);
+  }, [isMounted, adSlot]);
 
   // 高さの正規化
   const normalizedHeight =
@@ -163,6 +206,7 @@ export function AdSense({
   return (
     <div className={className} suppressHydrationWarning>
       <ins
+        ref={insRef}
         className="adsbygoogle"
         style={adStyle}
         data-ad-client="ca-pub-7839828582645189"
