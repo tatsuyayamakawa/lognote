@@ -10,10 +10,15 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
-import { Underline } from "@tiptap/extension-underline";
+import { Underline as TiptapUnderline } from "@tiptap/extension-underline";
 import { SpeechBubble } from "./extensions/speech-bubble";
 import { LinkCard } from "./extensions/link-card";
 import { Button } from "@/components/ui/button";
+
+// 一意の名前でUnderline拡張を作成（重複警告を回避）
+const Underline = TiptapUnderline.extend({
+  name: 'underlineEditor',
+});
 import {
   Bold,
   Italic,
