@@ -12,7 +12,7 @@ interface ResponsiveAdProps {
   pcConfig?: {
     width?: string
     height?: string
-    adFormat?: string
+    adFormat?: "rectangle" | "horizontal" | "vertical" | "auto" | "fluid"
     fullWidthResponsive?: boolean
   }
   /**
@@ -21,7 +21,7 @@ interface ResponsiveAdProps {
   mobileConfig?: {
     width?: string
     height?: string
-    adFormat?: string
+    adFormat?: "rectangle" | "horizontal" | "vertical" | "auto" | "fluid"
     fullWidthResponsive?: boolean
   }
 }
