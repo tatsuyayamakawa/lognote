@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { getBaseURL } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ScrollToTop } from "@/components/layout/scroll-to-top";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -91,6 +90,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <ScrollToTop />
           <GoogleAnalytics />
           {children}
         </ThemeProvider>
