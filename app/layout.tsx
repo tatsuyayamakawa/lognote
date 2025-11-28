@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   title: {
     default: "整えて、創る。",
     template: "%s | 整えて、創る。",
-    absolute: "整えて、創る。 | ネット集客に強い整体院サイトを制作",
+    absolute: "整えて、創る。 - ネット集客に強い整体院サイトを制作",
   },
   description:
     "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
