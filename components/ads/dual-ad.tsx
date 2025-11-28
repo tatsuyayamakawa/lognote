@@ -37,7 +37,7 @@ export function DualAd({
             height={height}
             adFormat="rectangle"
             fullWidthResponsive={false}
-            showSkeleton={true}
+            showSkeleton={false}
           />
         )}
         {slot2 && (
@@ -47,7 +47,7 @@ export function DualAd({
             height={height}
             adFormat="rectangle"
             fullWidthResponsive={false}
-            showSkeleton={true}
+            showSkeleton={false}
           />
         )}
       </div>

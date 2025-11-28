@@ -29,11 +29,18 @@ export default function ArticleLoadingPage() {
           </div>
 
           {/* メタ情報（中央揃え） */}
-          <div className="flex flex-wrap items-center justify-center gap-6">
+          <div className="mb-6 flex flex-wrap items-center justify-center gap-6">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-4 w-20" />
           </div>
+        </div>
+      </div>
+
+      {/* 記事上広告（タイトル下） */}
+      <div className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="flex justify-center">
+          <Skeleton className="h-[90px] w-[728px] rounded-lg" />
         </div>
       </div>
 
@@ -42,11 +49,6 @@ export default function ArticleLoadingPage() {
         <div className="grid gap-8 xl:grid-cols-[1fr_320px]">
           {/* メインコンテンツ */}
           <article className="min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
-            {/* 記事上広告 */}
-            <div className="mb-10">
-              <Skeleton className="h-[250px] w-full rounded-lg" />
-            </div>
-
             {/* コンテンツ */}
             <div className="space-y-4">
               <Skeleton className="h-4 w-full" />
@@ -63,9 +65,6 @@ export default function ArticleLoadingPage() {
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
               <div className="py-8" />
-
-              {/* 記事下広告 */}
-              <Skeleton className="h-[280px] w-full rounded-lg" />
 
               {/* シェアボタン */}
               <div className="mt-12 border-t pt-8">

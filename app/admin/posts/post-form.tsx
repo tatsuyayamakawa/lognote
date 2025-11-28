@@ -99,6 +99,9 @@ export function PostForm({ categories, post }: PostFormProps) {
         return;
       }
 
+      // サムネイルが設定されていない場合は、OGP画像URLを自動生成
+      const finalThumbnailUrl = thumbnailUrl || `${getBaseURL()}/api/og?title=${encodeURIComponent(title)}`;
+
       // 記事データ
       const postData = {
         title,
@@ -108,7 +111,7 @@ export function PostForm({ categories, post }: PostFormProps) {
         status,
         author_id: user.id,
         published_at: publishedAt ? publishedAt.toISOString() : null,
-        thumbnail_url: thumbnailUrl || null,
+        thumbnail_url: finalThumbnailUrl,
         is_featured: isFeatured,
       };
 

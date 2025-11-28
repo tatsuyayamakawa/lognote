@@ -5,13 +5,9 @@ let analyticsDataClient: BetaAnalyticsDataClient | null = null
 
 export function getAnalyticsClient() {
   if (!analyticsDataClient) {
-    console.log("[Analytics] Initializing GA4 client")
-    console.log("[Analytics] GA4 Property ID:", process.env.GA4_PROPERTY_ID)
-
     try {
       // Check if credentials are provided as JSON string (for Vercel/production)
       if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-        console.log("[Analytics] Using GOOGLE_SERVICE_ACCOUNT_JSON")
         const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
         analyticsDataClient = new BetaAnalyticsDataClient({
           credentials,
@@ -19,22 +15,17 @@ export function getAnalyticsClient() {
       }
       // Fallback to file path (for local development)
       else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        console.log("[Analytics] Using GOOGLE_APPLICATION_CREDENTIALS file path")
         const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
         const absolutePath = path.isAbsolute(credentialsPath)
           ? credentialsPath
           : path.resolve(process.cwd(), credentialsPath)
 
-        console.log("[Analytics] Credentials path:", absolutePath)
         process.env.GOOGLE_APPLICATION_CREDENTIALS = absolutePath
         analyticsDataClient = new BetaAnalyticsDataClient()
       }
       else {
-        console.warn("[Analytics] No credentials configured")
         return null
       }
-
-      console.log("[Analytics] Client initialized successfully")
     } catch (error) {
       console.error("[Analytics] Failed to initialize client:", error)
       if (error instanceof Error) {
@@ -50,15 +41,11 @@ export function getAnalyticsClient() {
 export async function getPageViews(days: number = 30) {
   const client = getAnalyticsClient()
   if (!client) {
-    console.warn("[Analytics] getPageViews: Client not initialized")
     return []
   }
   if (!process.env.GA4_PROPERTY_ID) {
-    console.warn("[Analytics] getPageViews: GA4_PROPERTY_ID not set")
     return []
   }
-
-  console.log(`[Analytics] Fetching page views for last ${days} days`)
 
   try {
     const [response] = await client.runReport({
@@ -81,7 +68,6 @@ export async function getPageViews(days: number = 30) {
     // Sort by date in ascending order (oldest to newest)
     result.sort((a, b) => a.date.localeCompare(b.date))
 
-    console.log(`[Analytics] Page views fetched: ${result.length} data points`)
     return result
   } catch (error) {
     console.error("[Analytics] Error fetching page views:", error)
@@ -96,15 +82,12 @@ export async function getPageViews(days: number = 30) {
 export async function getTopPages(limit: number = 10) {
   const client = getAnalyticsClient()
   if (!client) {
-    console.warn("[Analytics] getTopPages: Client not initialized")
     return []
   }
   if (!process.env.GA4_PROPERTY_ID) {
-    console.warn("[Analytics] getTopPages: GA4_PROPERTY_ID not set")
     return []
   }
 
-  console.log(`[Analytics] Fetching top ${limit} pages`)
 
   try {
     const [response] = await client.runReport({
@@ -168,7 +151,6 @@ export async function getTopPages(limit: number = 10) {
       views: parseInt(row.metricValues?.[0]?.value || "0"),
     })) || []
 
-    console.log(`[Analytics] Top pages fetched: ${result.length} pages`)
     return result
   } catch (error) {
     console.error("[Analytics] Error fetching top pages:", error)
@@ -182,15 +164,12 @@ export async function getTopPages(limit: number = 10) {
 export async function getSearchQueries(limit: number = 20) {
   const client = getAnalyticsClient()
   if (!client) {
-    console.warn("[Analytics] getSearchQueries: Client not initialized")
     return []
   }
   if (!process.env.GA4_PROPERTY_ID) {
-    console.warn("[Analytics] getSearchQueries: GA4_PROPERTY_ID not set")
     return []
   }
 
-  console.log(`[Analytics] Fetching top ${limit} search queries`)
 
   try {
     const [response] = await client.runReport({
@@ -232,7 +211,6 @@ export async function getSearchQueries(limit: number = 20) {
       engagedSessions: parseInt(row.metricValues?.[1]?.value || "0"),
     })) || []
 
-    console.log(`[Analytics] Search queries fetched: ${result.length} queries`)
     return result
   } catch (error) {
     console.error("[Analytics] Error fetching search queries:", error)
@@ -246,15 +224,12 @@ export async function getSearchQueries(limit: number = 20) {
 export async function getOrganicSearchStats(days: number = 30) {
   const client = getAnalyticsClient()
   if (!client) {
-    console.warn("[Analytics] getOrganicSearchStats: Client not initialized")
     return []
   }
   if (!process.env.GA4_PROPERTY_ID) {
-    console.warn("[Analytics] getOrganicSearchStats: GA4_PROPERTY_ID not set")
     return []
   }
 
-  console.log(`[Analytics] Fetching organic search stats for last ${days} days`)
 
   try {
     const [response] = await client.runReport({
@@ -305,7 +280,6 @@ export async function getOrganicSearchStats(days: number = 30) {
     // Sort by date in ascending order (oldest to newest)
     result.sort((a, b) => a.date.localeCompare(b.date))
 
-    console.log(`[Analytics] Organic search stats fetched: ${result.length} data points`)
     return result
   } catch (error) {
     console.error("[Analytics] Error fetching organic search stats:", error)
@@ -322,15 +296,12 @@ export async function getOrganicSearchStats(days: number = 30) {
 export async function getPostViewCounts() {
   const client = getAnalyticsClient()
   if (!client) {
-    console.warn("[Analytics] getPostViewCounts: Client not initialized")
     return []
   }
   if (!process.env.GA4_PROPERTY_ID) {
-    console.warn("[Analytics] getPostViewCounts: GA4_PROPERTY_ID not set")
     return []
   }
 
-  console.log("[Analytics] Fetching view counts for all posts")
 
   try {
     const [response] = await client.runReport({
@@ -440,7 +411,6 @@ export async function getPostViewCounts() {
       }
     }) || []
 
-    console.log(`[Analytics] Post view counts fetched: ${result.length} posts`)
     return result
   } catch (error) {
     console.error("[Analytics] Error fetching post view counts:", error)

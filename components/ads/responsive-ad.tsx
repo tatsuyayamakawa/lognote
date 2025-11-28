@@ -48,7 +48,7 @@ export function ResponsiveAd({
             <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
               スポンサーリンク
             </span>
-            <div>
+            <div className="flex justify-center">
               <AdSense
                 adSlot={pcSlot}
                 adFormat={pcConfig.adFormat}
@@ -65,7 +65,7 @@ export function ResponsiveAd({
             <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
               スポンサーリンク
             </span>
-            <div>
+            <div className="flex justify-center">
               <AdSense
                 adSlot={mobileSlot}
                 adFormat={mobileConfig.adFormat}
@@ -88,7 +88,7 @@ export function ResponsiveAd({
           <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
             スポンサーリンク
           </span>
-          <div>
+          <div className="flex justify-center">
             <AdSense
               adSlot={pcSlot}
               adFormat={pcConfig.adFormat}
@@ -110,7 +110,7 @@ export function ResponsiveAd({
           <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
             スポンサーリンク
           </span>
-          <div>
+          <div className="flex justify-center">
             <AdSense
               adSlot={mobileSlot}
               adFormat={mobileConfig.adFormat}

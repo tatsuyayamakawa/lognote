@@ -26,12 +26,6 @@ export default async function DashboardPage({
   // サイトのURLを取得
   const searchConsoleUrl = getBaseURL();
 
-  console.log("[Dashboard] GA4 configured:", gaConfigured);
-  console.log("[Dashboard] Site URL:", searchConsoleUrl);
-  console.log("[Dashboard] GA4_PROPERTY_ID:", process.env.GA4_PROPERTY_ID);
-  console.log("[Dashboard] GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
-  console.log("[Dashboard] Fetching analytics data for period:", days, "days");
-
   // Fetch analytics data with selected period
   const pageViews = gaConfigured ? await getPageViews(days) : [];
   const topPages = gaConfigured ? await getTopPages(10) : [];
@@ -43,12 +37,6 @@ export default async function DashboardPage({
   const searchKeywords = gaConfigured
     ? await getSearchKeywords(searchConsoleUrl, days, 20)
     : [];
-
-  console.log("[Dashboard] Analytics data fetched:");
-  console.log("  - pageViews:", pageViews.length, "items");
-  console.log("  - topPages:", topPages.length, "items");
-  console.log("  - organicSearchStats:", organicSearchStats.length, "items");
-  console.log("  - searchKeywords:", searchKeywords.length, "items");
 
   return (
     <div className="space-y-8">

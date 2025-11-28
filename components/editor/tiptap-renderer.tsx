@@ -7,16 +7,11 @@ import Image from "@tiptap/extension-image"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Highlight } from "@tiptap/extension-highlight"
-import { Underline as TiptapUnderline } from "@tiptap/extension-underline"
+import Underline from "@tiptap/extension-underline"
 import { cn } from "@/lib/utils"
 import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
-
-// 一意の名前でUnderline拡張を作成（重複警告を回避）
-const Underline = TiptapUnderline.extend({
-  name: 'underlineRenderer',
-})
 
 // 見出しにIDを自動生成する関数
 function generateId(text: string): string {

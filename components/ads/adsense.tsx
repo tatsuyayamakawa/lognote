@@ -37,12 +37,16 @@ export function AdSense({
 }: AdSenseProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [shouldHide, setShouldHide] = useState(false);
   const insRef = useRef<HTMLModElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // adFormatに基づいてデフォルトのスケルトン高さを計算
   const getDefaultSkeletonHeight = (): string => {
     if (skeletonHeight) {
-      return typeof skeletonHeight === "number" ? `${skeletonHeight}px` : skeletonHeight;
+      return typeof skeletonHeight === "number"
+        ? `${skeletonHeight}px`
+        : skeletonHeight;
     }
 
     // width/heightが指定されている場合はそれを使用
@@ -84,7 +88,7 @@ export function AdSense({
     const tryPushAd = () => {
       try {
         // AdSenseスクリプトが読み込まれているか確認
-        if (typeof window === 'undefined' || !insRef.current) return;
+        if (typeof window === "undefined" || !insRef.current) return;
 
         const container = insRef.current;
 
@@ -95,8 +99,10 @@ export function AdSense({
         const boundingRect = container.getBoundingClientRect();
 
         // display:noneの場合はスキップ（レスポンシブ広告の非表示側）
-        if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
-          console.log('AdSense: Container is hidden');
+        if (
+          computedStyle.display === "none" ||
+          computedStyle.visibility === "hidden"
+        ) {
           return;
         }
 
@@ -104,64 +110,53 @@ export function AdSense({
         let parent = container.parentElement;
         while (parent) {
           const parentStyle = window.getComputedStyle(parent);
-          if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') {
-            console.log('AdSense: Parent element is hidden');
+          if (
+            parentStyle.display === "none" ||
+            parentStyle.visibility === "hidden"
+          ) {
             return;
           }
           parent = parent.parentElement;
         }
 
         // 複数の幅チェックを行う
-        if (containerWidth === 0 || containerOffsetWidth === 0 || boundingRect.width === 0) {
+        if (
+          containerWidth === 0 ||
+          containerOffsetWidth === 0 ||
+          boundingRect.width === 0
+        ) {
           if (retryCount < maxRetries) {
             retryCount++;
-            console.log(`AdSense: Container width is 0, retrying... (${retryCount}/${maxRetries})`, {
-              clientWidth: containerWidth,
-              offsetWidth: containerOffsetWidth,
-              boundingWidth: boundingRect.width
-            });
             setTimeout(tryPushAd, 100);
             return;
           } else {
-            console.warn('AdSense: Container width still 0 after retries');
             return;
           }
         }
 
         // すでにpushされているかチェック
         if (pushed) {
-          console.log('AdSense: Already pushed');
           return;
         }
 
         // data-adsbygoogle-status属性をチェック（すでに処理済みか確認）
-        if (container.getAttribute('data-adsbygoogle-status')) {
-          console.log('AdSense: Already processed by AdSense script');
+        if (container.getAttribute("data-adsbygoogle-status")) {
           return;
         }
 
         // adsbygoogle配列を初期化してpush
-        console.log('AdSense: Pushing ad to adsbygoogle queue', {
-          adSlot,
-          clientWidth: containerWidth,
-          offsetWidth: containerOffsetWidth,
-          boundingWidth: boundingRect.width,
-          display: computedStyle.display,
-          visibility: computedStyle.visibility
-        });
         const adsbygoogle = (window.adsbygoogle = window.adsbygoogle || []);
 
         try {
           adsbygoogle.push({});
           pushed = true;
-          console.log('AdSense: Successfully pushed ad');
         } catch (pushErr) {
-          console.error('AdSense push error:', pushErr);
+          console.error("AdSense push error:", pushErr);
           // AdSenseのエラーでもコンポーネントは表示し続ける
           // このエラーは開発環境や一時的な問題の可能性がある
         }
       } catch (err) {
-        console.error('AdSense fatal error:', err);
+        console.error("AdSense fatal error:", err);
         queueMicrotask(() => {
           setHasError(true);
         });
@@ -174,23 +169,62 @@ export function AdSense({
     return () => clearTimeout(timer);
   }, [isMounted, adSlot]);
 
+  // 広告の読み込み状態を監視（本番環境のみ）
+  useEffect(() => {
+    // 開発環境では広告ブロック検出をスキップ
+    if (process.env.NODE_ENV === 'development') {
+      return;
+    }
+
+    if (!isMounted || !insRef.current) return;
+
+    const container = insRef.current;
+    let checkCount = 0;
+    const maxChecks = 20; // 10秒間チェック（500ms × 20）
+
+    const checkAdStatus = () => {
+      checkCount++;
+
+      // data-adsbygoogle-status属性をチェック
+      const status = container.getAttribute("data-adsbygoogle-status");
+
+      if (status === "done") {
+        // 広告が正常に読み込まれた
+        const adContent = container.querySelector("iframe");
+        if (!adContent) {
+          // 広告ブロックまたは広告なし
+          setShouldHide(true);
+        }
+      } else if (checkCount < maxChecks) {
+        // まだ読み込み中、再チェック
+        setTimeout(checkAdStatus, 500);
+      } else {
+        // タイムアウト - 広告が読み込まれなかった（本番環境でのみ非表示）
+        setShouldHide(true);
+      }
+    };
+
+    // 1秒後にチェック開始（AdSense処理の完了を待つ）
+    const timer = setTimeout(checkAdStatus, 1000);
+
+    return () => clearTimeout(timer);
+  }, [isMounted]);
+
   // サーバーサイドレンダリング時はスケルトンを表示
   if (!isMounted) {
     if (!showSkeleton) {
-      return (
-        <div className={className} style={{ minHeight: normalizedHeight }} />
-      );
+      return null;
     }
 
     return (
-      <div
-        className={className}
-        style={{ minHeight: normalizedHeight }}
-        aria-label="広告読み込み中"
-      >
+      <div className={className} aria-label="広告読み込み中">
         <div
           className="animate-pulse bg-gray-200 dark:bg-gray-800 rounded-lg"
-          style={{ height: normalizedHeight }}
+          style={{
+            height: normalizedHeight,
+            width: width || "100%",
+            maxWidth: width || "none",
+          }}
         >
           <div className="flex h-full items-center justify-center">
             <span className="text-xs text-gray-400 dark:text-gray-600">
@@ -202,37 +236,19 @@ export function AdSense({
     );
   }
 
-  // エラー時の表示
-  if (hasError) {
-    return (
-      <div
-        className={className}
-        style={{ minHeight: normalizedHeight }}
-        aria-label="広告の読み込みに失敗しました"
-      >
-        <div
-          className="flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800"
-          style={{ height: normalizedHeight }}
-        >
-          <span className="text-xs text-gray-400 dark:text-gray-600">
-            広告を読み込めませんでした
-          </span>
-        </div>
-      </div>
-    );
+  // エラー時または非表示時は何も表示しない
+  if (hasError || shouldHide) {
+    return null;
   }
 
-  // 広告のスタイル：固定サイズまたはfluidでも高さを確保
-  const adStyle: React.CSSProperties = width && height
-    ? { display: "inline-block", width, height }
-    : { display: "block", minHeight: normalizedHeight };
+  // 広告のスタイル：固定サイズの場合のみwidth/heightを設定
+  const adStyle: React.CSSProperties =
+    width && height
+      ? { display: "inline-block", width, height }
+      : { display: "block" };
 
   return (
-    <div
-      className={className}
-      style={{ minHeight: normalizedHeight }}
-      suppressHydrationWarning
-    >
+    <div ref={containerRef} className={className} suppressHydrationWarning>
       <ins
         ref={insRef}
         className="adsbygoogle"

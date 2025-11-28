@@ -40,6 +40,9 @@ export async function generateMetadata({
   const postUrl = `${getBaseURL()}/${post.slug}`;
   const keywords = post.categories?.map((c) => c.name) || [];
 
+  // OGP画像: サムネイルがあればそれを使用、なければ動的生成
+  const ogImageUrl = post.thumbnail_url || `${getBaseURL()}/api/og?title=${encodeURIComponent(post.title)}`;
+
   return {
     title: `${post.title}`,
     description: post.meta_description || post.excerpt || post.title,
@@ -52,7 +55,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.meta_description || post.excerpt || post.title,
       url: postUrl,
-      images: post.thumbnail_url ? [post.thumbnail_url] : [],
+      images: [ogImageUrl],
       type: "article",
       publishedTime: post.published_at || undefined,
       modifiedTime: post.updated_at,
@@ -63,7 +66,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: post.title,
       description: post.meta_description || post.excerpt || post.title,
-      images: post.thumbnail_url ? [post.thumbnail_url] : [],
+      images: [ogImageUrl],
     },
   };
 }
@@ -264,6 +267,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   height="250px"
                   adFormat="rectangle"
                   fullWidthResponsive={false}
+                  showSkeleton={false}
                 />
               </div>
             )}
