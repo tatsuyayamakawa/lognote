@@ -1,28 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import type { AdSettings, AdSettingsFormData } from "@/types/ad"
-import { Save } from "lucide-react"
-import { toast } from "sonner"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { AdSettings, AdSettingsFormData } from "@/types/ad";
+import { toast } from "sonner";
 
 interface AdSettingsFormProps {
-  initialSettings: AdSettings | null
+  initialSettings: AdSettings | null;
 }
 
 export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<AdSettingsFormData>({
     article_top_pc_slot: initialSettings?.article_top_pc_slot || "",
     article_top_mobile_slot: initialSettings?.article_top_mobile_slot || "",
@@ -30,14 +29,15 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
     in_article_mobile_slot: initialSettings?.in_article_mobile_slot || "",
     article_bottom_pc_slot_1: initialSettings?.article_bottom_pc_slot_1 || "",
     article_bottom_pc_slot_2: initialSettings?.article_bottom_pc_slot_2 || "",
-    article_bottom_mobile_slot: initialSettings?.article_bottom_mobile_slot || "",
+    article_bottom_mobile_slot:
+      initialSettings?.article_bottom_mobile_slot || "",
     sidebar_pc_slot: initialSettings?.sidebar_pc_slot || "",
     sidebar_mobile_slot: initialSettings?.sidebar_mobile_slot || "",
-  })
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/ad-settings", {
@@ -46,22 +46,23 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to save ad settings")
+        throw new Error("Failed to save ad settings");
       }
 
-      toast.success("広告設定を保存しました")
-      router.refresh()
+      toast.success("広告設定を保存しました");
+      router.refresh();
     } catch (error) {
-      console.error("Error saving ad settings:", error)
-      const errorMessage = error instanceof Error ? error.message : '不明なエラー'
-      toast.error(`広告設定の保存に失敗しました: ${errorMessage}`)
+      console.error("Error saving ad settings:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "不明なエラー";
+      toast.error(`広告設定の保存に失敗しました: ${errorMessage}`);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-8">
@@ -80,22 +81,26 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
         <Card>
           <CardHeader>
             <CardTitle>タイトル下広告（ファーストビュー）</CardTitle>
-            <CardDescription>
-              記事タイトル直下に表示される広告
-            </CardDescription>
+            <CardDescription>記事タイトル直下に表示される広告</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="article_top_pc_slot">
-                  PC用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - 横長バナー）</span>
+                  PC用{" "}
+                  <span className="text-xs text-muted-foreground">
+                    （ディスプレイ広告 - 横長バナー）
+                  </span>
                 </Label>
                 <Input
                   id="article_top_pc_slot"
                   placeholder="1234567890"
                   value={formData.article_top_pc_slot}
                   onChange={(e) =>
-                    setFormData({ ...formData, article_top_pc_slot: e.target.value })
+                    setFormData({
+                      ...formData,
+                      article_top_pc_slot: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -104,14 +109,20 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="article_top_mobile_slot">
-                  スマホ用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア）</span>
+                  スマホ用{" "}
+                  <span className="text-xs text-muted-foreground">
+                    （ディスプレイ広告 - スクエア）
+                  </span>
                 </Label>
                 <Input
                   id="article_top_mobile_slot"
                   placeholder="1234567890"
                   value={formData.article_top_mobile_slot}
                   onChange={(e) =>
-                    setFormData({ ...formData, article_top_mobile_slot: e.target.value })
+                    setFormData({
+                      ...formData,
+                      article_top_mobile_slot: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -134,14 +145,20 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="in_article_pc_slot">
-                  PC用 <span className="text-xs text-muted-foreground">（記事内広告）</span>
+                  PC用{" "}
+                  <span className="text-xs text-muted-foreground">
+                    （記事内広告）
+                  </span>
                 </Label>
                 <Input
                   id="in_article_pc_slot"
                   placeholder="1234567890"
                   value={formData.in_article_pc_slot}
                   onChange={(e) =>
-                    setFormData({ ...formData, in_article_pc_slot: e.target.value })
+                    setFormData({
+                      ...formData,
+                      in_article_pc_slot: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -150,14 +167,20 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="in_article_mobile_slot">
-                  スマホ用 <span className="text-xs text-muted-foreground">（記事内広告）</span>
+                  スマホ用{" "}
+                  <span className="text-xs text-muted-foreground">
+                    （記事内広告）
+                  </span>
                 </Label>
                 <Input
                   id="in_article_mobile_slot"
                   placeholder="1234567890"
                   value={formData.in_article_mobile_slot}
                   onChange={(e) =>
-                    setFormData({ ...formData, in_article_mobile_slot: e.target.value })
+                    setFormData({
+                      ...formData,
+                      in_article_mobile_slot: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -179,7 +202,10 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <Label>
-                PC用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア × 2個横並び）</span>
+                PC用{" "}
+                <span className="text-xs text-muted-foreground">
+                  （ディスプレイ広告 - スクエア × 2個横並び）
+                </span>
               </Label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -187,7 +213,10 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     placeholder="1つ目: 1234567890"
                     value={formData.article_bottom_pc_slot_1}
                     onChange={(e) =>
-                      setFormData({ ...formData, article_bottom_pc_slot_1: e.target.value })
+                      setFormData({
+                        ...formData,
+                        article_bottom_pc_slot_1: e.target.value,
+                      })
                     }
                   />
                   <p className="text-xs text-muted-foreground">
@@ -199,7 +228,10 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     placeholder="2つ目: 1234567890"
                     value={formData.article_bottom_pc_slot_2}
                     onChange={(e) =>
-                      setFormData({ ...formData, article_bottom_pc_slot_2: e.target.value })
+                      setFormData({
+                        ...formData,
+                        article_bottom_pc_slot_2: e.target.value,
+                      })
                     }
                   />
                   <p className="text-xs text-muted-foreground">
@@ -210,14 +242,20 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="article_bottom_mobile_slot">
-                スマホ用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア）</span>
+                スマホ用{" "}
+                <span className="text-xs text-muted-foreground">
+                  （ディスプレイ広告 - スクエア）
+                </span>
               </Label>
               <Input
                 id="article_bottom_mobile_slot"
                 placeholder="1234567890"
                 value={formData.article_bottom_mobile_slot}
                 onChange={(e) =>
-                  setFormData({ ...formData, article_bottom_mobile_slot: e.target.value })
+                  setFormData({
+                    ...formData,
+                    article_bottom_mobile_slot: e.target.value,
+                  })
                 }
               />
               <p className="text-xs text-muted-foreground">
@@ -239,14 +277,20 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="sidebar_pc_slot">
-                  PC用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - 縦長）</span>
+                  PC用{" "}
+                  <span className="text-xs text-muted-foreground">
+                    （ディスプレイ広告 - 縦長）
+                  </span>
                 </Label>
                 <Input
                   id="sidebar_pc_slot"
                   placeholder="1234567890"
                   value={formData.sidebar_pc_slot}
                   onChange={(e) =>
-                    setFormData({ ...formData, sidebar_pc_slot: e.target.value })
+                    setFormData({
+                      ...formData,
+                      sidebar_pc_slot: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -255,14 +299,20 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="sidebar_mobile_slot">
-                  スマホ用 <span className="text-xs text-muted-foreground">（ディスプレイ広告 - スクエア）</span>
+                  スマホ用{" "}
+                  <span className="text-xs text-muted-foreground">
+                    （ディスプレイ広告 - スクエア）
+                  </span>
                 </Label>
                 <Input
                   id="sidebar_mobile_slot"
                   placeholder="1234567890"
                   value={formData.sidebar_mobile_slot}
                   onChange={(e) =>
-                    setFormData({ ...formData, sidebar_mobile_slot: e.target.value })
+                    setFormData({
+                      ...formData,
+                      sidebar_mobile_slot: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -274,13 +324,12 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
         </Card>
 
         {/* 保存ボタン */}
-        <div className="flex justify-end">
+        <div className="flex justify-start">
           <Button type="submit" disabled={isSubmitting} size="lg">
-            <Save className="mr-2 h-4 w-4" />
-            {isSubmitting ? "保存中..." : "設定を保存"}
+            {isSubmitting ? "保存中..." : "保存"}
           </Button>
         </div>
       </form>
     </div>
-  )
+  );
 }
