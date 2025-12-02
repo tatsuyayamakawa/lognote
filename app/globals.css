@@ -140,6 +140,13 @@
   opacity: 0.6;
 }
 
+/* CTAボタン内のリンクは外部リンクアイコンを表示しない */
+[data-cta-button] a[href^="http"]:after,
+[data-cta-button] a[href^="https"]:after {
+  content: none !important;
+  display: none !important;
+}
+
 /* 外部リンクのアイコン表示 - ダークモード */
 .dark .prose a[href^="http"]:not([href*="localhost"]):after,
 .dark .prose a[href^="https"]:not([href*="localhost"]):after {

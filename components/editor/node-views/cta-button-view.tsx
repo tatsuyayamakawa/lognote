@@ -34,7 +34,7 @@ export function CtaButtonView({ node }: NodeViewProps) {
   };
 
   return (
-    <NodeViewWrapper className="flex justify-center my-8">
+    <NodeViewWrapper className="flex justify-center my-8" data-cta-button="">
       <a
         href={href || "#"}
         className={`inline-flex items-center justify-center rounded-lg px-8 py-4 text-lg font-semibold transition-all duration-300 ${buttonClass} ${animationClass} shadow-lg hover:shadow-xl transform hover:scale-105`}
