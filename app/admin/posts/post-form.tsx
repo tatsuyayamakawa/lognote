@@ -449,6 +449,8 @@ export function PostForm({ categories, post }: PostFormProps) {
               <CardTitle>サムネイル画像</CardTitle>
               <CardDescription>
                 記事一覧やSNSシェア時に表示される画像です。推奨サイズ: 1200×630px
+                <br />
+                画像を設定しない場合、タイトルから自動生成されます。
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -457,6 +459,7 @@ export function PostForm({ categories, post }: PostFormProps) {
                 onChange={setThumbnailUrl}
                 onRemove={() => setThumbnailUrl("")}
                 disabled={loading}
+                previewTitle={title}
               />
             </CardContent>
           </Card>
