@@ -101,6 +101,8 @@ export function ImageUpload({
             alt="Thumbnail preview"
             fill
             className="object-cover"
+            loading="eager"
+            priority
           />
           {value && (
             <button
