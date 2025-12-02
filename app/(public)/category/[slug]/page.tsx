@@ -36,6 +36,8 @@ export async function generateMetadata({
   const categoryUrl = `${getBaseURL()}/category/${category.slug}`;
   const description = category.description || `${category.name}の記事一覧`;
 
+  const ogImageUrl = `${getBaseURL()}/api/og?title=${encodeURIComponent(category.name)}`;
+
   return {
     title: `${category.name}`,
     description: description,
@@ -48,11 +50,13 @@ export async function generateMetadata({
       url: categoryUrl,
       type: "website",
       siteName: "整えて、創る。",
+      images: [ogImageUrl],
     },
     twitter: {
       card: "summary_large_image",
       title: category.name,
       description: description,
+      images: [ogImageUrl],
     },
   };
 }

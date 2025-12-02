@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     // タイトルを適切な長さに制限
     const truncatedTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
 
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
       (
         <div
           style={{
@@ -134,8 +134,16 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        headers: {
+          // CDNとブラウザでの長期キャッシュ設定
+          'Cache-Control': 'public, immutable, max-age=31536000, s-maxage=31536000',
+          // Vercel Edge Networkでのキャッシュ（30日間）
+          'CDN-Cache-Control': 'public, max-age=2592000',
+        },
       }
     )
+
+    return imageResponse
   } catch (e) {
     console.error('OG Image generation error:', e)
     return new Response(`Failed to generate image: ${e instanceof Error ? e.message : 'Unknown error'}`, {

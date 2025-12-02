@@ -16,11 +16,13 @@ export const metadata: Metadata = {
     url: `${getBaseURL()}/posts`,
     type: "website",
     siteName: "整えて、創る。",
+    images: [`${getBaseURL()}/api/og?title=${encodeURIComponent("記事一覧")}`],
   },
   twitter: {
     card: "summary_large_image",
     title: "記事一覧",
     description: "すべての記事一覧",
+    images: [`${getBaseURL()}/api/og?title=${encodeURIComponent("記事一覧")}`],
   },
 };
 
