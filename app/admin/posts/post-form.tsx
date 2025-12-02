@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ export function PostForm({ categories, post }: PostFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // カテゴリ作成ダイアログの状態
   const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
@@ -67,6 +68,50 @@ export function PostForm({ categories, post }: PostFormProps) {
     post?.published_at ? new Date(post.published_at) : undefined
   );
   const [isFeatured, setIsFeatured] = useState(post?.is_featured || false);
+
+  // 初期値を保存
+  const [initialValues] = useState({
+    title: post?.title || "",
+    slug: post?.slug || "",
+    excerpt: post?.excerpt || "",
+    content: JSON.stringify((post?.content as Record<string, unknown>) || { type: "doc", content: [] }),
+    selectedCategories: JSON.stringify(post?.categories?.map((c) => c.id) || []),
+    status: (post?.status as "draft" | "published" | "private") || "draft",
+    thumbnailUrl: post?.thumbnail_url || "",
+    publishedAt: post?.published_at ? new Date(post.published_at).toISOString() : "",
+    isFeatured: post?.is_featured || false,
+  });
+
+  // フォーム変更の監視（初期値と比較）
+  useEffect(() => {
+    const currentValues = {
+      title,
+      slug,
+      excerpt,
+      content: JSON.stringify(content),
+      selectedCategories: JSON.stringify(selectedCategories),
+      status,
+      thumbnailUrl,
+      publishedAt: publishedAt ? publishedAt.toISOString() : "",
+      isFeatured,
+    };
+
+    const hasChanged = JSON.stringify(initialValues) !== JSON.stringify(currentValues);
+    setHasUnsavedChanges(hasChanged);
+  }, [title, slug, excerpt, content, selectedCategories, status, thumbnailUrl, publishedAt, isFeatured, initialValues]);
+
+  // ページ離脱時の警告
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // タイトルからスラッグを自動生成
   const handleTitleChange = (value: string) => {
@@ -154,6 +199,9 @@ export function PostForm({ categories, post }: PostFormProps) {
 
       // 成功メッセージを表示
       toast.success(post ? "記事を更新しました" : "記事を作成しました");
+
+      // 未保存の変更フラグをクリア
+      setHasUnsavedChanges(false);
 
       // 記事一覧ページにリダイレクト
       router.push("/admin/posts");
@@ -623,7 +671,15 @@ export function PostForm({ categories, post }: PostFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
+          onClick={() => {
+            if (hasUnsavedChanges) {
+              if (confirm("保存されていない変更があります。本当に移動しますか?")) {
+                router.back();
+              }
+            } else {
+              router.back();
+            }
+          }}
           disabled={loading}
         >
           キャンセル
