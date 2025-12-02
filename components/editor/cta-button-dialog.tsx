@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,10 +60,23 @@ export function CtaButtonDialog({
   // 初期データがある場合は編集モード
   const isEditMode = !!initialData;
 
-  // open / initialData が変わるたびにコンテンツをリマウントして初期値を反映
-  const dialogKey = `${open ? "open" : "closed"}-${JSON.stringify(
-    initialData ?? {}
-  )}`;
+  // openとinitialDataが変わったらstateを更新
+  useEffect(() => {
+    if (open && initialData) {
+      setHref(initialData.href || "");
+      setText(initialData.text || "");
+      setBgColor(initialData.bgColor || "#3b82f6");
+      setTextColor(initialData.textColor || "#ffffff");
+      setAnimation(initialData.animation || "none");
+    } else if (!open) {
+      // ダイアログが閉じたらリセット
+      setHref("");
+      setText("");
+      setBgColor("#3b82f6");
+      setTextColor("#ffffff");
+      setAnimation("none");
+    }
+  }, [open, initialData]);
 
   const handleSubmit = () => {
     if (!href || !text) return;
@@ -107,7 +120,7 @@ export function CtaButtonDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent key={dialogKey} className="sm:max-w-[340px] p-4">
+      <DialogContent className="sm:max-w-[340px] p-4">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "CTAボタンを編集" : "CTAボタンを挿入"}
