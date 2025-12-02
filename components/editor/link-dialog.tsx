@@ -23,23 +23,36 @@ interface LinkDialogProps {
     type: "simple" | "card";
     linkTarget?: "internal" | "external";
   }) => void;
+  initialData?: {
+    href: string;
+    text?: string;
+  };
 }
 
-export function LinkDialog({ open, onOpenChange, onInsert }: LinkDialogProps) {
+export function LinkDialog({ open, onOpenChange, onInsert, initialData }: LinkDialogProps) {
   const [linkType, setLinkType] = useState<"simple" | "card">("simple");
   const [url, setUrl] = useState("");
   const [text, setText] = useState("");
   const [linkTarget, setLinkTarget] = useState<"internal" | "external">("external");
 
+  // 初期データがある場合は編集モード
+  const isEditMode = !!initialData;
+
   useEffect(() => {
-    if (!open) {
+    if (open && initialData) {
+      // 編集モードの場合は初期データをセット
+      setUrl(initialData.href || "");
+      setText(initialData.text || "");
+      // URLから内部/外部を判定
+      setLinkTarget(initialData.href?.startsWith("/") ? "internal" : "external");
+    } else if (!open) {
       // ダイアログが閉じたらリセット
       setUrl("");
       setText("");
       setLinkType("simple");
       setLinkTarget("external");
     }
-  }, [open]);
+  }, [open, initialData]);
 
   const handleInsert = () => {
     if (!url) return;
@@ -58,7 +71,7 @@ export function LinkDialog({ open, onOpenChange, onInsert }: LinkDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>リンクを挿入</DialogTitle>
+          <DialogTitle>{isEditMode ? "リンクを編集" : "リンクを挿入"}</DialogTitle>
           <DialogDescription>
             リンクの種類とURLを設定してください
           </DialogDescription>
@@ -133,7 +146,7 @@ export function LinkDialog({ open, onOpenChange, onInsert }: LinkDialogProps) {
             キャンセル
           </Button>
           <Button onClick={handleInsert} disabled={!url}>
-            挿入
+            {isEditMode ? "更新" : "挿入"}
           </Button>
         </DialogFooter>
       </DialogContent>

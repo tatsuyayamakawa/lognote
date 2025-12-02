@@ -59,6 +59,8 @@ export function TiptapEditor({
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
+  const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
+  const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{ href: string; text: string; variant: 'primary' | 'secondary' | 'outline' } | undefined>(undefined);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -73,7 +75,7 @@ export function TiptapEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-primary underline",
+          class: "text-primary underline cursor-pointer",
         },
       }),
       Image.configure({
@@ -109,6 +111,43 @@ export function TiptapEditor({
     onSelectionUpdate: () => {
       // カーソル位置が変わったらツールバーの状態を更新
       forceUpdate({});
+    },
+    onCreate: ({ editor }) => {
+      // エディタ作成時にクリックイベントを追加
+      const editorElement = editor.view.dom;
+
+      editorElement.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+
+        // リンクがクリックされた場合
+        const linkElement = target.closest('a');
+        if (linkElement && !disabled) {
+          event.preventDefault();
+          const href = linkElement.getAttribute('href') || '';
+          const text = linkElement.textContent || '';
+
+          setLinkInitialData({ href, text });
+          setLinkDialogOpen(true);
+          return;
+        }
+
+        // CTAボタンがクリックされた場合
+        const ctaButtonElement = target.closest('[data-cta-button]');
+        if (ctaButtonElement && !disabled) {
+          event.preventDefault();
+          const pos = editor.view.posAtDOM(ctaButtonElement, 0);
+          const node = editor.view.state.doc.nodeAt(pos);
+
+          if (node && node.type.name === 'ctaButton') {
+            setCtaButtonInitialData({
+              href: node.attrs.href || '',
+              text: node.attrs.text || '',
+              variant: node.attrs.variant || 'primary',
+            });
+            setCtaButtonDialogOpen(true);
+          }
+        }
+      });
     },
     editorProps: {
       attributes: {
@@ -220,6 +259,7 @@ export function TiptapEditor({
   }
 
   const addLink = () => {
+    setLinkInitialData(undefined);
     setLinkDialogOpen(true);
   };
 
@@ -232,6 +272,7 @@ export function TiptapEditor({
   };
 
   const addCtaButton = () => {
+    setCtaButtonInitialData(undefined);
     setCtaButtonDialogOpen(true);
   };
 
@@ -240,7 +281,14 @@ export function TiptapEditor({
   };
 
   const handleCtaButtonSelect = (options: { href: string; text: string; variant: 'primary' | 'secondary' | 'outline' }) => {
-    editor.chain().focus().setCtaButton(options).run();
+    if (ctaButtonInitialData) {
+      // 編集モード: 既存のCTAボタンを更新
+      editor.chain().focus().updateAttributes('ctaButton', options).run();
+    } else {
+      // 新規作成モード
+      editor.chain().focus().setCtaButton(options).run();
+    }
+    setCtaButtonInitialData(undefined);
   };
 
   const handleSpeechBubbleSelect = (position: "left" | "right") => {
@@ -255,14 +303,33 @@ export function TiptapEditor({
   }) => {
     if (data.type === "simple") {
       // 通常のリンク（内部・外部両方対応）
-      if (data.text) {
-        editor
-          .chain()
-          .focus()
-          .insertContent(`<a href="${data.href}">${data.text}</a>`)
-          .run();
+      if (linkInitialData) {
+        // 編集モード: 既存のリンクを更新
+        if (data.text && data.text !== linkInitialData.text) {
+          // テキストも変更された場合は、リンクを削除して新しいリンクを挿入
+          editor
+            .chain()
+            .focus()
+            .extendMarkRange('link')
+            .unsetLink()
+            .insertContent(`<a href="${data.href}">${data.text}</a>`)
+            .run();
+        } else {
+          // URLのみ変更の場合
+          editor.chain().focus().extendMarkRange('link').setLink({ href: data.href }).run();
+        }
+        setLinkInitialData(undefined);
       } else {
-        editor.chain().focus().setLink({ href: data.href }).run();
+        // 新規作成モード
+        if (data.text) {
+          editor
+            .chain()
+            .focus()
+            .insertContent(`<a href="${data.href}">${data.text}</a>`)
+            .run();
+        } else {
+          editor.chain().focus().setLink({ href: data.href }).run();
+        }
       }
     } else {
       // リンクカード（内部リンク専用）
@@ -600,6 +667,7 @@ export function TiptapEditor({
         open={linkDialogOpen}
         onOpenChange={setLinkDialogOpen}
         onInsert={handleLinkInsert}
+        initialData={linkInitialData}
       />
       <SpeechBubbleDialog
         open={speechBubbleDialogOpen}
@@ -610,6 +678,7 @@ export function TiptapEditor({
         open={ctaButtonDialogOpen}
         onOpenChange={setCtaButtonDialogOpen}
         onSelect={handleCtaButtonSelect}
+        initialData={ctaButtonInitialData}
       />
     </>
   );

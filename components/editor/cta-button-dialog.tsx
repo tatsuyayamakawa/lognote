@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -24,16 +24,38 @@ interface CtaButtonDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (options: { href: string; text: string; variant: 'primary' | 'secondary' | 'outline' }) => void
+  initialData?: {
+    href: string
+    text: string
+    variant: 'primary' | 'secondary' | 'outline'
+  }
 }
 
 export function CtaButtonDialog({
   open,
   onOpenChange,
   onSelect,
+  initialData,
 }: CtaButtonDialogProps) {
   const [href, setHref] = useState("")
   const [text, setText] = useState("")
   const [variant, setVariant] = useState<'primary' | 'secondary' | 'outline'>('primary')
+
+  // 初期データがある場合は編集モード
+  const isEditMode = !!initialData
+
+  // ダイアログが開いた時に初期データをセット
+  useEffect(() => {
+    if (open && initialData) {
+      setHref(initialData.href || "")
+      setText(initialData.text || "")
+      setVariant(initialData.variant || 'primary')
+    } else if (!open) {
+      setHref("")
+      setText("")
+      setVariant('primary')
+    }
+  }, [open, initialData])
 
   const handleSubmit = () => {
     if (!href || !text) return
@@ -58,9 +80,9 @@ export function CtaButtonDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>CTAボタンを挿入</DialogTitle>
+          <DialogTitle>{isEditMode ? "CTAボタンを編集" : "CTAボタンを挿入"}</DialogTitle>
           <DialogDescription>
-            クリックを促進するボタンリンクを挿入します
+            クリックを促進するボタンリンクを{isEditMode ? "編集" : "挿入"}します
           </DialogDescription>
         </DialogHeader>
 
@@ -131,7 +153,7 @@ export function CtaButtonDialog({
             onClick={handleSubmit}
             disabled={!href || !text}
           >
-            挿入
+            {isEditMode ? "更新" : "挿入"}
           </Button>
         </DialogFooter>
       </DialogContent>
