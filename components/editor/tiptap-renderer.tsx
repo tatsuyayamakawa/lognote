@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
+import { CtaButton } from "./extensions/cta-button"
 
 // 見出しの階層的な番号を管理するクラス
 class HeadingNumbering {
@@ -103,6 +104,12 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
       LinkCard.configure({
         HTMLAttributes: {
           class: "link-card",
+        },
+        enableNodeView: false,
+      }),
+      CtaButton.configure({
+        HTMLAttributes: {
+          class: "cta-button",
         },
         enableNodeView: false,
       }),

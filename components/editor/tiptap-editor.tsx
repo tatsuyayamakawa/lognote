@@ -13,6 +13,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
 import { SpeechBubble } from "./extensions/speech-bubble";
 import { LinkCard } from "./extensions/link-card";
+import { CtaButton } from "./extensions/cta-button";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -32,12 +33,14 @@ import {
   Underline as UnderlineIcon,
   MessageSquare,
   MessageSquareText,
+  MousePointerClick,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
 import { LinkDialog } from "./link-dialog";
 import { ColorPicker } from "./color-picker";
 import { SpeechBubbleDialog } from "./speech-bubble-dialog";
+import { CtaButtonDialog } from "./cta-button-dialog";
 
 interface TiptapEditorProps {
   content: JSONContent | null;
@@ -55,6 +58,7 @@ export function TiptapEditor({
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
+  const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -90,6 +94,9 @@ export function TiptapEditor({
         enableNodeView: true,
       }),
       LinkCard.configure({
+        enableNodeView: true,
+      }),
+      CtaButton.configure({
         enableNodeView: true,
       }),
     ],
@@ -224,8 +231,16 @@ export function TiptapEditor({
     setSpeechBubbleDialogOpen(true);
   };
 
+  const addCtaButton = () => {
+    setCtaButtonDialogOpen(true);
+  };
+
   const handleImageSelect = (url: string) => {
     editor.chain().focus().setImage({ src: url }).run();
+  };
+
+  const handleCtaButtonSelect = (options: { href: string; text: string; variant: 'primary' | 'secondary' | 'outline' }) => {
+    editor.chain().focus().setCtaButton(options).run();
   };
 
   const handleSpeechBubbleSelect = (position: "left" | "right") => {
@@ -510,6 +525,21 @@ export function TiptapEditor({
           >
             <MessageSquare className="h-4 w-4" />
           </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={addCtaButton}
+            className={
+              editor.isActive("ctaButton")
+                ? "bg-accent border-2 border-primary"
+                : ""
+            }
+            disabled={disabled}
+            title="CTAボタン"
+          >
+            <MousePointerClick className="h-4 w-4" />
+          </Button>
           <div className="mx-1 w-px bg-border" />
           <Button
             type="button"
@@ -575,6 +605,11 @@ export function TiptapEditor({
         open={speechBubbleDialogOpen}
         onOpenChange={setSpeechBubbleDialogOpen}
         onSelect={handleSpeechBubbleSelect}
+      />
+      <CtaButtonDialog
+        open={ctaButtonDialogOpen}
+        onOpenChange={setCtaButtonDialogOpen}
+        onSelect={handleCtaButtonSelect}
       />
     </>
   );

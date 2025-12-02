@@ -14,6 +14,7 @@ import { createPortal } from "react-dom"
 import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
+import { CtaButton } from "./extensions/cta-button"
 import { AdSense } from "../ads/adsense"
 
 // 見出しの階層的な番号を管理するクラス
@@ -115,6 +116,12 @@ export function TiptapRendererWithAds({
       LinkCard.configure({
         HTMLAttributes: {
           class: "link-card",
+        },
+        enableNodeView: false,
+      }),
+      CtaButton.configure({
+        HTMLAttributes: {
+          class: "cta-button",
         },
         enableNodeView: false,
       }),
