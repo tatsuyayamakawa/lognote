@@ -23,14 +23,10 @@ export function TableOfContents({ className }: TableOfContentsProps) {
     if (!article) return;
 
     const extractHeadings = () => {
-      // Tiptapのエディターコンテンツ内の見出しを取得
-      const headingElements = article.querySelectorAll(".ProseMirror h2, .ProseMirror h3");
+      // Tiptapのエディターコンテンツ内の見出しを取得（h2, h3, h4）
+      const headingElements = article.querySelectorAll(".ProseMirror h2, .ProseMirror h3, .ProseMirror h4");
       const headingData: Heading[] = Array.from(headingElements).map(
-        (heading, index) => {
-          // IDがない場合は自動生成
-          if (!heading.id) {
-            heading.id = `heading-${index}`;
-          }
+        (heading) => {
           return {
             id: heading.id,
             text: heading.textContent || "",
@@ -130,6 +126,7 @@ export function TableOfContents({ className }: TableOfContentsProps) {
             className={cn(
               "border-l-2 transition-all duration-200",
               heading.level === 3 && "pl-4",
+              heading.level === 4 && "pl-8",
               activeId === heading.id
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50 hover:bg-accent"

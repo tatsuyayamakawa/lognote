@@ -16,14 +16,34 @@ import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
 import { AdSense } from "../ads/adsense"
 
-// 見出しにIDを自動生成する関数
-function generateId(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim()
+// 見出しの階層的な番号を管理するクラス
+class HeadingNumbering {
+  private counters: number[] = [0, 0, 0, 0]; // h2, h3, h4, h5用
+
+  generateId(level: number): string {
+    // h2=0, h3=1, h4=2, h5=3
+    const index = level - 2;
+
+    if (index < 0 || index >= this.counters.length) {
+      return `heading-${level}`;
+    }
+
+    // 現在のレベルをインクリメント
+    this.counters[index]++;
+
+    // より深いレベルをリセット
+    for (let i = index + 1; i < this.counters.length; i++) {
+      this.counters[i] = 0;
+    }
+
+    // 番号を生成（例: 1-2-3）
+    const numbers = this.counters.slice(0, index + 1).filter(n => n > 0);
+    return `heading-${numbers.join('-')}`;
+  }
+
+  reset() {
+    this.counters = [0, 0, 0, 0];
+  }
 }
 
 interface TiptapRendererWithAdsProps {
@@ -44,6 +64,9 @@ export function TiptapRendererWithAds({
 
   const [showInArticleAd, setShowInArticleAd] = useState(false)
 
+  // 見出し番号管理インスタンス
+  const headingNumbering = new HeadingNumbering();
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -58,8 +81,7 @@ export function TiptapRendererWithAds({
           const level = this.options.levels.includes(node.attrs.level)
             ? node.attrs.level
             : this.options.levels[0]
-          const text = node.textContent
-          const id = generateId(text)
+          const id = headingNumbering.generateId(level)
 
           return [
             `h${level}`,
