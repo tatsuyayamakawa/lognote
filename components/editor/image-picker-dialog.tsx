@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Check } from "lucide-react"
+import { Loader2, Check, Upload, X } from "lucide-react"
 import Image from "next/image"
 
 interface StorageFile {
@@ -37,7 +37,11 @@ export function ImagePickerDialog({
   const [loading, setLoading] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [customUrl, setCustomUrl] = useState("")
-  const [activeTab, setActiveTab] = useState("library")
+  const [activeTab, setActiveTab] = useState("upload")
+  const [uploading, setUploading] = useState(false)
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
@@ -74,6 +78,71 @@ export function ImagePickerDialog({
     return publicUrl
   }
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // ファイルサイズチェック (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("ファイルサイズは10MB以下にしてください")
+      return
+    }
+
+    // ファイルタイプチェック
+    if (!file.type.startsWith("image/")) {
+      setUploadError("画像ファイルを選択してください")
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      // プレビュー用のURLを生成
+      const previewUrl = URL.createObjectURL(file)
+      setUploadPreview(previewUrl)
+
+      // 画像をアップロード
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || "アップロードに失敗しました")
+      }
+
+      // アップロード成功したら即座に挿入
+      onSelect(data.url)
+      handleClose()
+    } catch (err) {
+      console.error("Upload error:", err)
+      setUploadError(err instanceof Error ? err.message : "アップロードに失敗しました")
+    } finally {
+      setUploading(false)
+      // input要素をリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
+  }
+
+  const handleRemoveUpload = () => {
+    if (uploadPreview) {
+      URL.revokeObjectURL(uploadPreview)
+    }
+    setUploadPreview(null)
+    setUploadError(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
   const handleSelect = () => {
     if (activeTab === "library" && selectedImage) {
       onSelect(selectedImage)
@@ -87,7 +156,13 @@ export function ImagePickerDialog({
   const handleClose = () => {
     setSelectedImage(null)
     setCustomUrl("")
-    setActiveTab("library")
+    setActiveTab("upload")
+    setUploadPreview(null)
+    setUploadError(null)
+    setUploading(false)
+    if (uploadPreview) {
+      URL.revokeObjectURL(uploadPreview)
+    }
     onOpenChange(false)
   }
 
@@ -95,17 +170,90 @@ export function ImagePickerDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>画像を選択</DialogTitle>
+          <DialogTitle>画像を挿入</DialogTitle>
           <DialogDescription>
-            ライブラリから画像を選択するか、URLを入力してください
+            画像をアップロード、ライブラリから選択、またはURLを入力してください
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="upload">アップロード</TabsTrigger>
             <TabsTrigger value="library">ライブラリ</TabsTrigger>
-            <TabsTrigger value="url">URLを入力</TabsTrigger>
+            <TabsTrigger value="url">URL</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="upload" className="space-y-4">
+            {uploadPreview ? (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                <Image
+                  src={uploadPreview}
+                  alt="Upload preview"
+                  fill
+                  className="object-cover"
+                />
+                {!uploading && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveUpload}
+                    className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center rounded-lg border border-dashed p-12">
+                <div className="text-center">
+                  <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    画像を選択してアップロード
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    PNG, JPG, GIF (最大10MB)
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              disabled={uploading}
+              className="hidden"
+            />
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  アップロード中...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {uploadPreview ? "別の画像を選択" : "画像を選択"}
+                </>
+              )}
+            </Button>
+
+            {uploadError && (
+              <p className="text-sm text-destructive">{uploadError}</p>
+            )}
+          </TabsContent>
 
           <TabsContent value="library" className="space-y-4">
             {loading ? (

@@ -153,6 +153,58 @@ export function TiptapEditor({
         }
         return false;
       },
+      handleDrop(view, event, _slice, moved) {
+        if (moved) return false;
+
+        const files = event.dataTransfer?.files;
+        if (!files || files.length === 0) return false;
+
+        // ドロップされたファイルに画像があるかチェック
+        const imageFile = Array.from(files).find((file) =>
+          file.type.startsWith('image/')
+        );
+
+        if (imageFile) {
+          event.preventDefault();
+
+          // 画像をアップロード
+          const formData = new FormData();
+          formData.append('file', imageFile);
+
+          fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.url) {
+                // ドロップ位置を計算
+                const coordinates = view.posAtCoords({
+                  left: event.clientX,
+                  top: event.clientY,
+                });
+
+                if (coordinates) {
+                  // 画像を挿入
+                  view.dispatch(
+                    view.state.tr.insert(
+                      coordinates.pos,
+                      view.state.schema.nodes.image.create({ src: data.url })
+                    )
+                  );
+                }
+              }
+            })
+            .catch((error) => {
+              console.error('Failed to upload image:', error);
+              alert('画像のアップロードに失敗しました');
+            });
+
+          return true;
+        }
+
+        return false;
+      },
     },
   });
 
