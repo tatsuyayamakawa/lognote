@@ -10,7 +10,6 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
-import Underline from "@tiptap/extension-underline";
 import { SpeechBubble } from "./extensions/speech-bubble";
 import { LinkCard } from "./extensions/link-card";
 import { CtaButton } from "./extensions/cta-button";
@@ -73,12 +72,7 @@ export function TiptapEditor({
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [2, 3, 4],
-        },
-        link: false, // Link拡張を無効化して、後で個別に設定
-      }),
+      StarterKit,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -98,7 +92,6 @@ export function TiptapEditor({
       Highlight.configure({
         multicolor: true,
       }),
-      Underline,
       SpeechBubble.configure({
         enableNodeView: true,
       }),
@@ -126,8 +119,36 @@ export function TiptapEditor({
       editorElement.addEventListener('click', (event) => {
         const target = event.target as HTMLElement;
 
+        // CTAボタンがクリックされた場合（リンクより先にチェック）
+        const ctaButtonElement = target.closest('[data-cta-button]');
+
+        if (ctaButtonElement && !disabled) {
+          event.preventDefault();
+
+          try {
+            const pos = editor.view.posAtDOM(ctaButtonElement, 0);
+            const node = editor.view.state.doc.nodeAt(pos);
+
+            if (node && node.type.name === 'ctaButton') {
+              setCtaButtonInitialData({
+                href: node.attrs.href || '',
+                text: node.attrs.text || '',
+                variant: node.attrs.variant || 'primary',
+                bgColor: node.attrs.bgColor,
+                textColor: node.attrs.textColor,
+                animation: node.attrs.animation || 'none',
+              });
+              setCtaButtonDialogOpen(true);
+            }
+          } catch (error) {
+            console.error('Error handling CTA button click:', error);
+          }
+          return;
+        }
+
         // リンクがクリックされた場合
         const linkElement = target.closest('a');
+
         if (linkElement && !disabled) {
           event.preventDefault();
           const href = linkElement.getAttribute('href') || '';
@@ -136,26 +157,6 @@ export function TiptapEditor({
           setLinkInitialData({ href, text });
           setLinkDialogOpen(true);
           return;
-        }
-
-        // CTAボタンがクリックされた場合
-        const ctaButtonElement = target.closest('[data-cta-button]');
-        if (ctaButtonElement && !disabled) {
-          event.preventDefault();
-          const pos = editor.view.posAtDOM(ctaButtonElement, 0);
-          const node = editor.view.state.doc.nodeAt(pos);
-
-          if (node && node.type.name === 'ctaButton') {
-            setCtaButtonInitialData({
-              href: node.attrs.href || '',
-              text: node.attrs.text || '',
-              variant: node.attrs.variant || 'primary',
-              bgColor: node.attrs.bgColor,
-              textColor: node.attrs.textColor,
-              animation: node.attrs.animation || 'none',
-            });
-            setCtaButtonDialogOpen(true);
-          }
         }
       });
     },

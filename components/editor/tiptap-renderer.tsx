@@ -7,7 +7,6 @@ import Image from "@tiptap/extension-image"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Highlight } from "@tiptap/extension-highlight"
-import Underline from "@tiptap/extension-underline"
 import { cn } from "@/lib/utils"
 import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
@@ -94,7 +93,6 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
       Highlight.configure({
         multicolor: true,
       }),
-      Underline,
       SpeechBubble.configure({
         HTMLAttributes: {
           class: "speech-bubble",
