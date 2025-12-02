@@ -1,13 +1,13 @@
-import { LoginForm } from "./login-form"
-import type { Metadata } from "next"
+import { LoginForm } from "./login-form";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ログイン | 整えて、創る。",
+  title: "ログイン",
   robots: {
     index: false,
     follow: false,
   },
-}
+};
 
 export default function LoginPage() {
   return (
@@ -15,12 +15,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="mb-2 text-3xl font-bold">管理者ログイン</h1>
-          <p className="text-muted-foreground">
-            整えて、創る。管理画面
-          </p>
+          <p className="text-muted-foreground">整えて、創る。管理画面</p>
         </div>
         <LoginForm />
       </div>
     </div>
-  )
+  );
 }
