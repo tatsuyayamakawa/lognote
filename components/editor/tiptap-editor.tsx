@@ -60,7 +60,14 @@ export function TiptapEditor({
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
-  const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{ href: string; text: string; variant: 'primary' | 'secondary' | 'outline' } | undefined>(undefined);
+  const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
+    href: string;
+    text: string;
+    variant: 'primary' | 'secondary' | 'outline';
+    bgColor?: string;
+    textColor?: string;
+    animation?: 'none' | 'pulse' | 'bounce' | 'shine' | 'glow';
+  } | undefined>(undefined);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -143,6 +150,9 @@ export function TiptapEditor({
               href: node.attrs.href || '',
               text: node.attrs.text || '',
               variant: node.attrs.variant || 'primary',
+              bgColor: node.attrs.bgColor,
+              textColor: node.attrs.textColor,
+              animation: node.attrs.animation || 'none',
             });
             setCtaButtonDialogOpen(true);
           }
@@ -280,7 +290,14 @@ export function TiptapEditor({
     editor.chain().focus().setImage({ src: url }).run();
   };
 
-  const handleCtaButtonSelect = (options: { href: string; text: string; variant: 'primary' | 'secondary' | 'outline' }) => {
+  const handleCtaButtonSelect = (options: {
+    href: string;
+    text: string;
+    variant: 'primary' | 'secondary' | 'outline';
+    bgColor?: string;
+    textColor?: string;
+    animation?: 'none' | 'pulse' | 'bounce' | 'shine' | 'glow';
+  }) => {
     if (ctaButtonInitialData) {
       // 編集モード: 既存のCTAボタンを更新
       editor.chain().focus().updateAttributes('ctaButton', options).run();

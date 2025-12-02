@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,26 +9,36 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 interface CtaButtonDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSelect: (options: { href: string; text: string; variant: 'primary' | 'secondary' | 'outline' }) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (options: {
+    href: string;
+    text: string;
+    variant: "primary" | "secondary" | "outline";
+    bgColor?: string;
+    textColor?: string;
+    animation?: "none" | "pulse" | "bounce" | "shine" | "glow";
+  }) => void;
   initialData?: {
-    href: string
-    text: string
-    variant: 'primary' | 'secondary' | 'outline'
-  }
+    href: string;
+    text: string;
+    variant: "primary" | "secondary" | "outline";
+    bgColor?: string;
+    textColor?: string;
+    animation?: "none" | "pulse" | "bounce" | "shine" | "glow";
+  };
 }
 
 export function CtaButtonDialog({
@@ -37,50 +47,71 @@ export function CtaButtonDialog({
   onSelect,
   initialData,
 }: CtaButtonDialogProps) {
-  const [href, setHref] = useState("")
-  const [text, setText] = useState("")
-  const [variant, setVariant] = useState<'primary' | 'secondary' | 'outline'>('primary')
+  const [href, setHref] = useState(initialData?.href || "");
+  const [text, setText] = useState(initialData?.text || "");
+  const [bgColor, setBgColor] = useState(initialData?.bgColor || "#3b82f6");
+  const [textColor, setTextColor] = useState(
+    initialData?.textColor || "#ffffff"
+  );
+  const [animation, setAnimation] = useState<
+    "none" | "pulse" | "bounce" | "shine" | "glow"
+  >(initialData?.animation || "none");
 
   // 初期データがある場合は編集モード
-  const isEditMode = !!initialData
+  const isEditMode = !!initialData;
 
-  // ダイアログが開いた時に初期データをセット
-  useEffect(() => {
-    if (open && initialData) {
-      setHref(initialData.href || "")
-      setText(initialData.text || "")
-      setVariant(initialData.variant || 'primary')
-    } else if (!open) {
-      setHref("")
-      setText("")
-      setVariant('primary')
-    }
-  }, [open, initialData])
+  // open / initialData が変わるたびにコンテンツをリマウントして初期値を反映
+  const dialogKey = `${open ? "open" : "closed"}-${JSON.stringify(
+    initialData ?? {}
+  )}`;
 
   const handleSubmit = () => {
-    if (!href || !text) return
+    if (!href || !text) return;
 
     onSelect({
       href,
       text,
-      variant,
-    })
+      variant: "primary",
+      bgColor,
+      textColor,
+      animation,
+    });
 
-    handleClose()
-  }
+    handleClose();
+  };
 
   const handleClose = () => {
-    setHref("")
-    setText("")
-    setVariant('primary')
-    onOpenChange(false)
-  }
+    setHref("");
+    setText("");
+    setBgColor("#3b82f6");
+    setTextColor("#ffffff");
+    setAnimation("none");
+    onOpenChange(false);
+  };
+
+  // カラーパレット
+  const colorPresets = [
+    { name: "ブルー", bg: "#3b82f6", text: "#ffffff" },
+    { name: "スカイ", bg: "#0ea5e9", text: "#ffffff" },
+    { name: "ティール", bg: "#14b8a6", text: "#ffffff" },
+    { name: "グリーン", bg: "#10b981", text: "#ffffff" },
+    { name: "ライム", bg: "#84cc16", text: "#000000" },
+    { name: "イエロー", bg: "#eab308", text: "#000000" },
+    { name: "オレンジ", bg: "#f97316", text: "#ffffff" },
+    { name: "レッド", bg: "#ef4444", text: "#ffffff" },
+    { name: "ピンク", bg: "#ec4899", text: "#ffffff" },
+    { name: "パープル", bg: "#a855f7", text: "#ffffff" },
+    { name: "インディゴ", bg: "#6366f1", text: "#ffffff" },
+    { name: "グレー", bg: "#6b7280", text: "#ffffff" },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent key={dialogKey} className="sm:max-w-[340px] p-4">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "CTAボタンを編集" : "CTAボタンを挿入"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "CTAボタンを編集" : "CTAボタンを挿入"}
+          </DialogTitle>
           <DialogDescription>
             クリックを促進するボタンリンクを{isEditMode ? "編集" : "挿入"}します
           </DialogDescription>
@@ -109,15 +140,39 @@ export function CtaButtonDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="variant">スタイル</Label>
-            <Select value={variant} onValueChange={(value) => setVariant(value as typeof variant)}>
-              <SelectTrigger id="variant">
+            <Label>カラー</Label>
+            <div className="grid grid-cols-6 gap-2">
+              {colorPresets.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => {
+                    setBgColor(preset.bg);
+                    setTextColor(preset.text);
+                  }}
+                  className="h-8 w-full rounded border-2 transition-all hover:scale-110 border-border"
+                  style={{ backgroundColor: preset.bg }}
+                  title={preset.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="animation">アニメーション効果</Label>
+            <Select
+              value={animation}
+              onValueChange={(value) => setAnimation(value as typeof animation)}
+            >
+              <SelectTrigger id="animation">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="primary">プライマリ（塗りつぶし）</SelectItem>
-                <SelectItem value="secondary">セカンダリ（グレー）</SelectItem>
-                <SelectItem value="outline">アウトライン（枠線）</SelectItem>
+                <SelectItem value="none">なし</SelectItem>
+                <SelectItem value="pulse">パルス（ゆっくり点滅）</SelectItem>
+                <SelectItem value="bounce">バウンス（弾む）</SelectItem>
+                <SelectItem value="shine">シャイン（光沢）</SelectItem>
+                <SelectItem value="glow">グロー（発光）</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -126,19 +181,29 @@ export function CtaButtonDialog({
           {text && (
             <div className="space-y-2">
               <Label>プレビュー</Label>
-              <div className="flex justify-center rounded-lg border bg-muted/50 p-8">
-                <button
-                  type="button"
-                  className={`inline-flex items-center justify-center rounded-lg px-8 py-4 text-lg font-semibold transition-colors shadow-lg ${
-                    variant === 'primary'
-                      ? 'bg-primary text-primary-foreground'
-                      : variant === 'secondary'
-                      ? 'bg-secondary text-secondary-foreground'
-                      : 'border-2 border-primary text-primary'
-                  }`}
-                >
-                  {text}
-                </button>
+              <div className="flex justify-center rounded-lg border bg-muted/50 p-4">
+                <div className="w-full">
+                  <button
+                    type="button"
+                    className={`wrap-break-word w-full inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-center ${
+                      animation === "pulse"
+                        ? "animate-pulse-slow"
+                        : animation === "bounce"
+                        ? "animate-bounce-slow"
+                        : animation === "shine"
+                        ? "cta-shine"
+                        : animation === "glow"
+                        ? "cta-glow"
+                        : ""
+                    }`}
+                    style={{
+                      backgroundColor: bgColor,
+                      color: textColor,
+                    }}
+                  >
+                    {text}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -158,5 +223,5 @@ export function CtaButtonDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
