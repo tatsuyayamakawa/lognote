@@ -154,7 +154,9 @@ export function PostForm({ categories, post }: PostFormProps) {
 
       // 成功メッセージを表示
       toast.success(post ? "記事を更新しました" : "記事を作成しました");
-      setLoading(false);
+
+      // 記事一覧ページにリダイレクト
+      router.push("/admin/posts");
       router.refresh();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "保存に失敗しました";
