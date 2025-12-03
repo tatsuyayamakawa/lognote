@@ -195,28 +195,28 @@ export function CtaButtonDialog({
             <div className="space-y-2">
               <Label>プレビュー</Label>
               <div className="flex justify-center rounded-lg border bg-muted/50 p-4">
-                <div className="w-full">
-                  <button
-                    type="button"
-                    className={`wrap-break-word w-full inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-center ${
-                      animation === "pulse"
-                        ? "animate-pulse-slow"
-                        : animation === "bounce"
-                        ? "animate-bounce-slow"
-                        : animation === "shine"
-                        ? "cta-shine"
-                        : animation === "glow"
-                        ? "cta-glow"
-                        : ""
-                    }`}
-                    style={{
-                      backgroundColor: bgColor,
-                      color: textColor,
-                    }}
-                  >
-                    {text}
-                  </button>
-                </div>
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className={`w-full inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-center ${
+                    animation === "pulse"
+                      ? "animate-pulse-slow"
+                      : animation === "bounce"
+                      ? "animate-bounce-slow"
+                      : animation === "shine"
+                      ? "cta-shine"
+                      : animation === "glow"
+                      ? "cta-glow"
+                      : ""
+                  }`}
+                  style={{
+                    backgroundColor: bgColor,
+                    color: textColor,
+                    textDecoration: "none",
+                  }}
+                >
+                  {text}
+                </a>
               </div>
             </div>
           )}
