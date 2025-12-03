@@ -140,20 +140,27 @@
   opacity: 0.6;
 }
 
-/* CTAボタン内のリンクは外部リンクアイコンを表示しない */
+/* CTAボタンのスタイル */
+[data-cta-button] a {
+  text-decoration: none !important;
+  min-width: 300px;
+}
+
+[data-cta-button] a:hover {
+  text-decoration: none !important;
+}
+
 [data-cta-button] a[href^="http"]:after,
 [data-cta-button] a[href^="https"]:after {
   content: none !important;
   display: none !important;
 }
 
-/* CTAボタン内のリンクテキストに下線を表示しない */
-[data-cta-button] a {
-  text-decoration: none !important;
-}
-
-[data-cta-button] a:hover {
-  text-decoration: none !important;
+@media (max-width: 300px) {
+  [data-cta-button] a {
+    width: 100%;
+    min-width: unset;
+  }
 }
 
 /* 外部リンクのアイコン表示 - ダークモード */
