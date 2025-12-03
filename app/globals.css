@@ -147,6 +147,15 @@
   display: none !important;
 }
 
+/* CTAボタン内のリンクテキストに下線を表示しない */
+[data-cta-button] a {
+  text-decoration: none !important;
+}
+
+[data-cta-button] a:hover {
+  text-decoration: none !important;
+}
+
 /* 外部リンクのアイコン表示 - ダークモード */
 .dark .prose a[href^="http"]:not([href*="localhost"]):after,
 .dark .prose a[href^="https"]:not([href*="localhost"]):after {
@@ -310,7 +319,8 @@
 
 /* CTAボタンアニメーション */
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -321,7 +331,8 @@
 }
 
 @keyframes bounce-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -342,11 +353,13 @@
 }
 
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     filter: brightness(1) drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
   }
   50% {
-    filter: brightness(1.1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.4));
+    filter: brightness(1.1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))
+      drop-shadow(0 0 16px rgba(255, 255, 255, 0.4));
   }
 }
 
@@ -371,7 +384,11 @@
   width: 40px;
   height: 100%;
   transform: scale(2) rotate(20deg);
-  background-image: linear-gradient(100deg, rgba(255, 255, 255, 0) 10%, rgba(255, 255, 255, 0.5) 100%);
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 10%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
   animation: shine 3s ease-in-out infinite;
   pointer-events: none;
 }
