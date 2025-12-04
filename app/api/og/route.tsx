@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     // タイトルを適切な長さに制限
     const truncatedTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
 
-    // 日本語フォントの読み込み
+    // 日本語フォントの読み込み（Google Fonts APIから取得）
     const fontData = await fetch(
-      new URL('./fonts/NotoSansJP-Bold.ttf', import.meta.url)
+      'https://fonts.gstatic.com/s/notosansjp/v53/-F6ofjtqLzI2JPCgQBnw7HFQoggM.woff'
     ).then((res) => res.arrayBuffer())
 
     const imageResponse = new ImageResponse(
