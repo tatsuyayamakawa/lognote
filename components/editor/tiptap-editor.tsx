@@ -40,6 +40,12 @@ import { LinkDialog } from "./link-dialog";
 import { ColorPicker } from "./color-picker";
 import { SpeechBubbleDialog } from "./speech-bubble-dialog";
 import { CtaButtonDialog } from "./cta-button-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TiptapEditorProps {
   content: JSONContent | null;
@@ -404,278 +410,368 @@ export function TiptapEditor({
     <>
       <div className="rounded-md border">
         {/* ツールバー */}
-        <div className="sticky top-0 z-40 flex flex-wrap gap-1 rounded-t-[calc(0.375rem-1px)] border-b bg-muted p-2 shadow-sm">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-            className={
-              editor.isActive("heading", { level: 2 })
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="見出し2"
-          >
-            <Heading2 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run()
-            }
-            className={
-              editor.isActive("heading", { level: 3 })
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="見出し3"
-          >
-            <Heading3 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 4 }).run()
-            }
-            className={
-              editor.isActive("heading", { level: 4 })
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="見出し4"
-          >
-            <Heading4 className="h-4 w-4" />
-          </Button>
-          <div className="mx-1 w-px bg-border" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={
-              editor.isActive("bold") ? "bg-accent border-2 border-primary" : ""
-            }
-            disabled={disabled}
-            title="太字"
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={
-              editor.isActive("italic")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="斜体"
-          >
-            <Italic className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={
-              editor.isActive("underline")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="下線"
-          >
-            <UnderlineIcon className="h-4 w-4" />
-          </Button>
-          <div className="mx-1 w-px bg-border" />
-          <ColorPicker
-            currentColor={editor.getAttributes("textStyle").color}
-            onColorChange={(color) => editor.chain().focus().setColor(color).run()}
-            disabled={disabled}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const { from, to } = editor.state.selection;
-              if (from === to) {
-                // 選択範囲がない場合は、現在のブロック全体を選択してクリア
-                editor
-                  .chain()
-                  .focus()
-                  .selectParentNode()
-                  .clearNodes()
-                  .unsetAllMarks()
-                  .unsetColor()
-                  .run();
-              } else {
-                // 選択範囲がある場合は、その範囲をクリア
-                editor
-                  .chain()
-                  .focus()
-                  .clearNodes()
-                  .unsetAllMarks()
-                  .unsetColor()
-                  .run();
-              }
-            }}
-            disabled={disabled}
-            title="装飾解除"
-          >
-            <RemoveFormatting className="h-4 w-4" />
-          </Button>
-          <div className="mx-1 w-px bg-border" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={
-              editor.isActive("bulletList")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="箇条書きリスト"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={
-              editor.isActive("orderedList")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="番号付きリスト"
-          >
-            <ListOrdered className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={
-              editor.isActive("blockquote")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="引用"
-          >
-            <Quote className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={
-              editor.isActive("codeBlock")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="コードブロック"
-          >
-            <Code className="h-4 w-4" />
-          </Button>
-          <div className="mx-1 w-px bg-border" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addSpeechBubble}
-            className={
-              editor.isActive("speechBubble")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="吹き出し"
-          >
-            <MessageSquare className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addCtaButton}
-            className={
-              editor.isActive("ctaButton")
-                ? "bg-accent border-2 border-primary"
-                : ""
-            }
-            disabled={disabled}
-            title="CTAボタン"
-          >
-            <MousePointerClick className="h-4 w-4" />
-          </Button>
-          <div className="mx-1 w-px bg-border" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addLink}
-            className={
-              editor.isActive("link") ? "bg-accent border-2 border-primary" : ""
-            }
-            disabled={disabled}
-            title="リンク"
-          >
-            <Link2 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addImage}
-            disabled={disabled}
-            title="画像"
-          >
-            <ImageIcon className="h-4 w-4" />
-          </Button>
-          <div className="mx-1 w-px bg-border" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo() || disabled}
-            title="元に戻す"
-          >
-            <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo() || disabled}
-            title="やり直す"
-          >
-            <Redo className="h-4 w-4" />
-          </Button>
-        </div>
+        <TooltipProvider delayDuration={300}>
+          <div className="sticky top-0 z-40 flex flex-wrap gap-1 rounded-t-[calc(0.375rem-1px)] border-b bg-muted p-2 shadow-sm">
+            {/* 見出しグループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      editor.chain().focus().toggleHeading({ level: 2 }).run()
+                    }
+                    className={
+                      editor.isActive("heading", { level: 2 })
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="見出し2"
+                  >
+                    <Heading2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      editor.chain().focus().toggleHeading({ level: 3 }).run()
+                    }
+                    className={
+                      editor.isActive("heading", { level: 3 })
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="見出し3"
+                  >
+                    <Heading3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      editor.chain().focus().toggleHeading({ level: 4 }).run()
+                    }
+                    className={
+                      editor.isActive("heading", { level: 4 })
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="見出し4"
+                  >
+                    <Heading4 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>見出し関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* 文字装飾グループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    className={
+                      editor.isActive("bold") ? "bg-accent border-2 border-primary" : ""
+                    }
+                    disabled={disabled}
+                    title="太字"
+                  >
+                    <Bold className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    className={
+                      editor.isActive("italic")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="斜体"
+                  >
+                    <Italic className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
+                    className={
+                      editor.isActive("underline")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="下線"
+                  >
+                    <UnderlineIcon className="h-4 w-4" />
+                  </Button>
+                  <ColorPicker
+                    currentColor={editor.getAttributes("textStyle").color}
+                    onColorChange={(color) => editor.chain().focus().setColor(color).run()}
+                    disabled={disabled}
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>文字装飾関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* ブロックグループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                    className={
+                      editor.isActive("bulletList")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="箇条書きリスト"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    className={
+                      editor.isActive("orderedList")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="番号付きリスト"
+                  >
+                    <ListOrdered className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                    className={
+                      editor.isActive("blockquote")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="引用"
+                  >
+                    <Quote className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                    className={
+                      editor.isActive("codeBlock")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="コードブロック"
+                  >
+                    <Code className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>ブロック関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* リンク関連グループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addCtaButton}
+                    className={
+                      editor.isActive("ctaButton")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="CTAボタン"
+                  >
+                    <MousePointerClick className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addLink}
+                    className={
+                      editor.isActive("link") ? "bg-accent border-2 border-primary" : ""
+                    }
+                    disabled={disabled}
+                    title="リンク"
+                  >
+                    <Link2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>リンク関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* 画像グループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addImage}
+                    disabled={disabled}
+                    title="画像"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>画像関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* 吹き出しグループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addSpeechBubble}
+                    className={
+                      editor.isActive("speechBubble")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="吹き出し"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>吹き出し関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* 装飾解除グループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const { from, to } = editor.state.selection;
+                      if (from === to) {
+                        // 選択範囲がない場合は、現在のブロック全体を選択してクリア
+                        editor
+                          .chain()
+                          .focus()
+                          .selectParentNode()
+                          .clearNodes()
+                          .unsetAllMarks()
+                          .unsetColor()
+                          .run();
+                      } else {
+                        // 選択範囲がある場合は、その範囲をクリア
+                        editor
+                          .chain()
+                          .focus()
+                          .clearNodes()
+                          .unsetAllMarks()
+                          .unsetColor()
+                          .run();
+                      }
+                    }}
+                    disabled={disabled}
+                    title="装飾解除"
+                  >
+                    <RemoveFormatting className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>装飾解除</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* 操作グループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().undo().run()}
+                    disabled={!editor.can().undo() || disabled}
+                    title="元に戻す"
+                  >
+                    <Undo className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => editor.chain().focus().redo().run()}
+                    disabled={!editor.can().redo() || disabled}
+                    title="やり直す"
+                  >
+                    <Redo className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>操作</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
 
         {/* エディタエリア */}
         <EditorContent editor={editor} />
