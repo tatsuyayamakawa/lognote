@@ -354,19 +354,12 @@ export async function syncViewCountsFromAnalytics(forceRefresh: boolean = false)
       continue
     }
 
-    // view_count の更新時は updated_at を変更しない
-    // 現在の updated_at を取得
-    const { data: currentPost } = await supabase
-      .from('posts')
-      .select('updated_at')
-      .eq('id', postId)
-      .single()
-
+    // view_count のみを更新
+    // データベーストリガーが view_count のみの変更時は updated_at を更新しない
     const { error } = await supabase
       .from('posts')
       .update({
         view_count: views,
-        updated_at: currentPost?.updated_at || new Date().toISOString()
       })
       .eq('id', postId)
 

@@ -33,7 +33,6 @@ export default function ArticleLoadingPage() {
           <div className="mb-6 flex flex-wrap items-center justify-center gap-6">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-4 w-20" />
           </div>
         </div>
       </div>
