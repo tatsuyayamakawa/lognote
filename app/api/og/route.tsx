@@ -11,6 +11,11 @@ export async function GET(request: NextRequest) {
     // タイトルを適切な長さに制限
     const truncatedTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
 
+    // 日本語フォントの読み込み
+    const fontData = await fetch(
+      new URL('./fonts/NotoSansJP-Bold.ttf', import.meta.url)
+    ).then((res) => res.arrayBuffer())
+
     const imageResponse = new ImageResponse(
       (
         <div
@@ -88,6 +93,7 @@ export async function GET(request: NextRequest) {
                 lineHeight: 1.3,
                 marginBottom: '48px',
                 letterSpacing: '-0.02em',
+                fontFamily: '"Noto Sans JP", sans-serif',
               }}
             >
               {truncatedTitle}
@@ -115,6 +121,7 @@ export async function GET(request: NextRequest) {
                   color: '#495057',
                   fontWeight: 500,
                   letterSpacing: '0.05em',
+                  fontFamily: '"Noto Sans JP", sans-serif',
                 }}
               >
                 整えて、創る。
@@ -134,6 +141,14 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: [
+          {
+            name: 'Noto Sans JP',
+            data: fontData,
+            style: 'normal',
+            weight: 700,
+          },
+        ],
         headers: {
           // CDNとブラウザでの長期キャッシュ設定
           'Cache-Control': 'public, immutable, max-age=31536000, s-maxage=31536000',
