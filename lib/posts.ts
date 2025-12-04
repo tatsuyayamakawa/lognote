@@ -409,10 +409,16 @@ async function saveSyncResultToCache(
       })
 
     if (error) {
-      console.error('[Posts] Failed to save cache:', error)
+      console.error('[Posts] Failed to save cache:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      })
     }
   } catch (err) {
     // analytics_cacheテーブルが存在しない場合などはスキップ
-    console.warn('[Posts] Cache save skipped:', err)
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    console.warn('[Posts] Cache save skipped:', errorMessage)
   }
 }

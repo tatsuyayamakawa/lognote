@@ -377,3 +377,63 @@
 .cta-glow {
   animation: glow 2s ease-in-out infinite;
 }
+
+/* Tiptapテーブルスタイル */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.tiptap table td,
+.tiptap table th {
+  min-width: 1em;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.tiptap table th {
+  font-weight: bold;
+  text-align: left;
+  background-color: var(--muted);
+}
+
+.tiptap table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--primary);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.tiptap table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--primary);
+  pointer-events: none;
+}
+
+.tiptap.ProseMirror-focused table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--primary);
+  opacity: 0.2;
+}

@@ -10,6 +10,10 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableCell } from "@tiptap/extension-table-cell";
 import { SpeechBubble } from "./extensions/speech-bubble";
 import { LinkCard } from "./extensions/link-card";
 import { CtaButton } from "./extensions/cta-button";
@@ -33,6 +37,10 @@ import {
   MessageSquare,
   MessageSquareText,
   MousePointerClick,
+  Table as TableIcon,
+  Columns,
+  Rows,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
@@ -111,6 +119,27 @@ export function TiptapEditor({
       }),
       CtaButton.configure({
         enableNodeView: true,
+      }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: "border-collapse table-auto w-full my-4",
+        },
+      }),
+      TableRow.configure({
+        HTMLAttributes: {
+          class: "border-b",
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: "border border-border bg-muted p-2 text-left font-bold",
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: "border border-border p-2",
+        },
       }),
     ],
     content,
@@ -665,6 +694,72 @@ export function TiptapEditor({
               </TooltipTrigger>
               <TooltipContent>
                 <p>画像関連</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
+            {/* テーブルグループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      editor
+                        .chain()
+                        .focus()
+                        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                        .run()
+                    }
+                    disabled={disabled}
+                    title="テーブル挿入"
+                  >
+                    <TableIcon className="h-4 w-4" />
+                  </Button>
+                  {editor.isActive("table") && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          editor.chain().focus().addColumnBefore().run()
+                        }
+                        disabled={disabled}
+                        title="列を前に追加"
+                      >
+                        <Columns className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          editor.chain().focus().addRowBefore().run()
+                        }
+                        disabled={disabled}
+                        title="行を前に追加"
+                      >
+                        <Rows className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor.chain().focus().deleteTable().run()}
+                        disabled={disabled}
+                        title="テーブル削除"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>テーブル関連</p>
               </TooltipContent>
             </Tooltip>
             <div className="mx-1 w-px bg-border" />

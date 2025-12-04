@@ -7,6 +7,10 @@ import Image from "@tiptap/extension-image"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Highlight } from "@tiptap/extension-highlight"
+import { Table } from "@tiptap/extension-table"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableCell } from "@tiptap/extension-table-cell"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
@@ -122,6 +126,27 @@ export function TiptapRendererWithAds({
           class: "cta-button",
         },
         enableNodeView: false,
+      }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: "border-collapse table-auto w-full my-4",
+        },
+      }),
+      TableRow.configure({
+        HTMLAttributes: {
+          class: "border-b",
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: "border border-border bg-muted p-2 text-left font-bold",
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: "border border-border p-2",
+        },
       }),
     ],
     content: parsedContent,
