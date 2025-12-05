@@ -17,6 +17,7 @@ import { TableCell } from "@tiptap/extension-table-cell";
 import { SpeechBubble } from "./extensions/speech-bubble";
 import { LinkCard } from "./extensions/link-card";
 import { CtaButton } from "./extensions/cta-button";
+import { AffiliateBox } from "./extensions/affiliate-box";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -41,6 +42,7 @@ import {
   Columns,
   Rows,
   Trash2,
+  ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
@@ -48,6 +50,7 @@ import { LinkDialog } from "./link-dialog";
 import { ColorPicker } from "./color-picker";
 import { SpeechBubbleDialog } from "./speech-bubble-dialog";
 import { CtaButtonDialog } from "./cta-button-dialog";
+import { AffiliateBoxDialogSimple } from "./affiliate-box-dialog-simple";
 import {
   Tooltip,
   TooltipContent,
@@ -72,6 +75,7 @@ export function TiptapEditor({
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
+  const [affiliateBoxDialogOpen, setAffiliateBoxDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
   const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
     href: string;
@@ -118,6 +122,9 @@ export function TiptapEditor({
         enableNodeView: true,
       }),
       CtaButton.configure({
+        enableNodeView: true,
+      }),
+      AffiliateBox.configure({
         enableNodeView: true,
       }),
       Table.configure({
@@ -327,6 +334,10 @@ export function TiptapEditor({
     setCtaButtonDialogOpen(true);
   };
 
+  const addAffiliateBox = () => {
+    setAffiliateBoxDialogOpen(true);
+  };
+
   const handleImageSelect = (url: string) => {
     editor.chain().focus().setImage({ src: url }).run();
   };
@@ -351,6 +362,16 @@ export function TiptapEditor({
 
   const handleSpeechBubbleSelect = (position: "left" | "right") => {
     editor.chain().focus().toggleSpeechBubble(position).run();
+  };
+
+  const handleAffiliateBoxInsert = (data: {
+    code: string;
+    productName?: string;
+    productImage?: string;
+    productPrice?: string;
+    productUrl?: string;
+  }) => {
+    editor.chain().focus().setAffiliateBox(data).run();
   };
 
   const handleLinkInsert = async (data: {
@@ -791,6 +812,33 @@ export function TiptapEditor({
             </Tooltip>
             <div className="mx-1 w-px bg-border" />
 
+            {/* アフィリエイトグループ */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addAffiliateBox}
+                    className={
+                      editor.isActive("affiliateBox")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="アフィリエイト"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>アフィリエイトリンク</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="mx-1 w-px bg-border" />
+
             {/* 装飾解除グループ */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -893,6 +941,11 @@ export function TiptapEditor({
         onOpenChange={setCtaButtonDialogOpen}
         onSelect={handleCtaButtonSelect}
         initialData={ctaButtonInitialData}
+      />
+      <AffiliateBoxDialogSimple
+        open={affiliateBoxDialogOpen}
+        onOpenChange={setAffiliateBoxDialogOpen}
+        onInsert={handleAffiliateBoxInsert}
       />
     </>
   );

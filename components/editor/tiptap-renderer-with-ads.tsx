@@ -18,6 +18,8 @@ import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
 import { CtaButton } from "./extensions/cta-button"
+import { AffiliateBox } from "./extensions/affiliate-box"
+import { AffiliateBoxRenderer } from "./extensions/affiliate-box-renderer"
 import { AdSense } from "../ads/adsense"
 
 // 見出しの階層的な番号を管理するクラス
@@ -127,6 +129,9 @@ export function TiptapRendererWithAds({
         },
         enableNodeView: false,
       }),
+      AffiliateBox.configure({
+        enableNodeView: false,
+      }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
@@ -218,6 +223,46 @@ export function TiptapRendererWithAds({
       secondH2.parentNode?.insertBefore(adContainer, secondH2)
     }
   }, [editor, showInArticleAd])
+
+  // アフィリエイトボックスをReactコンポーネントに変換
+  useEffect(() => {
+    if (!editor) return
+
+    const editorElement = editor.view.dom
+    const affiliateBoxes = editorElement.querySelectorAll("[data-affiliate-box]")
+
+    affiliateBoxes.forEach((box) => {
+      // 既に処理済みかチェック
+      if (box.hasAttribute("data-rendered")) return
+
+      const code = box.getAttribute("data-code") || ""
+      const productName = box.getAttribute("data-product-name") || undefined
+      const productImage = box.getAttribute("data-product-image") || undefined
+      const productPrice = box.getAttribute("data-product-price") || undefined
+      const productUrl = box.getAttribute("data-product-url") || undefined
+
+      // 処理済みマーク
+      box.setAttribute("data-rendered", "true")
+
+      // Reactコンポーネントのマウント先を作成
+      const mountPoint = document.createElement("div")
+      box.appendChild(mountPoint)
+
+      // Reactコンポーネントをレンダリング（動的インポート）
+      import("react-dom/client").then(({ createRoot }) => {
+        const root = createRoot(mountPoint)
+        root.render(
+          <AffiliateBoxRenderer
+            code={code}
+            productName={productName}
+            productImage={productImage}
+            productPrice={productPrice}
+            productUrl={productUrl}
+          />
+        )
+      })
+    })
+  }, [editor])
 
   if (!editor) {
     return null

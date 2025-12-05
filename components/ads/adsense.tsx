@@ -82,8 +82,9 @@ export function AdSense({
     if (!isMounted || !insRef.current) return;
 
     let retryCount = 0;
-    const maxRetries = 5;
+    const maxRetries = 10; // 10回に増加（2秒間リトライ）
     let pushed = false;
+    let timeoutId: NodeJS.Timeout;
 
     const tryPushAd = () => {
       try {
@@ -119,17 +120,29 @@ export function AdSense({
           parent = parent.parentElement;
         }
 
-        // 複数の幅チェックを行う
+        // 複数の幅チェックを行う - より厳格に
         if (
           containerWidth === 0 ||
           containerOffsetWidth === 0 ||
-          boundingRect.width === 0
+          boundingRect.width === 0 ||
+          boundingRect.height === 0
         ) {
           if (retryCount < maxRetries) {
             retryCount++;
-            setTimeout(tryPushAd, 100);
+            timeoutId = setTimeout(tryPushAd, 200); // 200msに延長
             return;
           } else {
+            // タイムアウト後も失敗の場合はエラーログを出力
+            console.warn(
+              `AdSense: Container has zero dimensions after ${maxRetries} retries`,
+              {
+                slot: adSlot,
+                width: containerWidth,
+                offsetWidth: containerOffsetWidth,
+                boundingWidth: boundingRect.width,
+                boundingHeight: boundingRect.height,
+              }
+            );
             return;
           }
         }
@@ -163,10 +176,14 @@ export function AdSense({
       }
     };
 
-    // 初回実行は500ms後（スクリプト読み込みとレイアウト完成を待つ）
-    const timer = setTimeout(tryPushAd, 500);
+    // 初回実行は300ms後（スクリプト読み込みとレイアウト完成を待つ）
+    timeoutId = setTimeout(tryPushAd, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [isMounted, adSlot]);
 
   // 広告の読み込み状態を監視（本番環境のみ）
@@ -247,8 +264,19 @@ export function AdSense({
       ? { display: "inline-block", width, height }
       : { display: "block" };
 
+  // コンテナスタイル：最小幅を保証
+  const containerStyle: React.CSSProperties = {
+    minWidth: width || "280px", // 最小幅を保証（AdSenseの最小要件）
+    width: width || "100%",
+  };
+
   return (
-    <div ref={containerRef} className={className} suppressHydrationWarning>
+    <div
+      ref={containerRef}
+      className={className}
+      style={containerStyle}
+      suppressHydrationWarning
+    >
       <ins
         ref={insRef}
         className="adsbygoogle"

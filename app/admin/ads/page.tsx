@@ -1,8 +1,8 @@
-import { AdSettingsForm } from "./ad-settings-form"
+import { AdLayoutEditor } from "@/components/admin/ad-layout-editor"
 import { getAdSettings } from "@/lib/ad-settings"
 
 export default async function AdsPage() {
   const settings = await getAdSettings()
 
-  return <AdSettingsForm initialSettings={settings} />
+  return <AdLayoutEditor initialSettings={settings} />
 }
