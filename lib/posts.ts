@@ -1,40 +1,55 @@
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createBrowserClient, SupabaseClient } from '@supabase/supabase-js'
-import { Post, Category, PostWithCategories } from '@/types'
-import type { Database } from '@/types/database.types'
+import { createClient } from "@/lib/supabase/server";
+import {
+  createClient as createBrowserClient,
+  SupabaseClient,
+} from "@supabase/supabase-js";
+import {
+  Post,
+  Category,
+  PostWithCategories,
+  type Database,
+  type AnalyticsCacheInsert,
+} from "@/types";
 
 // Supabaseのクエリ結果の型定義
 type PostWithPostCategories = Post & {
   post_categories: Array<{
-    category: Category
-  }>
-}
+    category: Category;
+  }>;
+};
+
+type PostWithRelatedCategories = Post & {
+  categories: Array<{
+    category: Category;
+  }>;
+};
 
 // Supabaseクライアント型
-type SupabaseClientType = SupabaseClient<Database>
+type SupabaseClientType = SupabaseClient<Database>;
 
 /**
  * 静的生成用のSupabaseクライアント（認証不要）
  */
 function createStaticClient() {
   // ビルド時に環境変数がない場合のフォールバック
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-  
-  return createBrowserClient(
-    supabaseUrl,
-    supabaseAnonKey
-  )
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
+
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
 
 /**
  * 公開済み記事を取得（カテゴリ情報も含む）
  */
-export async function getPublishedPosts(limit?: number): Promise<PostWithCategories[]> {
-  const supabase = await createClient()
+export async function getPublishedPosts(
+  limit?: number
+): Promise<PostWithCategories[]> {
+  const supabase = await createClient();
 
   let query = supabase
-    .from('posts')
+    .from("posts")
     .select(
       `
       *,
@@ -43,35 +58,40 @@ export async function getPublishedPosts(limit?: number): Promise<PostWithCategor
       )
     `
     )
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
 
   if (limit) {
-    query = query.limit(limit)
+    query = query.limit(limit);
   }
 
-  const { data, error } = await query
+  const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching posts:', error)
-    return []
+    console.error("Error fetching posts:", error);
+    return [];
   }
 
   // データを整形
-  return (data || []).map((post: PostWithPostCategories): PostWithCategories => ({
-    ...post,
-    categories: post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
-  }))
+  return (data || []).map(
+    (post: PostWithPostCategories): PostWithCategories => ({
+      ...post,
+      categories:
+        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+    })
+  );
 }
 
 /**
  * 特集記事を取得（is_featured = true）
  */
-export async function getFeaturedPosts(limit?: number): Promise<PostWithCategories[]> {
-  const supabase = await createClient()
+export async function getFeaturedPosts(
+  limit?: number
+): Promise<PostWithCategories[]> {
+  const supabase = await createClient();
 
   let query = supabase
-    .from('posts')
+    .from("posts")
     .select(
       `
       *,
@@ -80,36 +100,41 @@ export async function getFeaturedPosts(limit?: number): Promise<PostWithCategori
       )
     `
     )
-    .eq('status', 'published')
-    .eq('is_featured', true)
-    .order('published_at', { ascending: false })
+    .eq("status", "published")
+    .eq("is_featured", true)
+    .order("published_at", { ascending: false });
 
   if (limit) {
-    query = query.limit(limit)
+    query = query.limit(limit);
   }
 
-  const { data, error } = await query
+  const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching featured posts:', error)
-    return []
+    console.error("Error fetching featured posts:", error);
+    return [];
   }
 
   // データを整形
-  return (data || []).map((post: PostWithPostCategories): PostWithCategories => ({
-    ...post,
-    categories: post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
-  }))
+  return (data || []).map(
+    (post: PostWithPostCategories): PostWithCategories => ({
+      ...post,
+      categories:
+        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+    })
+  );
 }
 
 /**
  * スラッグから記事を取得
  */
-export async function getPostBySlug(slug: string): Promise<PostWithCategories | null> {
-  const supabase = await createClient()
+export async function getPostBySlug(
+  slug: string
+): Promise<PostWithCategories | null> {
+  const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('posts')
+    .from("posts")
     .select(
       `
       *,
@@ -118,28 +143,33 @@ export async function getPostBySlug(slug: string): Promise<PostWithCategories | 
       )
     `
     )
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single();
 
   if (error || !data) {
-    return null
+    return null;
   }
 
   return {
     ...data,
-    categories: data.post_categories?.map((pc: { category: Category }) => pc.category).filter(Boolean) || [],
-  }
+    categories:
+      data.post_categories
+        ?.map((pc: { category: Category }) => pc.category)
+        .filter(Boolean) || [],
+  };
 }
 
 /**
  * カテゴリ別の記事を取得
  */
-export async function getPostsByCategory(categorySlug: string): Promise<PostWithCategories[]> {
-  const supabase = await createClient()
+export async function getPostsByCategory(
+  categorySlug: string
+): Promise<PostWithCategories[]> {
+  const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('posts')
+    .from("posts")
     .select(
       `
       *,
@@ -148,92 +178,97 @@ export async function getPostsByCategory(categorySlug: string): Promise<PostWith
       )
     `
     )
-    .eq('status', 'published')
-    .eq('post_categories.category.slug', categorySlug)
-    .order('published_at', { ascending: false })
+    .eq("status", "published")
+    .eq("post_categories.category.slug", categorySlug)
+    .order("published_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching posts by category:', error)
-    return []
+    console.error("Error fetching posts by category:", error);
+    return [];
   }
 
-  return (data || []).map((post: PostWithPostCategories): PostWithCategories => ({
-    ...post,
-    categories: post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
-  }))
+  return (data || []).map(
+    (post: PostWithPostCategories): PostWithCategories => ({
+      ...post,
+      categories:
+        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+    })
+  );
 }
 
 /**
  * 全カテゴリを取得
  */
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('order', { ascending: true })
+    .from("categories")
+    .select("*")
+    .order("order", { ascending: true });
 
   if (error) {
-    console.error('Error fetching categories:', error)
-    return []
+    console.error("Error fetching categories:", error);
+    return [];
   }
 
-  return data || []
+  return data || [];
 }
 
 /**
  * スラッグからカテゴリを取得
  */
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const supabase = await createClient()
+export async function getCategoryBySlug(
+  slug: string
+): Promise<Category | null> {
+  const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .single()
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
   if (error || !data) {
-    return null
+    return null;
   }
 
-  return data
+  return data;
 }
 
 /**
  * 静的生成用：公開済み記事のスラッグ一覧を取得
  */
 export async function getPublishedPostSlugs(): Promise<string[]> {
-  const supabase = createStaticClient()
+  const supabase = createStaticClient();
 
   const { data, error } = await supabase
-    .from('posts')
-    .select('slug')
-    .eq('status', 'published')
+    .from("posts")
+    .select("slug")
+    .eq("status", "published");
 
   if (error) {
-    console.error('Error fetching post slugs:', error)
-    return []
+    console.error("Error fetching post slugs:", error);
+    return [];
   }
 
-  return (data || []).map((post) => post.slug)
+  return (data || []).map((post) => post.slug);
 }
 
 /**
  * 静的生成用：カテゴリのスラッグ一覧を取得
  */
 export async function getCategorySlugs(): Promise<string[]> {
-  const supabase = createStaticClient()
+  const supabase = createStaticClient();
 
-  const { data, error } = await supabase.from('categories').select('slug')
+  const { data, error } = await supabase.from("categories").select("slug");
 
   if (error) {
-    console.error('Error fetching category slugs:', error)
-    return []
+    console.error("Error fetching category slugs:", error);
+    return [];
   }
 
-  return (data || []).map((category) => category.slug)
+  return (data || []).map((category) => category.slug);
 }
 
 /**
@@ -244,140 +279,164 @@ export async function getRelatedPosts(
   categoryIds: string[],
   limit: number = 3
 ): Promise<PostWithCategories[]> {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   if (categoryIds.length === 0) {
-    return []
+    return [];
   }
 
   // 同じカテゴリの記事を取得（現在の記事を除く）
   const { data: relatedPostIds } = await supabase
-    .from('post_categories')
-    .select('post_id')
-    .in('category_id', categoryIds)
-    .neq('post_id', postId)
+    .from("post_categories")
+    .select("post_id")
+    .in("category_id", categoryIds)
+    .neq("post_id", postId);
 
   if (!relatedPostIds || relatedPostIds.length === 0) {
-    return []
+    return [];
   }
 
   // 重複を削除
-  const uniquePostIds = [...new Set(relatedPostIds.map((item) => item.post_id))]
+  const uniquePostIds = [
+    ...new Set(relatedPostIds.map((item) => item.post_id)),
+  ];
 
   // 記事の詳細を取得
   const { data: posts } = await supabase
-    .from('posts')
+    .from("posts")
     .select(
       `
       *,
       categories:post_categories(category:categories(*))
     `
     )
-    .in('id', uniquePostIds)
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(limit)
+    .in("id", uniquePostIds)
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(limit);
 
   if (!posts) {
-    return []
+    return [];
   }
 
   // カテゴリデータを整形
-  return posts.map((post: any): PostWithCategories => ({
-    ...post,
-    categories: post.categories?.map((pc: { category: Category }) => pc.category).filter(Boolean) || [],
-  }))
+  return posts.map(
+    (post: PostWithRelatedCategories): PostWithCategories => ({
+      ...post,
+      categories:
+        post.categories
+          ?.map((pc: { category: Category }) => pc.category)
+          .filter(Boolean) || [],
+    })
+  );
 }
 
 /**
  * Google Analyticsの閲覧数をデータベースに同期（キャッシュ付き）
  * @param forceRefresh キャッシュを無視して強制的に同期する
  */
-export async function syncViewCountsFromAnalytics(forceRefresh: boolean = false) {
-  const supabase = await createClient()
-  const CACHE_KEY = 'view_counts_sync'
-  const CACHE_DURATION_HOURS = 1 // 1時間キャッシュ
+export async function syncViewCountsFromAnalytics(
+  forceRefresh: boolean = false
+) {
+  const supabase = await createClient();
+  const CACHE_KEY = "view_counts_sync";
+  const CACHE_DURATION_HOURS = 1; // 1時間キャッシュ
 
   // キャッシュをチェック（強制更新でない場合）
   if (!forceRefresh) {
     const { data: cache } = await supabase
-      .from('analytics_cache')
-      .select('*')
-      .eq('cache_key', CACHE_KEY)
-      .single()
+      .from("analytics_cache")
+      .select("*")
+      .eq("cache_key", CACHE_KEY)
+      .single();
 
     if (cache) {
-      const expiresAt = new Date(cache.expires_at)
-      const now = new Date()
+      const expiresAt = new Date(cache.expires_at);
+      const now = new Date();
 
       if (expiresAt > now) {
-        return cache.data as { updated: number; errors: number }
+        return cache.data as { updated: number; errors: number };
       }
     }
   }
 
-  console.log('[Posts] Fetching fresh view counts from Google Analytics')
+  console.log("[Posts] Fetching fresh view counts from Google Analytics");
 
   // Google Analyticsから記事ごとの閲覧数を取得
-  const { getPostViewCounts } = await import('@/lib/google-analytics/analytics')
-  const viewCounts = await getPostViewCounts()
+  const { getPostViewCounts } = await import(
+    "@/lib/google-analytics/analytics"
+  );
+  const viewCounts = await getPostViewCounts();
 
   if (viewCounts.length === 0) {
-    console.log('[Posts] No view counts to sync')
-    const result = { updated: 0, errors: 0 }
-    await saveSyncResultToCache(supabase, CACHE_KEY, result, CACHE_DURATION_HOURS)
-    return result
+    console.log("[Posts] No view counts to sync");
+    const result = { updated: 0, errors: 0 };
+    await saveSyncResultToCache(
+      supabase,
+      CACHE_KEY,
+      result,
+      CACHE_DURATION_HOURS
+    );
+    return result;
   }
 
-  let updated = 0
-  let errors = 0
+  let updated = 0;
+  let errors = 0;
 
   // データベース内の全記事を取得
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('id, slug')
+  const { data: posts } = await supabase.from("posts").select("id, slug");
 
   if (!posts) {
-    console.error('[Posts] Failed to fetch posts from database')
-    return { updated: 0, errors: 1 }
+    console.error("[Posts] Failed to fetch posts from database");
+    return { updated: 0, errors: 1 };
   }
 
   // スラッグをキーにしたマップを作成
-  const postsBySlug = new Map(posts.map(post => [post.slug, post.id]))
+  const postsBySlug = new Map(posts.map((post) => [post.slug, post.id]));
 
   // 閲覧数を更新
   for (const { slug, views } of viewCounts) {
-    const postId = postsBySlug.get(slug)
+    const postId = postsBySlug.get(slug);
 
     if (!postId) {
       // スラッグに対応する記事が見つからない場合はスキップ
-      continue
+      continue;
     }
 
     // view_count のみを更新
     // データベーストリガーが view_count のみの変更時は updated_at を更新しない
     const { error } = await supabase
-      .from('posts')
+      .from("posts")
       .update({
         view_count: views,
       })
-      .eq('id', postId)
+      .eq("id", postId);
 
     if (error) {
-      console.error(`[Posts] Failed to update view count for slug: ${slug}`, error)
-      errors++
+      console.error(
+        `[Posts] Failed to update view count for slug: ${slug}`,
+        error
+      );
+      errors++;
     } else {
-      updated++
+      updated++;
     }
   }
 
-  const result = { updated, errors }
-  console.log(`[Posts] View counts synced: ${updated} updated, ${errors} errors`)
+  const result = { updated, errors };
+  console.log(
+    `[Posts] View counts synced: ${updated} updated, ${errors} errors`
+  );
 
   // 結果をキャッシュに保存
-  await saveSyncResultToCache(supabase, CACHE_KEY, result, CACHE_DURATION_HOURS)
+  await saveSyncResultToCache(
+    supabase,
+    CACHE_KEY,
+    result,
+    CACHE_DURATION_HOURS
+  );
 
-  return result
+  return result;
 }
 
 /**
@@ -389,36 +448,44 @@ async function saveSyncResultToCache(
   data: Record<string, number>,
   hours: number
 ) {
-  const now = new Date()
-  const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000)
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
 
   try {
     // 既存のキャッシュを削除
-    await supabase
-      .from('analytics_cache')
-      .delete()
-      .eq('cache_key', cacheKey)
+    await supabase.from("analytics_cache").delete().eq("cache_key", cacheKey);
 
     // 新しいキャッシュを挿入
-    const { error } = await (supabase
-      .from('analytics_cache') as any)
-      .insert({
-        cache_key: cacheKey,
-        data,
-        expires_at: expiresAt.toISOString(),
-      })
+    const insertData: AnalyticsCacheInsert = {
+      cache_key: cacheKey,
+      data: data as AnalyticsCacheInsert["data"],
+      expires_at: expiresAt.toISOString(),
+    };
+    const cacheTable = supabase.from("analytics_cache");
+    const result = await (
+      cacheTable as unknown as {
+        insert: (values: AnalyticsCacheInsert) => Promise<{
+          error: {
+            message: string;
+            details?: string;
+            hint?: string;
+            code?: string;
+          } | null;
+        }>;
+      }
+    ).insert(insertData);
 
-    if (error) {
-      console.error('[Posts] Failed to save cache:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-      })
+    if (result.error) {
+      console.error("[Posts] Failed to save cache:", {
+        message: result.error.message,
+        details: result.error.details,
+        hint: result.error.hint,
+        code: result.error.code,
+      });
     }
   } catch (err) {
     // analytics_cacheテーブルが存在しない場合などはスキップ
-    const errorMessage = err instanceof Error ? err.message : String(err)
-    console.warn('[Posts] Cache save skipped:', errorMessage)
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.warn("[Posts] Cache save skipped:", errorMessage);
   }
 }

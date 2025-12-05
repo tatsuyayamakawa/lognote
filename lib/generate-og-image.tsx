@@ -4,17 +4,6 @@ export async function generateOgImageBuffer(title: string): Promise<ArrayBuffer>
   // タイトルを適切な長さに制限
   const truncatedTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
 
-  // Geistフォント（Medium & Bold）の読み込み
-  // Google Fonts APIから正しいフォントファイルを取得
-  const [fontData500, fontData700] = await Promise.all([
-    fetch('https://fonts.gstatic.com/s/geist/v4/gyBhhwUxId8gMGYQMKR3pzfaWI_RruM4nQ.ttf').then(
-      (res) => res.arrayBuffer()
-    ),
-    fetch('https://fonts.gstatic.com/s/geist/v4/gyBhhwUxId8gMGYQMKR3pzfaWI_Re-Q4nQ.ttf').then(
-      (res) => res.arrayBuffer()
-    ),
-  ])
-
   // OG画像を生成（Geistフォントを使用）
   const imageResponse = new ImageResponse(
     (
@@ -93,7 +82,7 @@ export async function generateOgImageBuffer(title: string): Promise<ArrayBuffer>
               lineHeight: 1.3,
               marginBottom: '48px',
               letterSpacing: '-0.02em',
-              fontFamily: '"Geist", sans-serif',
+              fontFamily: 'system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif',
             }}
           >
             {truncatedTitle}
@@ -121,7 +110,7 @@ export async function generateOgImageBuffer(title: string): Promise<ArrayBuffer>
                 color: '#495057',
                 fontWeight: 500,
                 letterSpacing: '0.05em',
-                fontFamily: '"Geist", sans-serif',
+                fontFamily: 'system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif',
               }}
             >
               整えて、創る。
@@ -141,20 +130,6 @@ export async function generateOgImageBuffer(title: string): Promise<ArrayBuffer>
     {
       width: 1200,
       height: 630,
-      fonts: [
-        {
-          name: 'Geist',
-          data: fontData500,
-          style: 'normal',
-          weight: 500,
-        },
-        {
-          name: 'Geist',
-          data: fontData700,
-          style: 'normal',
-          weight: 700,
-        },
-      ],
     }
   )
 
