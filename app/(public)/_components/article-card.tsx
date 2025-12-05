@@ -10,9 +10,12 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ post, showExcerpt = true, priority = false }: ArticleCardProps) {
-  // サムネイルURLを決定（カスタムサムネイルまたは動的生成）
+  // サムネイルURLを決定
+  // 優先順位: 1. カスタムサムネイル 2. キャッシュされたOG画像 3. 動的生成
   const thumbnailUrl =
-    post.thumbnail_url || `/api/og?title=${encodeURIComponent(post.title)}`;
+    post.thumbnail_url ||
+    post.og_image_url ||
+    `/api/og?title=${encodeURIComponent(post.title)}`;
 
   return (
     <Link href={`/${post.slug}`}>

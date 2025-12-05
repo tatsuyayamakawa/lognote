@@ -40,8 +40,11 @@ export async function generateMetadata({
   const postUrl = `${getBaseURL()}/${post.slug}`;
   const keywords = post.categories?.map((c) => c.name) || [];
 
-  // OGP画像: サムネイルがあればそれを使用、なければ動的生成
-  const ogImageUrl = post.thumbnail_url || `${getBaseURL()}/api/og?title=${encodeURIComponent(post.title)}`;
+  // OGP画像の優先順位: 1. カスタムサムネイル 2. キャッシュされたOG画像 3. 動的生成
+  const ogImageUrl =
+    post.thumbnail_url ||
+    post.og_image_url ||
+    `${getBaseURL()}/api/og?title=${encodeURIComponent(post.title)}`;
 
   return {
     title: `${post.title}`,

@@ -18,6 +18,7 @@ export interface Database {
           excerpt: string | null
           thumbnail_url: string | null
           thumbnail_type: 'auto' | 'custom' | null
+          og_image_url: string | null
           status: 'draft' | 'published' | 'private'
           published_at: string | null
           created_at: string
@@ -35,6 +36,7 @@ export interface Database {
           excerpt?: string | null
           thumbnail_url?: string | null
           thumbnail_type?: 'auto' | 'custom' | null
+          og_image_url?: string | null
           status?: 'draft' | 'published' | 'private'
           published_at?: string | null
           created_at?: string
@@ -52,6 +54,7 @@ export interface Database {
           excerpt?: string | null
           thumbnail_url?: string | null
           thumbnail_type?: 'auto' | 'custom' | null
+          og_image_url?: string | null
           status?: 'draft' | 'published' | 'private'
           published_at?: string | null
           created_at?: string

@@ -24,11 +24,12 @@ import {
 } from "@/components/ui/dialog";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
-import { Plus, X } from "lucide-react";
+import { Plus, X, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { getBaseURL } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Category, Post } from "@/types";
+import { generateOgImage, deleteOgImage } from "@/app/actions/generate-og-image";
 
 interface PostFormProps {
   categories: Category[];
@@ -68,6 +69,8 @@ export function PostForm({ categories, post }: PostFormProps) {
     post?.published_at ? new Date(post.published_at) : undefined
   );
   const [isFeatured, setIsFeatured] = useState(post?.is_featured || false);
+  const [ogImageUrl, setOgImageUrl] = useState(post?.og_image_url || "");
+  const [generatingOgImage, setGeneratingOgImage] = useState(false);
 
   // 初期値を保存
   const [initialValues] = useState({
@@ -211,6 +214,53 @@ export function PostForm({ categories, post }: PostFormProps) {
       setError(errorMessage);
       toast.error(errorMessage);
       setLoading(false);
+    }
+  };
+
+  const handleGenerateOgImage = async () => {
+    if (!post?.id) {
+      toast.error("記事を保存してからOG画像を生成してください");
+      return;
+    }
+
+    if (!title.trim()) {
+      toast.error("タイトルを入力してください");
+      return;
+    }
+
+    setGeneratingOgImage(true);
+    try {
+      const result = await generateOgImage(post.id, title);
+
+      if (result.success && result.ogImageUrl) {
+        setOgImageUrl(result.ogImageUrl);
+        toast.success("OG画像を生成しました");
+      } else {
+        throw new Error(result.error || "OG画像の生成に失敗しました");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "OG画像の生成に失敗しました";
+      toast.error(errorMessage);
+    } finally {
+      setGeneratingOgImage(false);
+    }
+  };
+
+  const handleDeleteOgImage = async () => {
+    if (!post?.id || !ogImageUrl) return;
+
+    try {
+      const result = await deleteOgImage(post.id, ogImageUrl);
+
+      if (result.success) {
+        setOgImageUrl("");
+        toast.success("OG画像を削除しました");
+      } else {
+        throw new Error(result.error || "OG画像の削除に失敗しました");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "OG画像の削除に失敗しました";
+      toast.error(errorMessage);
     }
   };
 
@@ -453,7 +503,7 @@ export function PostForm({ categories, post }: PostFormProps) {
                 画像を設定しない場合、タイトルから自動生成されます。
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <ImageUpload
                 value={thumbnailUrl}
                 onChange={setThumbnailUrl}
@@ -461,6 +511,87 @@ export function PostForm({ categories, post }: PostFormProps) {
                 disabled={loading}
                 previewTitle={title}
               />
+
+              {/* OG画像生成セクション */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h4 className="text-sm font-medium">OG画像キャッシュ</h4>
+                    <p className="text-xs text-muted-foreground">
+                      タイトルから自動生成されたOG画像をキャッシュとして保存します
+                    </p>
+                  </div>
+                </div>
+
+                {ogImageUrl ? (
+                  <div className="space-y-2">
+                    <div className="relative aspect-video w-full max-w-xs overflow-hidden rounded-lg border">
+                      <img
+                        src={ogImageUrl}
+                        alt="OG画像プレビュー"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateOgImage}
+                        disabled={generatingOgImage || loading || !post?.id}
+                      >
+                        {generatingOgImage ? (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            再生成中...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            再生成
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDeleteOgImage}
+                        disabled={loading}
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        削除
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGenerateOgImage}
+                    disabled={generatingOgImage || loading || !post?.id}
+                    className="w-full"
+                  >
+                    {generatingOgImage ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        生成中...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        OG画像を生成
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {!post?.id && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    ※ OG画像を生成するには、まず記事を保存してください
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
 

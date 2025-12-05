@@ -24,7 +24,11 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
           >
             <div className="aspect-video relative overflow-hidden bg-muted">
               <Image
-                src={post.thumbnail_url || `/api/og?title=${encodeURIComponent(post.title)}`}
+                src={
+                  post.thumbnail_url ||
+                  post.og_image_url ||
+                  `/api/og?title=${encodeURIComponent(post.title)}`
+                }
                 alt={post.title}
                 fill
                 className="object-cover transition-transform group-hover:scale-105"
