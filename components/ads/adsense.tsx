@@ -264,11 +264,15 @@ export function AdSense({
       ? { display: "inline-block", width, height }
       : { display: "block" };
 
-  // コンテナスタイル：最小幅を保証
-  const containerStyle: React.CSSProperties = {
-    minWidth: width || "280px", // 最小幅を保証（AdSenseの最小要件）
-    width: width || "100%",
-  };
+  // コンテナスタイル：固定サイズの場合のみ設定
+  // autoやfluidの場合は親要素のサイズに任せる
+  const containerStyle: React.CSSProperties | undefined =
+    width && height
+      ? {
+          minWidth: width,
+          width: width,
+        }
+      : undefined;
 
   return (
     <div

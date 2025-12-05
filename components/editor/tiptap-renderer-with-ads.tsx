@@ -319,7 +319,7 @@ function InArticleAdPortal({
     <>
       {/* PC用広告 */}
       {pcSlot && (
-        <div className="hidden md:block text-center">
+        <div className="hidden md:block text-center w-full" style={{ minWidth: "300px", maxWidth: "100%" }}>
           <span className="text-xs text-muted-foreground block mb-1">
             スポンサーリンク
           </span>
