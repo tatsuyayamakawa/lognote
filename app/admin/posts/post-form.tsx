@@ -504,67 +504,80 @@ export function PostForm({ categories, post }: PostFormProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ImageUpload
-                value={thumbnailUrl}
-                onChange={setThumbnailUrl}
-                onRemove={() => setThumbnailUrl("")}
-                disabled={loading}
-                previewTitle={title}
-              />
-
-              {/* OG画像生成セクション */}
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h4 className="text-sm font-medium">OG画像キャッシュ</h4>
-                    <p className="text-xs text-muted-foreground">
-                      タイトルから自動生成されたOG画像をキャッシュとして保存します
-                    </p>
+              {/* カスタムサムネイルがある場合 */}
+              {thumbnailUrl && !ogImageUrl ? (
+                <ImageUpload
+                  value={thumbnailUrl}
+                  onChange={setThumbnailUrl}
+                  onRemove={() => setThumbnailUrl("")}
+                  disabled={loading}
+                  previewTitle={title}
+                />
+              ) : ogImageUrl ? (
+                // OG画像が生成されている場合
+                <div className="space-y-4">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                    <img
+                      src={ogImageUrl}
+                      alt="OG画像プレビュー"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateOgImage}
+                      disabled={generatingOgImage || loading || !post?.id}
+                    >
+                      {generatingOgImage ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          再生成中...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          再生成
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDeleteOgImage}
+                      disabled={loading}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      削除
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    タイトルから自動生成されたOG画像です
+                  </p>
                 </div>
-
-                {ogImageUrl ? (
-                  <div className="space-y-2">
-                    <div className="relative aspect-video w-full max-w-xs overflow-hidden rounded-lg border">
-                      <img
-                        src={ogImageUrl}
-                        alt="OG画像プレビュー"
-                        className="h-full w-full object-cover"
-                      />
+              ) : (
+                // 何も設定されていない場合
+                <div className="space-y-3">
+                  <ImageUpload
+                    value=""
+                    onChange={setThumbnailUrl}
+                    onRemove={() => setThumbnailUrl("")}
+                    disabled={loading}
+                    previewTitle={title}
+                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleGenerateOgImage}
-                        disabled={generatingOgImage || loading || !post?.id}
-                      >
-                        {generatingOgImage ? (
-                          <>
-                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                            再生成中...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            再生成
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleDeleteOgImage}
-                        disabled={loading}
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        削除
-                      </Button>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        または
+                      </span>
                     </div>
                   </div>
-                ) : (
                   <Button
                     type="button"
                     variant="outline"
@@ -580,18 +593,17 @@ export function PostForm({ categories, post }: PostFormProps) {
                     ) : (
                       <>
                         <RefreshCw className="mr-2 h-4 w-4" />
-                        OG画像を生成
+                        タイトルからOG画像を生成
                       </>
                     )}
                   </Button>
-                )}
-
-                {!post?.id && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    ※ OG画像を生成するには、まず記事を保存してください
-                  </p>
-                )}
-              </div>
+                  {!post?.id && (
+                    <p className="text-xs text-muted-foreground">
+                      ※ OG画像を生成するには、まず記事を保存してください
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

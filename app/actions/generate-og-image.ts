@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { generateOgImageBuffer } from '@/lib/generate-og-image'
 
 /**
  * OG画像を生成してSupabase Storageに保存し、URLをデータベースに保存する
@@ -10,17 +11,9 @@ export async function generateOgImage(postId: string, title: string) {
   try {
     const supabase = await createClient()
 
-    // OG画像生成APIを呼び出し
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(title)}`
-
-    const response = await fetch(ogImageUrl)
-
-    if (!response.ok) {
-      throw new Error(`OG画像の生成に失敗しました: ${response.statusText}`)
-    }
-
-    const imageBuffer = await response.arrayBuffer()
+    // OG画像を直接生成
+    console.log('Generating OG image for:', title)
+    const imageBuffer = await generateOgImageBuffer(title)
 
     // Supabase Storageに保存
     const fileName = `og-${postId}-${Date.now()}.png`
