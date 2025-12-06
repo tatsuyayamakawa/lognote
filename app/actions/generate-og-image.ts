@@ -5,11 +5,66 @@ import { revalidatePath } from 'next/cache'
 import { generateOgImageBuffer } from '@/lib/generate-og-image'
 
 /**
+ * ストレージからOG画像を削除するヘルパー関数
+ */
+async function deleteOgImageFromStorage(ogImageUrl: string) {
+  try {
+    const supabase = await createClient()
+    
+    // URLからファイルパスを抽出
+    const url = new URL(ogImageUrl)
+    const pathParts = url.pathname.split('/')
+    const bucketIndex = pathParts.findIndex((part) => part === 'blog-images')
+
+    if (bucketIndex === -1) {
+      console.warn('Invalid OG image URL format:', ogImageUrl)
+      return
+    }
+
+    const filePath = pathParts.slice(bucketIndex + 1).join('/')
+
+    // Supabase Storageから削除
+    const { error: deleteError } = await supabase.storage
+      .from('blog-images')
+      .remove([filePath])
+
+    if (deleteError) {
+      console.error('Failed to delete old OG image from storage:', deleteError)
+      // エラーでも処理を続行（ファイルが既に削除されている可能性）
+    } else {
+      console.log('Successfully deleted old OG image:', filePath)
+    }
+  } catch (error) {
+    console.error('Error deleting OG image from storage:', error)
+    // エラーでも処理を続行
+  }
+}
+
+/**
  * OG画像を生成してSupabase Storageに保存し、URLをデータベースに保存する
  */
 export async function generateOgImage(postId: string, title: string) {
   try {
     const supabase = await createClient()
+
+    // 既存のOG画像があれば削除
+    const { data: existingPost } = await supabase
+      .from('posts')
+      .select('og_image_url')
+      .eq('id', postId)
+      .single()
+
+    if (existingPost?.og_image_url) {
+      // ストレージに保存されている画像URLの場合のみ削除
+      // APIエンドポイントのURL (/api/og) は無視
+      if (existingPost.og_image_url.includes('/storage/v1/object/public/blog-images/') ||
+          existingPost.og_image_url.includes('/blog-images/')) {
+        console.log('Deleting old OG image:', existingPost.og_image_url)
+        await deleteOgImageFromStorage(existingPost.og_image_url)
+      } else if (existingPost.og_image_url.includes('/api/og')) {
+        console.log('Skipping deletion of dynamic API endpoint URL')
+      }
+    }
 
     // OG画像を直接生成
     console.log('Generating OG image for:', title)
