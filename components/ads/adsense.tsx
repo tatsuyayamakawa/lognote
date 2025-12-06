@@ -65,14 +65,7 @@ export function AdSense({
     const checkVisibility = () => {
       if (isInitialized) return;
 
-      // すでに処理済みの場合はスキップ
-      if (container.getAttribute("data-adsbygoogle-status")) {
-        console.log(`[AdSense ${adSlot}] Already initialized (data-adsbygoogle-status exists)`);
-        isInitialized = true;
-        return;
-      }
-
-      // 要素のサイズと表示状態をチェック
+      // 要素のサイズと表示状態をチェック（data-adsbygoogle-statusチェックより前）
       const rect = container.getBoundingClientRect();
       const parentWidth = container.parentElement?.clientWidth || 0;
       const containerWidth = container.clientWidth;
@@ -84,10 +77,19 @@ export function AdSense({
         rectHeight: rect.height,
         parentWidth,
         containerWidth,
+        hasStatus: !!container.getAttribute("data-adsbygoogle-status"),
       });
 
       // 要素が表示されていない（display:none等）場合はスキップ
       if (!isVisible) {
+        console.log(`[AdSense ${adSlot}] Element is not visible (display:none). Waiting...`);
+        return;
+      }
+
+      // すでに処理済みの場合はスキップ（ただし表示されている場合のみチェック）
+      if (container.getAttribute("data-adsbygoogle-status")) {
+        console.log(`[AdSense ${adSlot}] Already initialized (data-adsbygoogle-status exists)`);
+        isInitialized = true;
         return;
       }
 
@@ -139,12 +141,15 @@ export function AdSense({
 
     resizeObserver.observe(container);
 
-    // 初回チェック（ファーストビュー用）
-    checkVisibility();
+    // 初回チェック（ファーストビュー用）- 少し遅延してCSSが適用されるのを待つ
+    const initialCheck = setTimeout(() => {
+      checkVisibility();
+    }, 100);
 
     return () => {
       observer.disconnect();
       resizeObserver.disconnect();
+      clearTimeout(initialCheck);
     };
   }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
 
