@@ -511,7 +511,6 @@ export function PostForm({ categories, post }: PostFormProps) {
                   onChange={setThumbnailUrl}
                   onRemove={() => setThumbnailUrl("")}
                   disabled={loading}
-                  previewTitle={title}
                 />
               ) : ogImageUrl ? (
                 // OG画像が生成されている場合
@@ -566,7 +565,6 @@ export function PostForm({ categories, post }: PostFormProps) {
                     onChange={setThumbnailUrl}
                     onRemove={() => setThumbnailUrl("")}
                     disabled={loading}
-                    previewTitle={title}
                   />
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
