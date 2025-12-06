@@ -40,10 +40,10 @@ export async function generateMetadata({
   const postUrl = `${getBaseURL()}/${post.slug}`;
   const keywords = post.categories?.map((c) => c.name) || [];
 
-  // OGP画像の優先順位: 1. カスタムサムネイル 2. キャッシュされたOG画像 3. 動的生成
+  // OGP画像の優先順位: 1. OG画像 2. カスタムサムネイル 3. 動的生成
   const ogImageUrl =
-    post.thumbnail_url ||
     post.og_image_url ||
+    post.thumbnail_url ||
     `${getBaseURL()}/api/og?title=${encodeURIComponent(post.title)}`;
 
   return {
