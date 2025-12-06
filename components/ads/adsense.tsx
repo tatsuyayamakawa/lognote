@@ -58,32 +58,48 @@ export function AdSense({
       return;
     }
 
+    // 初期化済みフラグ
+    let isInitialized = false;
+
     // IntersectionObserverで要素が表示されたタイミングで初期化
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // 要素が表示され、かつ幅が確保されている場合のみ初期化
-          if (entry.isIntersecting && entry.target === container) {
-            const containerWidth = container.clientWidth;
-            const parentWidth = container.parentElement?.clientWidth || 0;
+          // すでに初期化済み、または要素が表示されていない場合はスキップ
+          if (isInitialized || !entry.isIntersecting || entry.target !== container) {
+            return;
+          }
 
-            // 幅が0の場合は初期化しない
-            if (containerWidth === 0 || parentWidth === 0) {
-              console.warn(
-                `AdSense: Container width is 0 for slot ${adSlot}. Skipping initialization.`,
-                { containerWidth, parentWidth }
-              );
-              return;
-            }
+          // 再度処理済みチェック（data-adsbygoogle-status属性）
+          if (container.getAttribute("data-adsbygoogle-status")) {
+            observer.disconnect();
+            return;
+          }
 
-            // 初期化実行
-            try {
-              (window.adsbygoogle = window.adsbygoogle || []).push({});
-              // 初期化成功後はObserverを解除
-              observer.disconnect();
-            } catch (error) {
-              console.error("AdSense initialization error:", error);
-            }
+          // 親要素の幅をチェック（ins要素は空なので幅0になる可能性がある）
+          const parentWidth = container.parentElement?.clientWidth || 0;
+          const containerWidth = container.clientWidth;
+
+          // 親要素の幅が250px未満の場合は初期化しない（fluid広告の最小幅）
+          if (parentWidth < 250) {
+            console.warn(
+              `AdSense: Parent width is too small for slot ${adSlot}. Skipping initialization.`,
+              { parentWidth, containerWidth }
+            );
+            // 幅が小さすぎる場合はObserverを解除（再試行しない）
+            observer.disconnect();
+            return;
+          }
+
+          // 初期化実行
+          isInitialized = true;
+          try {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            // 初期化成功後はObserverを解除
+            observer.disconnect();
+          } catch (error) {
+            console.error("AdSense initialization error:", error);
+            isInitialized = false; // エラー時はフラグをリセット
           }
         });
       },
@@ -132,7 +148,7 @@ export function AdSense({
   // 広告のスタイル
   const adStyle: React.CSSProperties = width && height
     ? { display: "inline-block", width, height }
-    : { display: "block" };
+    : { display: "block", width: "100%" }; // fluid広告には幅100%を設定
 
   // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ + 中央寄せ
   const containerStyle: React.CSSProperties = {
