@@ -61,59 +61,90 @@ export function AdSense({
     // 初期化済みフラグ
     let isInitialized = false;
 
-    // IntersectionObserverで要素が表示されたタイミングで初期化
+    // 要素が表示されているかチェックする関数
+    const checkVisibility = () => {
+      if (isInitialized) return;
+
+      // すでに処理済みの場合はスキップ
+      if (container.getAttribute("data-adsbygoogle-status")) {
+        console.log(`[AdSense ${adSlot}] Already initialized (data-adsbygoogle-status exists)`);
+        isInitialized = true;
+        return;
+      }
+
+      // 要素のサイズと表示状態をチェック
+      const rect = container.getBoundingClientRect();
+      const parentWidth = container.parentElement?.clientWidth || 0;
+      const containerWidth = container.clientWidth;
+      const isVisible = rect.width > 0 && rect.height > 0;
+
+      console.log(`[AdSense ${adSlot}] Visibility check:`, {
+        isVisible,
+        rectWidth: rect.width,
+        rectHeight: rect.height,
+        parentWidth,
+        containerWidth,
+      });
+
+      // 要素が表示されていない（display:none等）場合はスキップ
+      if (!isVisible) {
+        return;
+      }
+
+      // 親要素の幅が250px未満の場合は初期化しない（fluid広告の最小幅）
+      if (parentWidth < 250) {
+        console.warn(
+          `[AdSense ${adSlot}] Parent width is too small. Skipping initialization.`,
+          { parentWidth, containerWidth }
+        );
+        return;
+      }
+
+      // 初期化実行
+      console.log(`[AdSense ${adSlot}] Initializing...`);
+      isInitialized = true;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        console.log(`[AdSense ${adSlot}] Initialized successfully`);
+      } catch (error) {
+        console.error(`[AdSense ${adSlot}] Initialization error:`, error);
+        isInitialized = false; // エラー時はフラグをリセット
+      }
+    };
+
+    console.log(`[AdSense ${adSlot}] Setting up visibility checks`);
+
+    // IntersectionObserver: スクロールで表示されたタイミング
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // すでに初期化済み、または要素が表示されていない場合はスキップ
-          if (isInitialized || !entry.isIntersecting || entry.target !== container) {
-            return;
-          }
-
-          // 再度処理済みチェック（data-adsbygoogle-status属性）
-          if (container.getAttribute("data-adsbygoogle-status")) {
-            observer.disconnect();
-            return;
-          }
-
-          // 親要素の幅をチェック（ins要素は空なので幅0になる可能性がある）
-          const parentWidth = container.parentElement?.clientWidth || 0;
-          const containerWidth = container.clientWidth;
-
-          // 親要素の幅が250px未満の場合は初期化しない（fluid広告の最小幅）
-          if (parentWidth < 250) {
-            console.warn(
-              `AdSense: Parent width is too small for slot ${adSlot}. Skipping initialization.`,
-              { parentWidth, containerWidth }
-            );
-            // 幅が小さすぎる場合はObserverを解除（再試行しない）
-            observer.disconnect();
-            return;
-          }
-
-          // 初期化実行
-          isInitialized = true;
-          try {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            // 初期化成功後はObserverを解除
-            observer.disconnect();
-          } catch (error) {
-            console.error("AdSense initialization error:", error);
-            isInitialized = false; // エラー時はフラグをリセット
+          if (entry.isIntersecting) {
+            checkVisibility();
           }
         });
       },
       {
         root: null,
-        rootMargin: "50px", // 50px手前から検知開始
-        threshold: 0.01, // 1%でも表示されたら
+        rootMargin: "50px",
+        threshold: 0.01,
       }
     );
 
     observer.observe(container);
 
+    // ResizeObserver: レスポンシブで表示状態が変わったタイミング
+    const resizeObserver = new ResizeObserver(() => {
+      checkVisibility();
+    });
+
+    resizeObserver.observe(container);
+
+    // 初回チェック（ファーストビュー用）
+    checkVisibility();
+
     return () => {
       observer.disconnect();
+      resizeObserver.disconnect();
     };
   }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
 
