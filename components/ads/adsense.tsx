@@ -58,18 +58,38 @@ export function AdSense({
       return;
     }
 
-    // AdSenseスクリプトを初期化
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (error) {
-      console.error("AdSense initialization error:", error);
-    }
-  }, [pathname, isProduction]); // pathnameが変わるたびに再初期化
+    // レイアウトが完全に確定するまで待つ
+    // requestAnimationFrame + setTimeoutで確実にレンダリング完了を待つ
+    const timer = setTimeout(() => {
+      if (!insRef.current) return;
+
+      // 最終チェック: コンテナの幅が確保されているか
+      const containerWidth = insRef.current.clientWidth;
+      const parentWidth = insRef.current.parentElement?.clientWidth || 0;
+
+      if (containerWidth === 0 || parentWidth === 0) {
+        console.warn(
+          `AdSense: Container width is 0 for slot ${adSlot}. Skipping initialization.`,
+          { containerWidth, parentWidth }
+        );
+        return;
+      }
+
+      // AdSenseスクリプトを初期化
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (error) {
+        console.error("AdSense initialization error:", error);
+      }
+    }, 100); // 100ms待機してレイアウト確定を待つ
+
+    return () => clearTimeout(timer);
+  }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
 
   // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
     return (
-      <div className={className} style={{ minHeight: actualPlaceholderHeight }}>
+      <div className={`${className} flex justify-center`} style={{ minHeight: actualPlaceholderHeight }}>
         <div
           className="flex items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 rounded"
           style={{ height: actualPlaceholderHeight, width: width || "100%" }}
@@ -87,15 +107,24 @@ export function AdSense({
     );
   }
 
+  // adFormatが固定フォーマット（rectangle/horizontal/vertical）かどうか
+  const isFixedFormat = adFormat === "rectangle" || adFormat === "horizontal" || adFormat === "vertical";
+
+  // 固定サイズ広告かどうかの判定
+  // width/heightが指定されているか、固定フォーマットが指定されている場合
+  const isFixedSize = !!(width && height) || isFixedFormat;
+
   // 広告のスタイル
   const adStyle: React.CSSProperties = width && height
     ? { display: "inline-block", width, height }
     : { display: "block" };
 
-  // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ
+  // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ + 中央寄せ
   const containerStyle: React.CSSProperties = {
     minHeight: actualPlaceholderHeight,
     width: width || "100%",
+    display: "flex",
+    justifyContent: "center",
   };
 
   return (
@@ -106,8 +135,8 @@ export function AdSense({
         style={adStyle}
         data-ad-client="ca-pub-7839828582645189"
         data-ad-slot={adSlot}
-        data-ad-format={adFormat}
-        data-full-width-responsive={fullWidthResponsive.toString()}
+        {...(!isFixedSize && { "data-ad-format": adFormat })}
+        {...(!isFixedSize && { "data-full-width-responsive": fullWidthResponsive.toString() })}
         suppressHydrationWarning
       />
     </div>
