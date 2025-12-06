@@ -58,32 +58,47 @@ export function AdSense({
       return;
     }
 
-    // レイアウトが完全に確定するまで待つ
-    // requestAnimationFrame + setTimeoutで確実にレンダリング完了を待つ
-    const timer = setTimeout(() => {
-      if (!insRef.current) return;
+    // IntersectionObserverで要素が表示されたタイミングで初期化
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // 要素が表示され、かつ幅が確保されている場合のみ初期化
+          if (entry.isIntersecting && entry.target === container) {
+            const containerWidth = container.clientWidth;
+            const parentWidth = container.parentElement?.clientWidth || 0;
 
-      // 最終チェック: コンテナの幅が確保されているか
-      const containerWidth = insRef.current.clientWidth;
-      const parentWidth = insRef.current.parentElement?.clientWidth || 0;
+            // 幅が0の場合は初期化しない
+            if (containerWidth === 0 || parentWidth === 0) {
+              console.warn(
+                `AdSense: Container width is 0 for slot ${adSlot}. Skipping initialization.`,
+                { containerWidth, parentWidth }
+              );
+              return;
+            }
 
-      if (containerWidth === 0 || parentWidth === 0) {
-        console.warn(
-          `AdSense: Container width is 0 for slot ${adSlot}. Skipping initialization.`,
-          { containerWidth, parentWidth }
-        );
-        return;
+            // 初期化実行
+            try {
+              (window.adsbygoogle = window.adsbygoogle || []).push({});
+              // 初期化成功後はObserverを解除
+              observer.disconnect();
+            } catch (error) {
+              console.error("AdSense initialization error:", error);
+            }
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: "50px", // 50px手前から検知開始
+        threshold: 0.01, // 1%でも表示されたら
       }
+    );
 
-      // AdSenseスクリプトを初期化
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (error) {
-        console.error("AdSense initialization error:", error);
-      }
-    }, 100); // 100ms待機してレイアウト確定を待つ
+    observer.observe(container);
 
-    return () => clearTimeout(timer);
+    return () => {
+      observer.disconnect();
+    };
   }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
 
   // 開発環境ではプレースホルダーを表示
