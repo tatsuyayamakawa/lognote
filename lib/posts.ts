@@ -355,7 +355,7 @@ export async function syncViewCountsFromAnalytics(
       const now = new Date();
 
       if (expiresAt > now) {
-        return cache.data as { updated: number; errors: number };
+        return cache.data as { updated: number; errors: number; skipped?: number };
       }
     }
   }
@@ -370,7 +370,7 @@ export async function syncViewCountsFromAnalytics(
 
   if (viewCounts.length === 0) {
     console.log("[Posts] No view counts to sync");
-    const result = { updated: 0, errors: 0 };
+    const result = { updated: 0, errors: 0, skipped: 0 };
     await saveSyncResultToCache(
       supabase,
       CACHE_KEY,
@@ -382,24 +382,33 @@ export async function syncViewCountsFromAnalytics(
 
   let updated = 0;
   let errors = 0;
+  let skipped = 0;
 
-  // データベース内の全記事を取得
-  const { data: posts } = await supabase.from("posts").select("id, slug");
+  // データベース内の全記事を取得（view_count も含む）
+  const { data: posts } = await supabase.from("posts").select("id, slug, view_count");
 
   if (!posts) {
     console.error("[Posts] Failed to fetch posts from database");
     return { updated: 0, errors: 1 };
   }
 
-  // スラッグをキーにしたマップを作成
-  const postsBySlug = new Map(posts.map((post) => [post.slug, post.id]));
+  // スラッグをキーにしたマップを作成（view_count も保持）
+  const postsBySlug = new Map(
+    posts.map((post) => [post.slug, { id: post.id, currentViewCount: post.view_count || 0 }])
+  );
 
   // 閲覧数を更新
   for (const { slug, views } of viewCounts) {
-    const postId = postsBySlug.get(slug);
+    const post = postsBySlug.get(slug);
 
-    if (!postId) {
+    if (!post) {
       // スラッグに対応する記事が見つからない場合はスキップ
+      continue;
+    }
+
+    // view_count が変更されない場合は UPDATE をスキップ
+    if (post.currentViewCount === views) {
+      skipped++;
       continue;
     }
 
@@ -410,7 +419,7 @@ export async function syncViewCountsFromAnalytics(
       .update({
         view_count: views,
       })
-      .eq("id", postId);
+      .eq("id", post.id);
 
     if (error) {
       console.error(
@@ -423,9 +432,9 @@ export async function syncViewCountsFromAnalytics(
     }
   }
 
-  const result = { updated, errors };
+  const result = { updated, errors, skipped };
   console.log(
-    `[Posts] View counts synced: ${updated} updated, ${errors} errors`
+    `[Posts] View counts synced: ${updated} updated, ${skipped} skipped (no change), ${errors} errors`
   );
 
   // 結果をキャッシュに保存
