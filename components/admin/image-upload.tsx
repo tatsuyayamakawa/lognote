@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Upload, X, Loader2 } from "lucide-react"
-import Image from "next/image"
+import { useState, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Upload, X, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface ImageUploadProps {
-  value?: string
-  onChange: (url: string) => void
-  onRemove: () => void
-  disabled?: boolean
-  bucketName?: string
-  folder?: string
+  value?: string;
+  onChange: (url: string) => void;
+  onRemove: () => void;
+  disabled?: boolean;
+  bucketName?: string;
+  folder?: string;
 }
 
 export function ImageUpload({
@@ -23,36 +23,38 @@ export function ImageUpload({
   bucketName = "blog-images",
   folder = "thumbnails",
 }: ImageUploadProps) {
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    // ファイルサイズチェック (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("ファイルサイズは10MB以下にしてください")
-      return
+    // ファイルサイズチェック (50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      setError("ファイルサイズは50MB以下にしてください");
+      return;
     }
 
     // ファイルタイプチェック
     if (!file.type.startsWith("image/")) {
-      setError("画像ファイルを選択してください")
-      return
+      setError("画像ファイルを選択してください");
+      return;
     }
 
-    setUploading(true)
-    setError(null)
+    setUploading(true);
+    setError(null);
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
 
       // ファイル名を生成（タイムスタンプ + ランダム文字列）
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${folder}/${fileName}`
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(7)}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
 
       // Supabaseストレージにアップロード
       const { data, error: uploadError } = await supabase.storage
@@ -60,27 +62,29 @@ export function ImageUpload({
         .upload(filePath, file, {
           cacheControl: "3600",
           upsert: false,
-        })
+        });
 
-      if (uploadError) throw uploadError
+      if (uploadError) throw uploadError;
 
       // 公開URLを取得
       const {
         data: { publicUrl },
-      } = supabase.storage.from(bucketName).getPublicUrl(data.path)
+      } = supabase.storage.from(bucketName).getPublicUrl(data.path);
 
-      onChange(publicUrl)
+      onChange(publicUrl);
     } catch (err) {
-      console.error("Upload error:", err)
-      setError(err instanceof Error ? err.message : "アップロードに失敗しました")
+      console.error("Upload error:", err);
+      setError(
+        err instanceof Error ? err.message : "アップロードに失敗しました"
+      );
     } finally {
-      setUploading(false)
+      setUploading(false);
       // input要素をリセット
       if (fileInputRef.current) {
-        fileInputRef.current.value = ""
+        fileInputRef.current.value = "";
       }
     }
-  }
+  };
 
   // 表示する画像URL（カスタム画像のみ）
   // 自動生成プレビューは無効化（生成ボタンで明示的に生成する）
@@ -117,7 +121,7 @@ export function ImageUpload({
               画像をアップロード
             </p>
             <p className="text-xs text-muted-foreground">
-              PNG, JPG, GIF (最大10MB)
+              PNG, JPG, GIF (最大50MB)
             </p>
           </div>
         </div>
@@ -152,9 +156,7 @@ export function ImageUpload({
         )}
       </Button>
 
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
-  )
+  );
 }
