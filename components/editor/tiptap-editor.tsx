@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -18,7 +18,9 @@ import { TableCell } from "@tiptap/extension-table-cell";
 import { SpeechBubble } from "./extensions/speech-bubble";
 import { LinkCard } from "./extensions/link-card";
 import { CtaButton } from "./extensions/cta-button";
-import { AffiliateBox } from "./extensions/affiliate-box";
+import { ProductLinkBox } from "./extensions/product-link-box";
+import { EmbedAdBox } from "./extensions/embed-ad-box";
+import { PointBox } from "./extensions/point-box";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -44,8 +46,10 @@ import {
   Columns,
   Rows,
   Trash2,
-  ShoppingBag,
+  Package,
+  MonitorPlay,
   Youtube as YoutubeIcon,
+  Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
@@ -53,7 +57,9 @@ import { LinkDialog } from "./link-dialog";
 import { ColorPicker } from "./color-picker";
 import { SpeechBubbleDialog } from "./speech-bubble-dialog";
 import { CtaButtonDialog } from "./cta-button-dialog";
-import { AffiliateBoxDialogSimple } from "./affiliate-box-dialog-simple";
+import { PointBoxDialog } from "./point-box-dialog";
+import { ProductLinkBoxDialog } from "./product-link-box-dialog";
+import { EmbedAdBoxDialog } from "./embed-ad-box-dialog";
 import { YoutubeDialog } from "./youtube-dialog";
 import {
   Tooltip,
@@ -79,8 +85,10 @@ export function TiptapEditor({
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
-  const [affiliateBoxDialogOpen, setAffiliateBoxDialogOpen] = useState(false);
+  const [productLinkBoxDialogOpen, setProductLinkBoxDialogOpen] = useState(false);
+  const [embedAdBoxDialogOpen, setEmbedAdBoxDialogOpen] = useState(false);
   const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
+  const [pointBoxDialogOpen, setPointBoxDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
   const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
     href: string;
@@ -90,6 +98,17 @@ export function TiptapEditor({
     textColor?: string;
     animation?: 'none' | 'pulse' | 'bounce' | 'shine' | 'glow';
   } | undefined>(undefined);
+  const [productLinkBoxInitialData, setProductLinkBoxInitialData] = useState<{
+    productName?: string;
+    productImage?: string;
+    amazonUrl?: string;
+    amazonPrice?: string;
+    rakutenUrl?: string;
+    rakutenPrice?: string;
+    yahooUrl?: string;
+    yahooPrice?: string;
+  } | undefined>(undefined);
+  const [isEditingProductLinkBox, setIsEditingProductLinkBox] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -101,11 +120,32 @@ export function TiptapEditor({
         },
         link: false, // Link拡張を無効化して、後で個別に設定
       }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-primary underline cursor-pointer",
+      Link.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            class: {
+              default: null,
+              renderHTML: (attributes) => {
+                const href = attributes.href || "";
+                const isExternal = href.startsWith("http://") || href.startsWith("https://");
+                const isInternalDomain = href.includes("lognote.biz");
+
+                if (isExternal && !isInternalDomain) {
+                  return {
+                    class: "text-primary underline cursor-pointer external-link",
+                  };
+                }
+
+                return {
+                  class: "text-primary underline cursor-pointer",
+                };
+              },
+            },
+          };
         },
+      }).configure({
+        openOnClick: false,
       }),
       Image.configure({
         HTMLAttributes: {
@@ -136,7 +176,13 @@ export function TiptapEditor({
       CtaButton.configure({
         enableNodeView: true,
       }),
-      AffiliateBox.configure({
+      ProductLinkBox.configure({
+        enableNodeView: true,
+      }),
+      EmbedAdBox.configure({
+        enableNodeView: true,
+      }),
+      PointBox.configure({
         enableNodeView: true,
       }),
       Table.configure({
@@ -324,6 +370,22 @@ export function TiptapEditor({
     },
   });
 
+  // 商品リンクボックスのダブルクリック編集イベントをリスン
+  useEffect(() => {
+    const handleEditProductLinkBox = (event: Event) => {
+      const customEvent = event as CustomEvent<{ pos: number; attrs: any }>;
+      setProductLinkBoxInitialData(customEvent.detail.attrs);
+      setIsEditingProductLinkBox(true);
+      setProductLinkBoxDialogOpen(true);
+    };
+
+    window.addEventListener('edit-product-link-box', handleEditProductLinkBox);
+
+    return () => {
+      window.removeEventListener('edit-product-link-box', handleEditProductLinkBox);
+    };
+  }, []);
+
   if (!editor) {
     return null;
   }
@@ -346,8 +408,14 @@ export function TiptapEditor({
     setCtaButtonDialogOpen(true);
   };
 
-  const addAffiliateBox = () => {
-    setAffiliateBoxDialogOpen(true);
+  const addProductLinkBox = () => {
+    setProductLinkBoxInitialData(undefined);
+    setIsEditingProductLinkBox(false);
+    setProductLinkBoxDialogOpen(true);
+  };
+
+  const addEmbedAdBox = () => {
+    setEmbedAdBoxDialogOpen(true);
   };
 
   const addYoutube = () => {
@@ -384,14 +452,37 @@ export function TiptapEditor({
     editor.chain().focus().toggleSpeechBubble(position).run();
   };
 
-  const handleAffiliateBoxInsert = (data: {
-    code: string;
-    productName?: string;
-    productImage?: string;
-    productPrice?: string;
-    productUrl?: string;
+  const handlePointBoxInsert = (data: {
+    type: 'point' | 'warning' | 'danger' | 'success' | 'info';
+    title: string;
+    content: string;
   }) => {
-    editor.chain().focus().setAffiliateBox(data).run();
+    editor.chain().focus().setPointBox(data).run();
+  };
+
+  const handleProductLinkBoxInsert = (data: {
+    productName: string;
+    productImage: string;
+    amazonUrl?: string;
+    amazonPrice?: string;
+    rakutenUrl?: string;
+    rakutenPrice?: string;
+    yahooUrl?: string;
+    yahooPrice?: string;
+  }) => {
+    if (isEditingProductLinkBox) {
+      // 編集モード: 既存の商品リンクボックスを更新
+      editor.chain().focus().updateProductLinkBox(data).run();
+      setIsEditingProductLinkBox(false);
+      setProductLinkBoxInitialData(undefined);
+    } else {
+      // 新規作成モード
+      editor.chain().focus().setProductLinkBox(data).run();
+    }
+  };
+
+  const handleEmbedAdBoxInsert = (embedCode: string) => {
+    editor.chain().focus().setEmbedAdBox({ embedCode }).run();
   };
 
   const handleLinkInsert = async (data: {
@@ -854,10 +945,25 @@ export function TiptapEditor({
                   >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPointBoxDialogOpen(true)}
+                    className={
+                      editor.isActive("pointBox")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="ポイントボックス"
+                  >
+                    <Lightbulb className="h-4 w-4" />
+                  </Button>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>吹き出し関連</p>
+                <p>吹き出し・ポイントボックス</p>
               </TooltipContent>
             </Tooltip>
             <div className="mx-1 w-px bg-border" />
@@ -870,16 +976,31 @@ export function TiptapEditor({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={addAffiliateBox}
+                    onClick={addProductLinkBox}
                     className={
-                      editor.isActive("affiliateBox")
+                      editor.isActive("productLinkBox")
                         ? "bg-accent border-2 border-primary"
                         : ""
                     }
                     disabled={disabled}
-                    title="アフィリエイト"
+                    title="商品リンクボックス"
                   >
-                    <ShoppingBag className="h-4 w-4" />
+                    <Package className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addEmbedAdBox}
+                    className={
+                      editor.isActive("embedAdBox")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="埋め込み広告"
+                  >
+                    <MonitorPlay className="h-4 w-4" />
                   </Button>
                 </div>
               </TooltipTrigger>
@@ -992,15 +1113,27 @@ export function TiptapEditor({
         onSelect={handleCtaButtonSelect}
         initialData={ctaButtonInitialData}
       />
-      <AffiliateBoxDialogSimple
-        open={affiliateBoxDialogOpen}
-        onOpenChange={setAffiliateBoxDialogOpen}
-        onInsert={handleAffiliateBoxInsert}
-      />
       <YoutubeDialog
         open={youtubeDialogOpen}
         onOpenChange={setYoutubeDialogOpen}
         onInsert={handleYoutubeInsert}
+      />
+      <PointBoxDialog
+        open={pointBoxDialogOpen}
+        onOpenChange={setPointBoxDialogOpen}
+        onInsert={handlePointBoxInsert}
+      />
+      <ProductLinkBoxDialog
+        open={productLinkBoxDialogOpen}
+        onOpenChange={setProductLinkBoxDialogOpen}
+        onInsert={handleProductLinkBoxInsert}
+        initialData={productLinkBoxInitialData}
+        isEditMode={isEditingProductLinkBox}
+      />
+      <EmbedAdBoxDialog
+        open={embedAdBoxDialogOpen}
+        onOpenChange={setEmbedAdBoxDialogOpen}
+        onInsert={handleEmbedAdBoxInsert}
       />
     </>
   );

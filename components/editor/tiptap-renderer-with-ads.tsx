@@ -1,26 +1,28 @@
-"use client"
+"use client";
 
-import { useEditor, EditorContent, type JSONContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import Link from "@tiptap/extension-link"
-import Image from "@tiptap/extension-image"
-import { TextStyle } from "@tiptap/extension-text-style"
-import { Color } from "@tiptap/extension-color"
-import { Highlight } from "@tiptap/extension-highlight"
-import { Table } from "@tiptap/extension-table"
-import { TableRow } from "@tiptap/extension-table-row"
-import { TableHeader } from "@tiptap/extension-table-header"
-import { TableCell } from "@tiptap/extension-table-cell"
-import { cn } from "@/lib/utils"
-import { useEffect, useState } from "react"
-import { createPortal } from "react-dom"
-import Heading from "@tiptap/extension-heading"
-import { SpeechBubble } from "./extensions/speech-bubble"
-import { LinkCard } from "./extensions/link-card"
-import { CtaButton } from "./extensions/cta-button"
-import { AffiliateBox } from "./extensions/affiliate-box"
-import { AffiliateBoxRenderer } from "./extensions/affiliate-box-renderer"
-import { AdSense } from "../ads/adsense"
+import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { Highlight } from "@tiptap/extension-highlight";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import Heading from "@tiptap/extension-heading";
+import { SpeechBubble } from "./extensions/speech-bubble";
+import { LinkCard } from "./extensions/link-card";
+import { CtaButton } from "./extensions/cta-button";
+import { ProductLinkBox } from "./extensions/product-link-box";
+import { EmbedAdBox } from "./extensions/embed-ad-box";
+import { PointBox } from "./extensions/point-box";
+import { AffiliateBoxRenderer } from "./extensions/affiliate-box-renderer";
+import { AdSense } from "../ads/adsense";
 
 // 見出しの階層的な番号を管理するクラス
 class HeadingNumbering {
@@ -43,8 +45,8 @@ class HeadingNumbering {
     }
 
     // 番号を生成（例: 1-2-3）
-    const numbers = this.counters.slice(0, index + 1).filter(n => n > 0);
-    return `heading-${numbers.join('-')}`;
+    const numbers = this.counters.slice(0, index + 1).filter((n) => n > 0);
+    return `heading-${numbers.join("-")}`;
   }
 
   reset() {
@@ -53,10 +55,10 @@ class HeadingNumbering {
 }
 
 interface TiptapRendererWithAdsProps {
-  content: string | JSONContent
-  inArticlePcSlot?: string
-  inArticleMobileSlot?: string
-  className?: string
+  content: string | JSONContent;
+  inArticlePcSlot?: string;
+  inArticleMobileSlot?: string;
+  className?: string;
 }
 
 export function TiptapRendererWithAds({
@@ -66,9 +68,9 @@ export function TiptapRendererWithAds({
   className,
 }: TiptapRendererWithAdsProps) {
   const parsedContent =
-    typeof content === "string" ? JSON.parse(content) : content
+    typeof content === "string" ? JSON.parse(content) : content;
 
-  const [showInArticleAd, setShowInArticleAd] = useState(false)
+  const [showInArticleAd, setShowInArticleAd] = useState(false);
 
   // 見出し番号管理インスタンス
   const headingNumbering = new HeadingNumbering();
@@ -86,14 +88,10 @@ export function TiptapRendererWithAds({
         renderHTML({ node, HTMLAttributes }) {
           const level = this.options.levels.includes(node.attrs.level)
             ? node.attrs.level
-            : this.options.levels[0]
-          const id = headingNumbering.generateId(level)
+            : this.options.levels[0];
+          const id = headingNumbering.generateId(level);
 
-          return [
-            `h${level}`,
-            { ...HTMLAttributes, id },
-            0,
-          ]
+          return [`h${level}`, { ...HTMLAttributes, id }, 0];
         },
       }),
       Link.extend({
@@ -104,12 +102,14 @@ export function TiptapRendererWithAds({
               default: null,
               renderHTML: (attributes) => {
                 const href = attributes.href || "";
-                const isExternal = href.startsWith("http://") || href.startsWith("https://");
+                const isExternal =
+                  href.startsWith("http://") || href.startsWith("https://");
                 const isInternalDomain = href.includes("lognote.biz");
 
                 if (isExternal && !isInternalDomain) {
                   return {
-                    class: "text-primary underline hover:opacity-80 external-link",
+                    class:
+                      "text-primary underline hover:opacity-80 external-link",
                   };
                 }
 
@@ -151,7 +151,22 @@ export function TiptapRendererWithAds({
         },
         enableNodeView: false,
       }),
-      AffiliateBox.configure({
+      ProductLinkBox.configure({
+        HTMLAttributes: {
+          class: "product-link-box",
+        },
+        enableNodeView: false,
+      }),
+      EmbedAdBox.configure({
+        HTMLAttributes: {
+          class: "embed-ad-box",
+        },
+        enableNodeView: false,
+      }),
+      PointBox.configure({
+        HTMLAttributes: {
+          class: "point-box",
+        },
         enableNodeView: false,
       }),
       Table.configure({
@@ -199,80 +214,86 @@ export function TiptapRendererWithAds({
         ),
       },
     },
-  })
+  });
 
   // H2の数をカウント
   useEffect(() => {
-    if (!editor) return
+    if (!editor) return;
 
-    const content = editor.getJSON()
-    let count = 0
+    const content = editor.getJSON();
+    let count = 0;
 
     const countH2 = (node: JSONContent) => {
       if (node.type === "heading" && node.attrs?.level === 2) {
-        count++
+        count++;
       }
       if (node.content) {
-        node.content.forEach(countH2)
+        node.content.forEach(countH2);
       }
-    }
+    };
 
-    countH2(content)
-    setShowInArticleAd(count >= 2 && !!(inArticlePcSlot || inArticleMobileSlot))
-  }, [editor, inArticlePcSlot, inArticleMobileSlot])
+    countH2(content);
+    setShowInArticleAd(
+      count >= 2 && !!(inArticlePcSlot || inArticleMobileSlot)
+    );
+  }, [editor, inArticlePcSlot, inArticleMobileSlot]);
 
   // 2つ目のH2の前に広告を挿入
   useEffect(() => {
-    if (!editor || !showInArticleAd) return
+    if (!editor || !showInArticleAd) return;
 
-    const editorElement = editor.view.dom
-    const h2Elements = editorElement.querySelectorAll("h2")
+    const editorElement = editor.view.dom;
+    const h2Elements = editorElement.querySelectorAll("h2");
 
     if (h2Elements.length >= 2) {
-      const secondH2 = h2Elements[1]
+      const secondH2 = h2Elements[1];
 
       // 既に広告が挿入されているかチェック
-      const existingAd = secondH2.previousElementSibling?.querySelector("[data-in-article-ad]")
-      if (existingAd) return
+      const existingAd = secondH2.previousElementSibling?.querySelector(
+        "[data-in-article-ad]"
+      );
+      if (existingAd) return;
 
       // 広告要素を作成
-      const adContainer = document.createElement("div")
-      adContainer.setAttribute("data-in-article-ad", "true")
-      adContainer.className = "my-10 not-prose"
-      adContainer.id = "in-article-ad-container"
+      const adContainer = document.createElement("div");
+      adContainer.setAttribute("data-in-article-ad", "true");
+      adContainer.className = "my-10 not-prose";
+      adContainer.id = "in-article-ad-container";
 
       // H2の前に挿入
-      secondH2.parentNode?.insertBefore(adContainer, secondH2)
+      secondH2.parentNode?.insertBefore(adContainer, secondH2);
     }
-  }, [editor, showInArticleAd])
+  }, [editor, showInArticleAd]);
 
   // アフィリエイトボックスをReactコンポーネントに変換
   useEffect(() => {
-    if (!editor) return
+    if (!editor) return;
 
-    const editorElement = editor.view.dom
-    const affiliateBoxes = editorElement.querySelectorAll("[data-affiliate-box]")
+    const editorElement = editor.view.dom;
+    const affiliateBoxes = editorElement.querySelectorAll(
+      "[data-affiliate-box]"
+    );
 
     affiliateBoxes.forEach((box) => {
       // 既に処理済みかチェック
-      if (box.hasAttribute("data-rendered")) return
+      if (box.hasAttribute("data-rendered")) return;
 
-      const code = box.getAttribute("data-code") || ""
-      const productName = box.getAttribute("data-product-name") || undefined
-      const productImage = box.getAttribute("data-product-image") || undefined
-      const productPrice = box.getAttribute("data-product-price") || undefined
-      const productUrl = box.getAttribute("data-product-url") || undefined
+      const code = box.getAttribute("data-code") || "";
+      const productName = box.getAttribute("data-product-name") || undefined;
+      const productImage = box.getAttribute("data-product-image") || undefined;
+      const productPrice = box.getAttribute("data-product-price") || undefined;
+      const productUrl = box.getAttribute("data-product-url") || undefined;
 
       // 処理済みマーク
-      box.setAttribute("data-rendered", "true")
+      box.setAttribute("data-rendered", "true");
 
       // Reactコンポーネントのマウント先を作成
-      const mountPoint = document.createElement("div")
-      box.appendChild(mountPoint)
+      const mountPoint = document.createElement("div");
+      box.appendChild(mountPoint);
 
       // Reactコンポーネントをレンダリング（動的インポート）
       import("react-dom/client").then(({ createRoot }) => {
-        const root = createRoot(mountPoint)
+        const root = createRoot(mountPoint);
         root.render(
           <AffiliateBoxRenderer
             code={code}
@@ -281,13 +302,13 @@ export function TiptapRendererWithAds({
             productPrice={productPrice}
             productUrl={productUrl}
           />
-        )
-      })
-    })
-  }, [editor])
+        );
+      });
+    });
+  }, [editor]);
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
@@ -302,7 +323,7 @@ export function TiptapRendererWithAds({
         />
       )}
     </div>
-  )
+  );
 }
 
 // 記事内広告をポータルで挿入するコンポーネント
@@ -310,38 +331,45 @@ function InArticleAdPortal({
   pcSlot,
   mobileSlot,
 }: {
-  pcSlot?: string
-  mobileSlot?: string
+  pcSlot?: string;
+  mobileSlot?: string;
 }) {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    // 次のイベントループでマウント状態を更新（同期的なsetStateを回避）
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    if (!mounted) return
+    if (!mounted) return;
 
-    const container = document.querySelector(`[data-in-article-ad="true"]`)
-    if (!container) return
+    const container = document.querySelector(`[data-in-article-ad="true"]`);
+    if (!container) return;
 
     // すでに広告が挿入されているかチェック
-    if (container.hasAttribute("data-ad-inserted")) return
+    if (container.hasAttribute("data-ad-inserted")) return;
 
     // 広告挿入済みフラグを設定
-    container.setAttribute("data-ad-inserted", "true")
-  }, [mounted, pcSlot, mobileSlot])
+    container.setAttribute("data-ad-inserted", "true");
+  }, [mounted, pcSlot, mobileSlot]);
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
-  const container = document.querySelector(`[data-in-article-ad="true"]`)
-  if (!container) return null
+  const container = document.querySelector(`[data-in-article-ad="true"]`);
+  if (!container) return null;
 
   return createPortal(
     <>
       {/* PC用広告 */}
       {pcSlot && (
-        <div className="hidden md:block text-center w-full" style={{ minWidth: "300px", maxWidth: "100%" }}>
+        <div
+          className="hidden md:block text-center w-full"
+          style={{ minWidth: "300px", maxWidth: "100%" }}
+        >
           <span className="text-xs text-muted-foreground block mb-1">
             スポンサーリンク
           </span>
@@ -371,5 +399,5 @@ function InArticleAdPortal({
       )}
     </>,
     container
-  )
+  );
 }

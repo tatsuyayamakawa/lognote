@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,26 +27,38 @@ interface LinkDialogProps {
   };
 }
 
-export function LinkDialog({ open, onOpenChange, onInsert, initialData }: LinkDialogProps) {
-  const [url, setUrl] = useState("");
-  const [text, setText] = useState("");
-  const [linkTarget, setLinkTarget] = useState<"internal" | "external">("external");
-
+export function LinkDialog({
+  open,
+  onOpenChange,
+  onInsert,
+  initialData,
+}: LinkDialogProps) {
   // 初期データがある場合は編集モード
   const isEditMode = !!initialData;
 
+  const [url, setUrl] = useState("");
+  const [text, setText] = useState("");
+  const [linkTarget, setLinkTarget] = useState<"internal" | "external">(
+    "external"
+  );
+
   useEffect(() => {
     if (open && initialData) {
-      // 編集モードの場合は初期データをセット
-      setUrl(initialData.href || "");
-      setText(initialData.text || "");
-      // URLから内部/外部を判定
-      setLinkTarget(initialData.href?.startsWith("/") ? "internal" : "external");
+      // 編集モードの場合は初期データをセット（startTransitionでラップ）
+      startTransition(() => {
+        setUrl(initialData.href || "");
+        setText(initialData.text || "");
+        setLinkTarget(
+          initialData.href?.startsWith("/") ? "internal" : "external"
+        );
+      });
     } else if (!open) {
-      // ダイアログが閉じたらリセット
-      setUrl("");
-      setText("");
-      setLinkTarget("external");
+      // ダイアログが閉じたらリセット（startTransitionでラップ）
+      startTransition(() => {
+        setUrl("");
+        setText("");
+        setLinkTarget("external");
+      });
     }
   }, [open, initialData]);
 
@@ -66,7 +78,9 @@ export function LinkDialog({ open, onOpenChange, onInsert, initialData }: LinkDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "リンクを編集" : "リンクを挿入"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "リンクを編集" : "リンクを挿入"}
+          </DialogTitle>
           <DialogDescription>
             リンクの種類とURLを設定してください
           </DialogDescription>
@@ -103,7 +117,11 @@ export function LinkDialog({ open, onOpenChange, onInsert, initialData }: LinkDi
             <Label htmlFor="url">URL *</Label>
             <Input
               id="url"
-              placeholder={linkTarget === "internal" ? "/your-post-slug" : "https://example.com"}
+              placeholder={
+                linkTarget === "internal"
+                  ? "/your-post-slug"
+                  : "https://example.com"
+              }
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
