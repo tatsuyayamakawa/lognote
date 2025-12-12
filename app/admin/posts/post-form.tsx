@@ -29,7 +29,11 @@ import { format } from "date-fns";
 import { getBaseURL } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Category, Post } from "@/types";
-import { generateOgImage, deleteOgImage } from "@/app/actions/generate-og-image";
+import {
+  generateOgImage,
+  deleteOgImage,
+} from "@/app/actions/generate-og-image";
+import Image from "next/image";
 
 interface PostFormProps {
   categories: Category[];
@@ -77,11 +81,17 @@ export function PostForm({ categories, post }: PostFormProps) {
     title: post?.title || "",
     slug: post?.slug || "",
     excerpt: post?.excerpt || "",
-    content: JSON.stringify((post?.content as Record<string, unknown>) || { type: "doc", content: [] }),
-    selectedCategories: JSON.stringify(post?.categories?.map((c) => c.id) || []),
+    content: JSON.stringify(
+      (post?.content as Record<string, unknown>) || { type: "doc", content: [] }
+    ),
+    selectedCategories: JSON.stringify(
+      post?.categories?.map((c) => c.id) || []
+    ),
     status: (post?.status as "draft" | "published" | "private") || "draft",
     thumbnailUrl: post?.thumbnail_url || "",
-    publishedAt: post?.published_at ? new Date(post.published_at).toISOString() : "",
+    publishedAt: post?.published_at
+      ? new Date(post.published_at).toISOString()
+      : "",
     isFeatured: post?.is_featured || false,
   });
 
@@ -99,9 +109,21 @@ export function PostForm({ categories, post }: PostFormProps) {
       isFeatured,
     };
 
-    const hasChanged = JSON.stringify(initialValues) !== JSON.stringify(currentValues);
+    const hasChanged =
+      JSON.stringify(initialValues) !== JSON.stringify(currentValues);
     setHasUnsavedChanges(hasChanged);
-  }, [title, slug, excerpt, content, selectedCategories, status, thumbnailUrl, publishedAt, isFeatured, initialValues]);
+  }, [
+    title,
+    slug,
+    excerpt,
+    content,
+    selectedCategories,
+    status,
+    thumbnailUrl,
+    publishedAt,
+    isFeatured,
+    initialValues,
+  ]);
 
   // ページ離脱時の警告
   useEffect(() => {
@@ -133,7 +155,9 @@ export function PostForm({ categories, post }: PostFormProps) {
       }
 
       // サムネイルが設定されていない場合は、OGP画像URLを自動生成
-      const finalThumbnailUrl = thumbnailUrl || `${getBaseURL()}/api/og?title=${encodeURIComponent(title)}`;
+      const finalThumbnailUrl =
+        thumbnailUrl ||
+        `${getBaseURL()}/api/og?title=${encodeURIComponent(title)}`;
 
       // 記事データ
       const postData = {
@@ -195,7 +219,8 @@ export function PostForm({ categories, post }: PostFormProps) {
       router.push("/admin/posts");
       router.refresh();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "保存に失敗しました";
+      const errorMessage =
+        err instanceof Error ? err.message : "保存に失敗しました";
       setError(errorMessage);
       toast.error(errorMessage);
       setLoading(false);
@@ -224,7 +249,8 @@ export function PostForm({ categories, post }: PostFormProps) {
         throw new Error(result.error || "OG画像の生成に失敗しました");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "OG画像の生成に失敗しました";
+      const errorMessage =
+        err instanceof Error ? err.message : "OG画像の生成に失敗しました";
       toast.error(errorMessage);
     } finally {
       setGeneratingOgImage(false);
@@ -244,7 +270,8 @@ export function PostForm({ categories, post }: PostFormProps) {
         throw new Error(result.error || "OG画像の削除に失敗しました");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "OG画像の削除に失敗しました";
+      const errorMessage =
+        err instanceof Error ? err.message : "OG画像の削除に失敗しました";
       toast.error(errorMessage);
     }
   };
@@ -296,7 +323,8 @@ export function PostForm({ categories, post }: PostFormProps) {
 
       toast.success("カテゴリを作成しました");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "カテゴリの作成に失敗しました";
+      const errorMessage =
+        err instanceof Error ? err.message : "カテゴリの作成に失敗しました";
       toast.error(errorMessage);
     } finally {
       setCreatingCategory(false);
@@ -340,9 +368,21 @@ export function PostForm({ categories, post }: PostFormProps) {
 
       toast.success("カテゴリを削除しました");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "カテゴリの削除に失敗しました";
+      const errorMessage =
+        err instanceof Error ? err.message : "カテゴリの削除に失敗しました";
       toast.error(errorMessage);
     }
+  };
+
+  const handleStatusSubmit = (newStatus: "draft" | "published" | "private") => {
+    setStatus(newStatus);
+    // ステータスを設定した後、次のレンダリングサイクルでフォームを送信
+    setTimeout(() => {
+      const form = document.querySelector("form");
+      if (form) {
+        form.requestSubmit();
+      }
+    }, 0);
   };
 
   return (
@@ -356,32 +396,6 @@ export function PostForm({ categories, post }: PostFormProps) {
           <p className="text-sm text-muted-foreground sm:text-base">
             {post ? "記事を編集します" : "新しい記事を作成します"}
           </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant={status === "draft" ? "default" : "outline"}
-            onClick={() => setStatus("draft")}
-            disabled={loading}
-          >
-            下書き
-          </Button>
-          <Button
-            type="button"
-            variant={status === "published" ? "default" : "outline"}
-            onClick={() => setStatus("published")}
-            disabled={loading}
-          >
-            公開
-          </Button>
-          <Button
-            type="button"
-            variant={status === "private" ? "default" : "outline"}
-            onClick={() => setStatus("private")}
-            disabled={loading}
-          >
-            非公開
-          </Button>
         </div>
       </div>
 
@@ -453,7 +467,7 @@ export function PostForm({ categories, post }: PostFormProps) {
         </div>
 
         {/* 右カラム: サイドバー (4カラム) */}
-        <div className="space-y-6 lg:col-span-4">
+        <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <Card>
             <CardHeader>
               <CardTitle>公開日時</CardTitle>
@@ -465,7 +479,9 @@ export function PostForm({ categories, post }: PostFormProps) {
               <input
                 type="datetime-local"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={publishedAt ? format(publishedAt, "yyyy-MM-dd'T'HH:mm") : ""}
+                value={
+                  publishedAt ? format(publishedAt, "yyyy-MM-dd'T'HH:mm") : ""
+                }
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value) {
@@ -483,7 +499,8 @@ export function PostForm({ categories, post }: PostFormProps) {
             <CardHeader>
               <CardTitle>サムネイル画像</CardTitle>
               <CardDescription>
-                記事一覧やSNSシェア時に表示される画像です。推奨サイズ: 1200×630px
+                記事一覧やSNSシェア時に表示される画像です。推奨サイズ:
+                1200×630px
                 <br />
                 画像を設定しない場合、タイトルから自動生成されます。
               </CardDescription>
@@ -501,9 +518,10 @@ export function PostForm({ categories, post }: PostFormProps) {
                 // OG画像が生成されている場合
                 <div className="space-y-4">
                   <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                    <img
+                    <Image
                       src={ogImageUrl}
                       alt="OG画像プレビュー"
+                      fill
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -793,16 +811,39 @@ export function PostForm({ categories, post }: PostFormProps) {
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={loading}>
-          {loading ? "保存中..." : post ? "更新" : "作成"}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant={status === "draft" ? "default" : "outline"}
+          onClick={() => handleStatusSubmit("draft")}
+          disabled={loading}
+        >
+          {loading && status === "draft" ? "保存中..." : "下書き保存"}
+        </Button>
+        <Button
+          type="button"
+          variant={status === "published" ? "default" : "outline"}
+          onClick={() => handleStatusSubmit("published")}
+          disabled={loading}
+        >
+          {loading && status === "published" ? "保存中..." : "公開"}
+        </Button>
+        <Button
+          type="button"
+          variant={status === "private" ? "default" : "outline"}
+          onClick={() => handleStatusSubmit("private")}
+          disabled={loading}
+        >
+          {loading && status === "private" ? "保存中..." : "非公開"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={() => {
             if (hasUnsavedChanges) {
-              if (confirm("保存されていない変更があります。本当に移動しますか?")) {
+              if (
+                confirm("保存されていない変更があります。本当に移動しますか?")
+              ) {
                 router.back();
               }
             } else {
