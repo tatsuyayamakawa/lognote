@@ -7,6 +7,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import Youtube from "@tiptap/extension-youtube";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
@@ -26,6 +27,7 @@ import {
   ListOrdered,
   Quote,
   Code,
+  Code2,
   Heading2,
   Heading3,
   Heading4,
@@ -43,6 +45,7 @@ import {
   Rows,
   Trash2,
   ShoppingBag,
+  Youtube as YoutubeIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
@@ -51,6 +54,7 @@ import { ColorPicker } from "./color-picker";
 import { SpeechBubbleDialog } from "./speech-bubble-dialog";
 import { CtaButtonDialog } from "./cta-button-dialog";
 import { AffiliateBoxDialogSimple } from "./affiliate-box-dialog-simple";
+import { YoutubeDialog } from "./youtube-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -76,6 +80,7 @@ export function TiptapEditor({
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
   const [affiliateBoxDialogOpen, setAffiliateBoxDialogOpen] = useState(false);
+  const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
   const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
     href: string;
@@ -105,6 +110,13 @@ export function TiptapEditor({
       Image.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
+        },
+      }),
+      Youtube.configure({
+        width: 640,
+        height: 360,
+        HTMLAttributes: {
+          class: "rounded-lg my-4",
         },
       }),
       Placeholder.configure({
@@ -338,6 +350,14 @@ export function TiptapEditor({
     setAffiliateBoxDialogOpen(true);
   };
 
+  const addYoutube = () => {
+    setYoutubeDialogOpen(true);
+  };
+
+  const handleYoutubeInsert = (url: string) => {
+    editor.chain().focus().setYoutubeVideo({ src: url }).run();
+  };
+
   const handleImageSelect = (url: string) => {
     editor.chain().focus().setImage({ src: url }).run();
   };
@@ -377,11 +397,10 @@ export function TiptapEditor({
   const handleLinkInsert = async (data: {
     href: string;
     text?: string;
-    type: "simple" | "card";
-    linkTarget?: "internal" | "external";
+    linkTarget: "internal" | "external";
   }) => {
-    if (data.type === "simple") {
-      // 通常のリンク（内部・外部両方対応）
+    if (data.linkTarget === "external") {
+      // 外部リンク（通常のリンク）
       if (linkInitialData) {
         // 編集モード: 既存のリンクを更新
         if (data.text && data.text !== linkInitialData.text) {
@@ -411,7 +430,7 @@ export function TiptapEditor({
         }
       }
     } else {
-      // リンクカード（内部リンク専用）
+      // 内部リンク（自動的にリンクカード形式）
       // APIからデータを取得して保存
       const fetchAndInsertLinkCard = async () => {
         try {
@@ -427,6 +446,7 @@ export function TiptapEditor({
                 href: data.href,
                 title: postData.title,
                 description: postData.description,
+                thumbnail: postData.thumbnail_url || postData.og_image_url,
               })
               .run();
           } else {
@@ -638,6 +658,21 @@ export function TiptapEditor({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    onClick={() => editor.chain().focus().toggleCode().run()}
+                    className={
+                      editor.isActive("code")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="インラインコード"
+                  >
+                    <Code2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                     className={
                       editor.isActive("codeBlock")
@@ -697,7 +732,7 @@ export function TiptapEditor({
             </Tooltip>
             <div className="mx-1 w-px bg-border" />
 
-            {/* 画像グループ */}
+            {/* 画像・動画グループ */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex gap-1">
@@ -711,10 +746,25 @@ export function TiptapEditor({
                   >
                     <ImageIcon className="h-4 w-4" />
                   </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addYoutube}
+                    className={
+                      editor.isActive("youtube")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="YouTube動画"
+                  >
+                    <YoutubeIcon className="h-4 w-4" />
+                  </Button>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>画像関連</p>
+                <p>画像・動画関連</p>
               </TooltipContent>
             </Tooltip>
             <div className="mx-1 w-px bg-border" />
@@ -946,6 +996,11 @@ export function TiptapEditor({
         open={affiliateBoxDialogOpen}
         onOpenChange={setAffiliateBoxDialogOpen}
         onInsert={handleAffiliateBoxInsert}
+      />
+      <YoutubeDialog
+        open={youtubeDialogOpen}
+        onOpenChange={setYoutubeDialogOpen}
+        onInsert={handleYoutubeInsert}
       />
     </>
   );

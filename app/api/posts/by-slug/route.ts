@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
       title: post.title,
       description: post.excerpt || post.meta_description,
       thumbnail_url: post.thumbnail_url,
+      og_image_url: post.og_image_url,
       slug: post.slug,
     });
   } catch (error) {

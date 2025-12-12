@@ -73,13 +73,12 @@ export async function getPageViews(days: number = 30) {
     console.error("[Analytics] Error fetching page views:", error)
     if (error instanceof Error) {
       console.error("[Analytics] Error details:", error.message)
-      console.error("[Analytics] Error stack:", error.stack)
     }
     return []
   }
 }
 
-export async function getTopPages(limit: number = 10) {
+export async function getTopPages(limit: number = 10, days: number = 30) {
   const client = getAnalyticsClient()
   if (!client) {
     return []
@@ -94,7 +93,7 @@ export async function getTopPages(limit: number = 10) {
       property: `properties/${process.env.GA4_PROPERTY_ID}`,
       dateRanges: [
         {
-          startDate: "30daysAgo",
+          startDate: `${days}daysAgo`,
           endDate: "today",
         },
       ],

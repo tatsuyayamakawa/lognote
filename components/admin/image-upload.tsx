@@ -88,7 +88,8 @@ export function ImageUpload({
 
   // 表示する画像URL（カスタム画像のみ）
   // 自動生成プレビューは無効化（生成ボタンで明示的に生成する）
-  const displayUrl = value;
+  // 空文字列の場合もfalseとして扱う
+  const displayUrl = value && value.trim() !== "" ? value : null;
 
   return (
     <div className="space-y-4">

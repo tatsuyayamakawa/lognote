@@ -96,10 +96,32 @@ export function TiptapRendererWithAds({
           ]
         },
       }),
-      Link.configure({
-        HTMLAttributes: {
-          class: "text-primary underline hover:opacity-80",
+      Link.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            class: {
+              default: null,
+              renderHTML: (attributes) => {
+                const href = attributes.href || "";
+                const isExternal = href.startsWith("http://") || href.startsWith("https://");
+                const isInternalDomain = href.includes("lognote.biz");
+
+                if (isExternal && !isInternalDomain) {
+                  return {
+                    class: "text-primary underline hover:opacity-80 external-link",
+                  };
+                }
+
+                return {
+                  class: "text-primary underline hover:opacity-80",
+                };
+              },
+            },
+          };
         },
+      }).configure({
+        openOnClick: false,
       }),
       Image.configure({
         HTMLAttributes: {

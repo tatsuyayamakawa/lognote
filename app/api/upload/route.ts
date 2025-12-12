@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Supabase Storageにアップロード
     const { data, error } = await supabase.storage
       .from("blog-images")
-      .upload(`posts/${fileName}`, file, {
+      .upload(`content/${fileName}`, file, {
         cacheControl: "3600",
         upsert: false,
       });

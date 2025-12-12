@@ -5,7 +5,6 @@ let searchConsoleClient: any = null
 
 export function getSearchConsoleClient() {
   if (!searchConsoleClient) {
-
     try {
       let auth: any
 
@@ -37,7 +36,6 @@ export function getSearchConsoleClient() {
         version: "v1",
         auth,
       })
-
     } catch (error) {
       console.error("[Search Console] Failed to initialize client:", error)
       if (error instanceof Error) {
@@ -71,7 +69,6 @@ export async function getSearchKeywords(
   if (!siteUrl) {
     return []
   }
-
 
   const endDate = new Date()
   const startDate = new Date()
@@ -107,10 +104,9 @@ export async function getSearchKeywords(
 
     return result
   } catch (error) {
-    // Silently return empty array if permission error or other API errors
-    if (error instanceof Error && error.message.includes("permission")) {
-    } else {
-      console.error("[Search Console] Error fetching search keywords:", error)
+    console.error("[Search Console] Error fetching search keywords:", error)
+    if (error instanceof Error) {
+      console.error("[Search Console] Error details:", error.message)
     }
     return []
   }

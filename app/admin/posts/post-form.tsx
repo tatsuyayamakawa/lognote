@@ -116,21 +116,6 @@ export function PostForm({ categories, post }: PostFormProps) {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  // タイトルからスラッグを自動生成
-  const handleTitleChange = (value: string) => {
-    setTitle(value);
-    if (!post) {
-      // 新規作成時のみ自動生成
-      const autoSlug = value
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^\w\-]+/g, "")
-        .replace(/\-\-+/g, "-")
-        .trim();
-      setSlug(autoSlug);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -416,7 +401,7 @@ export function PostForm({ categories, post }: PostFormProps) {
                 <Input
                   id="title"
                   value={title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
+                  onChange={(e) => setTitle(e.target.value)}
                   required
                   disabled={loading}
                 />
@@ -622,7 +607,7 @@ export function PostForm({ categories, post }: PostFormProps) {
                   disabled={loading}
                   className="h-4 w-4 rounded border-gray-300"
                 />
-                <Label htmlFor="is-featured" className="text-sm font-normal cursor-pointer">
+                <Label htmlFor="is-featured" className="text-sm font-normal">
                   この記事を特集記事として表示
                 </Label>
               </div>

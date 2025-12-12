@@ -24,6 +24,34 @@ export const getBaseURL = () => {
 };
 
 /**
+ * Google Search Console用のサイトURLを取得
+ * プロパティタイプに応じて適切な形式を返す
+ * 
+ * 環境変数 SEARCH_CONSOLE_PROPERTY_TYPE で制御:
+ * - "url-prefix" (デフォルト): URLプレフィックス形式 (https://example.com)
+ * - "domain": ドメインプロパティ形式 (sc-domain:example.com)
+ */
+export const getSearchConsoleURL = () => {
+  const baseUrl = getBaseURL();
+  const propertyType = process.env.SEARCH_CONSOLE_PROPERTY_TYPE || "url-prefix";
+
+  if (propertyType === "domain") {
+    // ドメインプロパティ形式: sc-domain:example.com
+    // baseUrlからドメイン部分を抽出
+    try {
+      const url = new URL(baseUrl);
+      return `sc-domain:${url.hostname}`;
+    } catch (error) {
+      console.error("[Search Console] Invalid base URL:", baseUrl);
+      return baseUrl;
+    }
+  }
+
+  // URLプレフィックス形式（デフォルト）
+  return baseUrl;
+};
+
+/**
  * 日付をフォーマットする（日本語形式）
  */
 export function formatDate(dateString: string): string {

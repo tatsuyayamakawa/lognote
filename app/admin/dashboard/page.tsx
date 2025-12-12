@@ -9,7 +9,7 @@ import {
 import { getSearchKeywords } from "@/lib/google-analytics/search-console";
 import { AnalyticsCharts } from "./analytics-charts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getBaseURL } from "@/lib/utils";
+import { getSearchConsoleURL } from "@/lib/utils";
 
 export default async function DashboardPage({
   searchParams,
@@ -23,12 +23,12 @@ export default async function DashboardPage({
     !!process.env.GA4_PROPERTY_ID &&
     (!!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !!process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
-  // サイトのURLを取得
-  const searchConsoleUrl = getBaseURL();
+  // サイトのURLを取得（Search Consoleのプロパティタイプに対応）
+  const searchConsoleUrl = getSearchConsoleURL();
 
   // Fetch analytics data with selected period
   const pageViews = gaConfigured ? await getPageViews(days) : [];
-  const topPages = gaConfigured ? await getTopPages(10) : [];
+  const topPages = gaConfigured ? await getTopPages(10, days) : [];
   const organicSearchStats = gaConfigured
     ? await getOrganicSearchStats(days)
     : [];

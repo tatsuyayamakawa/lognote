@@ -1,15 +1,17 @@
 "use client";
 
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 interface PostData {
   title: string;
   description?: string;
+  thumbnail?: string;
 }
 
 export function LinkCardView({ node }: NodeViewProps) {
-  const { href, title, description } = node.attrs;
+  const { href, title, description, thumbnail } = node.attrs;
   const [postData, setPostData] = useState<PostData | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,12 +22,15 @@ export function LinkCardView({ node }: NodeViewProps) {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/posts/by-slug?slug=${href.replace("/", "")}`);
+        const response = await fetch(
+          `/api/posts/by-slug?slug=${href.replace("/", "")}`
+        );
         if (response.ok) {
           const data = await response.json();
           setPostData({
             title: data.title,
             description: data.description,
+            thumbnail: data.thumbnail_url || data.og_image_url,
           });
         }
       } catch (error) {
@@ -36,23 +41,25 @@ export function LinkCardView({ node }: NodeViewProps) {
     };
 
     // 属性からデータが提供されていない場合のみフェッチ
-    if (!title && !description) {
+    if (!title && !description && !thumbnail) {
       fetchPostData();
     } else {
-      setPostData({ title, description });
+      setPostData({ title, description, thumbnail });
     }
-  }, [href, title, description]);
+  }, [href, title, description, thumbnail]);
 
-  const displayData = postData || { title, description };
+  const displayData = postData || { title, description, thumbnail };
 
   if (loading) {
     return (
       <NodeViewWrapper className="my-4">
         <div className="link-card animate-pulse" data-type="internal">
-          <div className="space-y-2">
+          <div className="link-card-thumbnail">
+            <div className="h-full w-full bg-muted" />
+          </div>
+          <div className="link-card-content">
             <div className="h-6 w-3/4 rounded bg-muted" />
             <div className="h-4 w-full rounded bg-muted" />
-            <div className="h-4 w-5/6 rounded bg-muted" />
           </div>
         </div>
       </NodeViewWrapper>
@@ -62,14 +69,22 @@ export function LinkCardView({ node }: NodeViewProps) {
   return (
     <NodeViewWrapper className="my-4">
       <a href={href || "#"} className="link-card" data-type="internal">
-        <div className="space-y-1">
-          <div className="text-lg font-semibold line-clamp-2">
-            {displayData.title || href}
+        {displayData.thumbnail && (
+          <div className="link-card-thumbnail">
+            <Image
+              src={displayData.thumbnail}
+              alt={displayData.title || "Thumbnail"}
+              fill
+              className="object-cover my-0!"
+              loading="lazy"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           </div>
+        )}
+        <div className="link-card-content">
+          <div className="link-card-title">{displayData.title || href}</div>
           {displayData.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {displayData.description}
-            </p>
+            <p className="link-card-description">{displayData.description}</p>
           )}
         </div>
       </a>

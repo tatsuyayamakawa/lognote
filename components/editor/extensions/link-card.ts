@@ -53,19 +53,29 @@ export const LinkCard = Node.create<LinkCardOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const { href, title, description } = node.attrs
+    const { href, title, description, thumbnail } = node.attrs
 
     const contentChildren = []
 
-    // タイトルを表示（ない場合はhrefをフォールバック）
-    // h3ではなくdivを使用して目次から除外
-    const displayTitle = title || href || 'Untitled'
-    contentChildren.push(['div', { class: 'text-lg font-semibold line-clamp-2' }, displayTitle])
-
-    // 説明文（記事抜粋）を表示
-    if (description) {
-      contentChildren.push(['p', { class: 'text-sm text-muted-foreground line-clamp-2' }, description])
+    // サムネイル画像（左側）
+    if (thumbnail) {
+      contentChildren.push([
+        'div',
+        { class: 'link-card-thumbnail' },
+        ['img', { src: thumbnail, alt: title || 'Thumbnail', loading: 'lazy' }]
+      ])
     }
+
+    // テキストコンテンツ（右側）
+    const textChildren = []
+    const displayTitle = title || href || 'Untitled'
+    textChildren.push(['div', { class: 'link-card-title' }, displayTitle])
+
+    if (description) {
+      textChildren.push(['p', { class: 'link-card-description' }, description])
+    }
+
+    contentChildren.push(['div', { class: 'link-card-content' }, ...textChildren])
 
     return [
       'a',
@@ -74,7 +84,7 @@ export const LinkCard = Node.create<LinkCardOptions>({
         'data-type': 'internal',
         'href': href || '#',
       }),
-      ['div', { class: 'space-y-1' }, ...contentChildren]
+      ...contentChildren
     ]
   },
 
