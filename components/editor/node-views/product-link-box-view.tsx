@@ -50,6 +50,28 @@ export function ProductLinkBoxView({ node, getPos, editor }: NodeViewProps) {
         )}
         <div className="product-link-box-info">
           <div className="product-link-box-name">{productName || "商品名"}</div>
+          {(amazonPrice || rakutenPrice || yahooPrice) && (
+            <div className="product-link-box-prices">
+              {amazonPrice && (
+                <div className="product-link-box-price-item">
+                  <span className="product-link-box-price-label">Amazon:</span>
+                  <span className="product-link-box-price-value">¥{Number(amazonPrice).toLocaleString()}</span>
+                </div>
+              )}
+              {rakutenPrice && (
+                <div className="product-link-box-price-item">
+                  <span className="product-link-box-price-label">楽天:</span>
+                  <span className="product-link-box-price-value">¥{Number(rakutenPrice).toLocaleString()}</span>
+                </div>
+              )}
+              {yahooPrice && (
+                <div className="product-link-box-price-item">
+                  <span className="product-link-box-price-label">Yahoo!:</span>
+                  <span className="product-link-box-price-value">¥{Number(yahooPrice).toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          )}
           <div className="product-link-box-buttons">
             <a
               href={amazonUrl || "#"}
@@ -58,7 +80,7 @@ export function ProductLinkBoxView({ node, getPos, editor }: NodeViewProps) {
               rel={amazonUrl ? "noopener noreferrer nofollow" : undefined}
               onClick={(e) => !amazonUrl && e.preventDefault()}
             >
-              Amazon{amazonPrice && ` ¥${amazonPrice}`}
+              Amazon
             </a>
             <a
               href={rakutenUrl || "#"}
@@ -67,7 +89,7 @@ export function ProductLinkBoxView({ node, getPos, editor }: NodeViewProps) {
               rel={rakutenUrl ? "noopener noreferrer nofollow" : undefined}
               onClick={(e) => !rakutenUrl && e.preventDefault()}
             >
-              楽天{rakutenPrice && ` ¥${rakutenPrice}`}
+              楽天
             </a>
             <a
               href={yahooUrl || "#"}
@@ -76,7 +98,7 @@ export function ProductLinkBoxView({ node, getPos, editor }: NodeViewProps) {
               rel={yahooUrl ? "noopener noreferrer" : undefined}
               onClick={(e) => !yahooUrl && e.preventDefault()}
             >
-              Yahoo!{yahooPrice && ` ¥${yahooPrice}`}
+              Yahoo!
             </a>
           </div>
         </div>

@@ -697,7 +697,7 @@
 .prose .product-link-box-image {
   position: relative;
   flex-shrink: 0;
-  width: 120px;
+  width: 160px;
   aspect-ratio: 1 / 1;
   height: auto;
   overflow: hidden;
@@ -731,6 +731,37 @@
 }
 
 .dark .prose .product-link-box-name {
+  color: #f3f4f6;
+}
+
+.prose .product-link-box-prices {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+
+.dark .prose .product-link-box-prices {
+  color: #9ca3af;
+}
+
+.prose .product-link-box-price-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.prose .product-link-box-price-label {
+  font-weight: 500;
+}
+
+.prose .product-link-box-price-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.dark .prose .product-link-box-price-value {
   color: #f3f4f6;
 }
 

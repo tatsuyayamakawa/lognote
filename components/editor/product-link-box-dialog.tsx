@@ -239,6 +239,24 @@ export function ProductLinkBoxDialog({
                     </p>
                   </div>
                 </div>
+              ) : amazonResults.length === 0 && searchQuery ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    「{searchQuery}」の検索結果が見つかりませんでした
+                  </p>
+                  <div className="border-t pt-3">
+                    <Label htmlFor="manual-amazon-url-not-found" className="text-sm">
+                      または Amazon URL を手動入力
+                    </Label>
+                    <Input
+                      id="manual-amazon-url-not-found"
+                      placeholder="https://www.amazon.co.jp/..."
+                      value={manualAmazonUrl}
+                      onChange={(e) => setManualAmazonUrl(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
               ) : amazonResults.length === 0 ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground text-center py-2">
@@ -303,6 +321,24 @@ export function ProductLinkBoxDialog({
                     </Label>
                     <Input
                       id="manual-rakuten-url"
+                      placeholder="https://item.rakuten.co.jp/..."
+                      value={manualRakutenUrl}
+                      onChange={(e) => setManualRakutenUrl(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+              ) : rakutenResults.length === 0 && searchQuery ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    「{searchQuery}」の検索結果が見つかりませんでした
+                  </p>
+                  <div className="border-t pt-3">
+                    <Label htmlFor="manual-rakuten-url-not-found" className="text-sm">
+                      または 楽天 URL を手動入力
+                    </Label>
+                    <Input
+                      id="manual-rakuten-url-not-found"
                       placeholder="https://item.rakuten.co.jp/..."
                       value={manualRakutenUrl}
                       onChange={(e) => setManualRakutenUrl(e.target.value)}

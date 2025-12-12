@@ -90,6 +90,32 @@ export const ProductLinkBox = Node.create<ProductLinkBoxOptions>({
       yahooPrice
     } = node.attrs
 
+    // 価格表示要素（価格がある場合のみ）
+    const pricesElement = (amazonPrice || rakutenPrice || yahooPrice) ? [
+      'div',
+      { class: 'product-link-box-prices' },
+      ...[
+        amazonPrice ? [
+          'div',
+          { class: 'product-link-box-price-item' },
+          ['span', { class: 'product-link-box-price-label' }, 'Amazon:'],
+          ['span', { class: 'product-link-box-price-value' }, `¥${Number(amazonPrice).toLocaleString()}`]
+        ] : null,
+        rakutenPrice ? [
+          'div',
+          { class: 'product-link-box-price-item' },
+          ['span', { class: 'product-link-box-price-label' }, '楽天:'],
+          ['span', { class: 'product-link-box-price-value' }, `¥${Number(rakutenPrice).toLocaleString()}`]
+        ] : null,
+        yahooPrice ? [
+          'div',
+          { class: 'product-link-box-price-item' },
+          ['span', { class: 'product-link-box-price-label' }, 'Yahoo!:'],
+          ['span', { class: 'product-link-box-price-value' }, `¥${Number(yahooPrice).toLocaleString()}`]
+        ] : null
+      ].filter(Boolean)
+    ] : null
+
     // 常に3つのボタンを表示（URLがない場合はopacity-50で無効化）
     const buttons = [
       [
@@ -100,7 +126,7 @@ export const ProductLinkBox = Node.create<ProductLinkBoxOptions>({
           target: amazonUrl ? '_blank' : undefined,
           rel: amazonUrl ? 'noopener noreferrer nofollow' : undefined,
         },
-        `Amazon${amazonPrice ? ` ¥${amazonPrice}` : ''}`
+        'Amazon'
       ],
       [
         'a',
@@ -110,7 +136,7 @@ export const ProductLinkBox = Node.create<ProductLinkBoxOptions>({
           target: rakutenUrl ? '_blank' : undefined,
           rel: rakutenUrl ? 'noopener noreferrer nofollow' : undefined,
         },
-        `楽天${rakutenPrice ? ` ¥${rakutenPrice}` : ''}`
+        '楽天'
       ],
       [
         'a',
@@ -120,7 +146,7 @@ export const ProductLinkBox = Node.create<ProductLinkBoxOptions>({
           target: yahooUrl ? '_blank' : undefined,
           rel: yahooUrl ? 'noopener noreferrer' : undefined,
         },
-        `Yahoo!${yahooPrice ? ` ¥${yahooPrice}` : ''}`
+        'Yahoo!'
       ]
     ]
 
@@ -146,12 +172,13 @@ export const ProductLinkBox = Node.create<ProductLinkBoxOptions>({
             { class: 'product-link-box-name' },
             productName || '商品名'
           ],
+          pricesElement,
           [
             'div',
             { class: 'product-link-box-buttons' },
             ...buttons
           ]
-        ]
+        ].filter(Boolean)
       ].filter(Boolean)
     ]
   },
