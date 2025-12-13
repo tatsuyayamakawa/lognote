@@ -91,9 +91,15 @@ export function ImageGalleryDialog({
     setImagePickerOpen(true);
   };
 
-  const handleImageSelected = (url: string) => {
+  const handleImageSelected = (data: { src: string; alt?: string; caption?: string }) => {
     if (currentImageIndex !== null) {
-      handleImageChange(currentImageIndex, "src", url);
+      const newImages = [...images];
+      newImages[currentImageIndex] = {
+        src: data.src,
+        alt: data.alt || "",
+        caption: data.caption || "",
+      };
+      setImages(newImages);
     }
     setImagePickerOpen(false);
     setCurrentImageIndex(null);
