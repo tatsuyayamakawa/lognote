@@ -173,13 +173,15 @@ function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
   return (
     <NodeViewWrapper className="image-gallery-wrapper my-6">
       <div className="relative group">
-        <button
-          onClick={deleteNode}
-          className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded p-1 text-xs hover:bg-red-600"
-          contentEditable={false}
-        >
-          削除
-        </button>
+        {deleteNode && (
+          <button
+            onClick={deleteNode}
+            className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded p-1 text-xs hover:bg-red-600"
+            contentEditable={false}
+          >
+            削除
+          </button>
+        )}
         <div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 cursor-pointer"
           style={{

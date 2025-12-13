@@ -5,7 +5,6 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import Youtube from "@tiptap/extension-youtube";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -22,6 +21,7 @@ import { ProductLinkBox } from "./extensions/product-link-box";
 import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
 import { ImageGallery } from "./extensions/image-gallery";
+import { CustomImage } from "./extensions/custom-image";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -157,7 +157,9 @@ export function TiptapEditor({
       }).configure({
         openOnClick: false,
       }),
-      Image.configure({
+      CustomImage.configure({
+        inline: false,
+        allowBase64: false,
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
         },
