@@ -129,6 +129,9 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
   },
 
   addNodeView() {
+    if (this.options.enableNodeView === false) {
+      return null
+    }
     return ReactNodeViewRenderer(ImageGalleryComponent)
   },
 
