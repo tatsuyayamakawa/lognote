@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import { CategoriesTable } from "./categories-table"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "カテゴリ管理",
+}
 
 export default async function CategoriesPage() {
   const supabase = await createClient()

@@ -21,6 +21,7 @@ import { CtaButton } from "./extensions/cta-button";
 import { ProductLinkBox } from "./extensions/product-link-box";
 import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
+import { ImageGallery } from "./extensions/image-gallery";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -50,6 +51,7 @@ import {
   MonitorPlay,
   Youtube as YoutubeIcon,
   Lightbulb,
+  Images,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./image-picker-dialog";
@@ -61,6 +63,7 @@ import { PointBoxDialog } from "./point-box-dialog";
 import { ProductLinkBoxDialog } from "./product-link-box-dialog";
 import { EmbedAdBoxDialog } from "./embed-ad-box-dialog";
 import { YoutubeDialog } from "./youtube-dialog";
+import { ImageGalleryDialog } from "./image-gallery-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -89,6 +92,7 @@ export function TiptapEditor({
   const [embedAdBoxDialogOpen, setEmbedAdBoxDialogOpen] = useState(false);
   const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
   const [pointBoxDialogOpen, setPointBoxDialogOpen] = useState(false);
+  const [imageGalleryDialogOpen, setImageGalleryDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
   const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
     href: string;
@@ -109,6 +113,12 @@ export function TiptapEditor({
     yahooPrice?: string;
   } | undefined>(undefined);
   const [isEditingProductLinkBox, setIsEditingProductLinkBox] = useState(false);
+  const [imageGalleryInitialData, setImageGalleryInitialData] = useState<{
+    images: { src: string; alt?: string; caption?: string }[];
+    columns: number;
+    gap: number;
+  } | undefined>(undefined);
+  const [isEditingImageGallery, setIsEditingImageGallery] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -183,6 +193,9 @@ export function TiptapEditor({
         enableNodeView: true,
       }),
       PointBox.configure({
+        enableNodeView: true,
+      }),
+      ImageGallery.configure({
         enableNodeView: true,
       }),
       Table.configure({
@@ -386,6 +399,22 @@ export function TiptapEditor({
     };
   }, []);
 
+  // 画像ギャラリーのダブルクリック編集イベントをリスン
+  useEffect(() => {
+    const handleEditImageGallery = (event: Event) => {
+      const customEvent = event as CustomEvent<{ pos: number; attrs: any }>;
+      setImageGalleryInitialData(customEvent.detail.attrs);
+      setIsEditingImageGallery(true);
+      setImageGalleryDialogOpen(true);
+    };
+
+    window.addEventListener('edit-image-gallery', handleEditImageGallery);
+
+    return () => {
+      window.removeEventListener('edit-image-gallery', handleEditImageGallery);
+    };
+  }, []);
+
   if (!editor) {
     return null;
   }
@@ -483,6 +512,22 @@ export function TiptapEditor({
 
   const handleEmbedAdBoxInsert = (embedCode: string) => {
     editor.chain().focus().setEmbedAdBox({ embedCode }).run();
+  };
+
+  const handleImageGalleryInsert = (data: {
+    images: { src: string; alt?: string; caption?: string }[];
+    columns: number;
+    gap: number;
+  }) => {
+    if (isEditingImageGallery) {
+      // 編集モード: 既存のギャラリーを更新
+      editor.chain().focus().updateAttributes('imageGallery', data).run();
+      setIsEditingImageGallery(false);
+      setImageGalleryInitialData(undefined);
+    } else {
+      // 新規作成モード
+      editor.chain().focus().setImageGallery(data).run();
+    }
   };
 
   const handleLinkInsert = async (data: {
@@ -841,6 +886,21 @@ export function TiptapEditor({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    onClick={() => setImageGalleryDialogOpen(true)}
+                    className={
+                      editor.isActive("imageGallery")
+                        ? "bg-accent border-2 border-primary"
+                        : ""
+                    }
+                    disabled={disabled}
+                    title="画像ギャラリー"
+                  >
+                    <Images className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={addYoutube}
                     className={
                       editor.isActive("youtube")
@@ -1134,6 +1194,13 @@ export function TiptapEditor({
         open={embedAdBoxDialogOpen}
         onOpenChange={setEmbedAdBoxDialogOpen}
         onInsert={handleEmbedAdBoxInsert}
+      />
+      <ImageGalleryDialog
+        open={imageGalleryDialogOpen}
+        onOpenChange={setImageGalleryDialogOpen}
+        onSubmit={handleImageGalleryInsert}
+        initialData={imageGalleryInitialData}
+        isEditMode={isEditingImageGallery}
       />
     </>
   );

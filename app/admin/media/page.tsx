@@ -5,9 +5,13 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Copy, Trash2, Check } from "lucide-react";
+import { Upload, Copy, Trash2, Check, Search, X } from "lucide-react";
 import Image from "next/image";
 import { ImageUploadDialog } from "./_components/image-upload-dialog";
+import { ImageReuploadDialog } from "./_components/image-reupload-dialog";
+import { Input } from "@/components/ui/input";
+
+// クライアントコンポーネントなので、メタデータは別ファイルで設定する必要があります
 
 interface StorageFile {
   name: string;
@@ -17,14 +21,46 @@ interface StorageFile {
   metadata: {
     size: number;
     mimetype: string;
+    postId?: string;
   };
+}
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  content: any; // JSON content
 }
 
 export default function MediaPage() {
   const [images, setImages] = useState<StorageFile[]>([]);
+  const [filteredImages, setFilteredImages] = useState<StorageFile[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [reuploadDialogOpen, setReuploadDialogOpen] = useState(false);
+  const [selectedImageForReupload, setSelectedImageForReupload] = useState<{
+    fileName: string;
+    url: string;
+  } | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [filterMode, setFilterMode] = useState<"all" | "unassigned">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const loadPosts = async () => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("posts")
+        .select("id, title, slug, content")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (err) {
+      console.error("Failed to load posts:", err);
+    }
+  };
 
   const loadImages = async () => {
     setLoading(true);
@@ -48,6 +84,7 @@ export default function MediaPage() {
           metadata: {
             size: (file.metadata?.size as number) || 0,
             mimetype: (file.metadata?.mimetype as string) || "",
+            postId: (file.metadata?.postId as string) || undefined,
           },
         }))
       );
@@ -59,8 +96,67 @@ export default function MediaPage() {
   };
 
   useEffect(() => {
+    loadPosts();
     loadImages();
   }, []);
+
+  // 画像URLから記事を検索するヘルパー関数
+  const findPostsUsingImage = (imageUrl: string) => {
+    return posts.filter((post) => {
+      if (!post.content) return false;
+      const contentStr = JSON.stringify(post.content);
+      return contentStr.includes(imageUrl);
+    });
+  };
+
+  // フィルタリング処理
+  useEffect(() => {
+    let filtered = images;
+
+    // モードフィルター
+    if (filterMode === "unassigned") {
+      filtered = filtered.filter((img) => {
+        // メタデータに記事IDがあるか
+        if (img.metadata.postId) return false;
+
+        // コンテンツ内で使用されているか確認
+        const imageUrl = getImageUrl(img.name);
+        const usingPosts = findPostsUsingImage(imageUrl);
+        return usingPosts.length === 0;
+      });
+    }
+
+    // 検索クエリフィルター
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((img) => {
+        const imageUrl = getImageUrl(img.name);
+
+        // 1. 記事タイトルで検索
+        const usingPosts = findPostsUsingImage(imageUrl);
+        const titleMatch = usingPosts.some(post =>
+          post.title.toLowerCase().includes(query)
+        );
+
+        // 2. スラッグで検索
+        const slugMatch = usingPosts.some(post =>
+          post.slug.toLowerCase().includes(query)
+        );
+
+        // 3. ファイル名でも検索（一応）
+        const fileNameMatch = img.name.toLowerCase().includes(query);
+
+        return titleMatch || slugMatch || fileNameMatch;
+      });
+    }
+
+    // 作成日時でソート（新しい順）
+    filtered = filtered.sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    setFilteredImages(filtered);
+  }, [images, filterMode, searchQuery, posts]);
 
   const getImageUrl = (fileName: string) => {
     const supabase = createClient();
@@ -115,6 +211,49 @@ export default function MediaPage() {
         </Button>
       </div>
 
+      {/* フィルタリング */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex gap-2">
+          <Button
+            variant={filterMode === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilterMode("all")}
+          >
+            すべて
+          </Button>
+          <Button
+            variant={filterMode === "unassigned" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilterMode("unassigned")}
+          >
+            未割当
+          </Button>
+        </div>
+
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="記事タイトルまたはファイル名で検索..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        <span className="text-sm text-muted-foreground whitespace-nowrap bg-secondary px-3 py-1 rounded-full">
+          {filteredImages.length}件
+        </span>
+      </div>
+
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
@@ -131,26 +270,38 @@ export default function MediaPage() {
             </Card>
           ))}
         </div>
-      ) : images.length === 0 ? (
+      ) : filteredImages.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>画像がありません</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              アップロードボタンから画像を追加してください
+              {images.length === 0
+                ? "アップロードボタンから画像を追加してください"
+                : "この条件に一致する画像がありません"}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {images.map((image) => {
+          {filteredImages.map((image) => {
             const url = getImageUrl(image.name);
             const isCopied = copiedUrl === url;
 
             return (
               <Card key={image.id} className="overflow-hidden py-0">
-                <div className="aspect-video relative bg-muted">
+                <div
+                  className="aspect-video relative bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                  onDoubleClick={() => {
+                    setSelectedImageForReupload({
+                      fileName: image.name,
+                      url,
+                    });
+                    setReuploadDialogOpen(true);
+                  }}
+                  title="ダブルクリックで再アップロード"
+                >
                   <Image
                     src={url}
                     alt={image.name}
@@ -205,6 +356,16 @@ export default function MediaPage() {
         onOpenChange={setUploadDialogOpen}
         onUploadComplete={loadImages}
       />
+
+      {selectedImageForReupload && (
+        <ImageReuploadDialog
+          open={reuploadDialogOpen}
+          onOpenChange={setReuploadDialogOpen}
+          onUploadComplete={loadImages}
+          imageFileName={selectedImageForReupload.fileName}
+          imageUrl={selectedImageForReupload.url}
+        />
+      )}
     </div>
   );
 }

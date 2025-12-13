@@ -5,6 +5,11 @@ import { Plus } from "lucide-react";
 import { PostsTable } from "./posts-table";
 import { syncViewCountsFromAnalytics } from "@/lib/posts";
 import type { Post, Category } from "@/types";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "記事管理",
+};
 
 const POSTS_PER_PAGE = 10;
 

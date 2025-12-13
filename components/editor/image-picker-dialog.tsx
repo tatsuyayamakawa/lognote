@@ -26,12 +26,14 @@ interface ImagePickerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (url: string) => void
+  postId?: string // 現在編集中の記事ID（任意）
 }
 
 export function ImagePickerDialog({
   open,
   onOpenChange,
   onSelect,
+  postId,
 }: ImagePickerDialogProps) {
   const [images, setImages] = useState<StorageFile[]>([])
   const [loading, setLoading] = useState(false)
@@ -105,6 +107,11 @@ export function ImagePickerDialog({
       // 画像をアップロード
       const formData = new FormData()
       formData.append("file", file)
+
+      // 記事IDがあれば一緒に送信
+      if (postId) {
+        formData.append("postId", postId)
+      }
 
       const response = await fetch("/api/upload", {
         method: "POST",

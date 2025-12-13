@@ -8,6 +8,11 @@ import {
 } from "@/lib/google-analytics/analytics";
 import { getSearchKeywords } from "@/lib/google-analytics/search-console";
 import { AnalyticsCharts } from "./analytics-charts";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ダッシュボード",
+};
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSearchConsoleURL } from "@/lib/utils";
 

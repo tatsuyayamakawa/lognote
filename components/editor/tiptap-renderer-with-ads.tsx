@@ -21,8 +21,10 @@ import { CtaButton } from "./extensions/cta-button";
 import { ProductLinkBox } from "./extensions/product-link-box";
 import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
+import { ImageGallery } from "./extensions/image-gallery";
 import { AffiliateBoxRenderer } from "./extensions/affiliate-box-renderer";
 import { AdSense } from "../ads/adsense";
+import { ImageGalleryClient } from "./image-gallery-client";
 
 // 見出しの階層的な番号を管理するクラス
 class HeadingNumbering {
@@ -166,6 +168,12 @@ export function TiptapRendererWithAds({
       PointBox.configure({
         HTMLAttributes: {
           class: "point-box",
+        },
+        enableNodeView: false,
+      }),
+      ImageGallery.configure({
+        HTMLAttributes: {
+          class: "image-gallery",
         },
         enableNodeView: false,
       }),
@@ -322,6 +330,9 @@ export function TiptapRendererWithAds({
           mobileSlot={inArticleMobileSlot}
         />
       )}
+
+      {/* 画像ギャラリークリック拡大機能 */}
+      <ImageGalleryClient />
     </div>
   );
 }

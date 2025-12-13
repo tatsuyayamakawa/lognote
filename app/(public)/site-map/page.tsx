@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${getBaseURL()}/site-map`,
   },
+  openGraph: {
+    title: "サイトマップ",
+    description: "整えて、創る。のサイトマップ - すべてのページ一覧",
+    url: `${getBaseURL()}/site-map`,
+  },
+  twitter: {
+    title: "サイトマップ",
+    description: "整えて、創る。のサイトマップ - すべてのページ一覧",
+  },
 };
 
 export default async function SitemapPage() {

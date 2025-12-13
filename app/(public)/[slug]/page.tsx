@@ -38,7 +38,6 @@ export async function generateMetadata({
   }
 
   const postUrl = `${getBaseURL()}/${post.slug}`;
-  const keywords = post.categories?.map((c) => c.name) || [];
 
   // OGP画像の優先順位: 1. OG画像 2. カスタムサムネイル 3. 動的生成
   const ogImageUrl =
@@ -49,8 +48,6 @@ export async function generateMetadata({
   return {
     title: `${post.title}`,
     description: post.meta_description || post.excerpt || post.title,
-    keywords: keywords,
-    authors: [{ name: "整えて、創る。" }],
     alternates: {
       canonical: postUrl,
     },
@@ -63,10 +60,8 @@ export async function generateMetadata({
       publishedTime: post.published_at || undefined,
       modifiedTime: post.updated_at,
       authors: ["整えて、創る。"],
-      siteName: "整えて、創る。",
     },
     twitter: {
-      card: "summary_large_image",
       title: post.title,
       description: post.meta_description || post.excerpt || post.title,
       images: [ogImageUrl],

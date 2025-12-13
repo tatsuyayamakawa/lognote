@@ -13,7 +13,7 @@ export default function PublicLayout({
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7839828582645189"
         crossOrigin="anonymous"
-        strategy="beforeInteractive"
+        strategy="lazyOnload"
       />
       <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
         <Header />

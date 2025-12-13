@@ -1,4 +1,9 @@
 import { CategoryForm } from "../category-form"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "カテゴリ作成",
+}
 
 export default function NewCategoryPage() {
   return (

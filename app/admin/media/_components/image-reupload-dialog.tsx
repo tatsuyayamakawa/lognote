@@ -13,17 +13,21 @@ import {
 import { Upload, Loader2, X } from "lucide-react"
 import Image from "next/image"
 
-interface ImageUploadDialogProps {
+interface ImageReuploadDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onUploadComplete: () => void
+  imageFileName: string
+  imageUrl: string
 }
 
-export function ImageUploadDialog({
+export function ImageReuploadDialog({
   open,
   onOpenChange,
   onUploadComplete,
-}: ImageUploadDialogProps) {
+  imageFileName,
+  imageUrl,
+}: ImageReuploadDialogProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -66,6 +70,7 @@ export function ImageUploadDialog({
     try {
       const formData = new FormData()
       formData.append("file", selectedFile)
+      formData.append("overwriteFileName", imageFileName)
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -101,79 +106,99 @@ export function ImageUploadDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>画像をアップロード</DialogTitle>
+          <DialogTitle>画像を再アップロード</DialogTitle>
           <DialogDescription>
-            記事で使用する画像をアップロードします（最大10MB）
+            既存の画像を新しい画像で置き換えます
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {previewUrl ? (
-            <div className="relative aspect-video overflow-hidden rounded-lg border">
+          {/* 現在の画像 */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">現在の画像</p>
+            <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
               <Image
-                src={previewUrl}
-                alt="Preview"
+                src={imageUrl}
+                alt={imageFileName}
                 fill
                 className="object-cover"
               />
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedFile(null)
-                  setPreviewUrl(null)
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = ""
-                  }
-                }}
-                disabled={uploading}
-                className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm hover:bg-destructive/90 disabled:opacity-50"
-              >
-                <X className="h-4 w-4" />
-              </button>
             </div>
-          ) : (
-            <div className="flex items-center justify-center rounded-lg border border-dashed p-12">
-              <div className="text-center">
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  画像を選択してください
+            <p className="text-xs text-muted-foreground truncate">
+              {imageFileName}
+            </p>
+          </div>
+
+          {/* 新しい画像 */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">新しい画像</p>
+            {previewUrl ? (
+              <div className="relative aspect-video overflow-hidden rounded-lg border">
+                <Image
+                  src={previewUrl}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedFile(null)
+                    setPreviewUrl(null)
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = ""
+                    }
+                  }}
+                  disabled={uploading}
+                  className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm hover:bg-destructive/90 disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center rounded-lg border border-dashed p-12">
+                <div className="text-center">
+                  <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    置き換える画像を選択してください
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              disabled={uploading}
+              className="hidden"
+            />
+
+            {!previewUrl && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                ファイルを選択
+              </Button>
+            )}
+
+            {selectedFile && (
+              <div className="rounded-md bg-muted p-3 text-sm">
+                <p className="font-medium">{selectedFile.name}</p>
+                <p className="text-muted-foreground">
+                  {(selectedFile.size / 1024).toFixed(1)} KB
                 </p>
               </div>
-            </div>
-          )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            disabled={uploading}
-            className="hidden"
-          />
-
-          {!previewUrl && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              ファイルを選択
-            </Button>
-          )}
-
-          {selectedFile && (
-            <div className="rounded-md bg-muted p-3 text-sm">
-              <p className="font-medium">{selectedFile.name}</p>
-              <p className="text-muted-foreground">
-                {(selectedFile.size / 1024).toFixed(1)} KB
-              </p>
-            </div>
-          )}
+            )}
+          </div>
 
           {error && (
             <p className="text-sm text-destructive">{error}</p>
@@ -197,10 +222,10 @@ export function ImageUploadDialog({
             {uploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                アップロード中...
+                上書き中...
               </>
             ) : (
-              "アップロード"
+              "上書きアップロード"
             )}
           </Button>
         </DialogFooter>

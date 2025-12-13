@@ -9,6 +9,27 @@ import { ArticleCard } from "@/app/(public)/_components/article-card";
 import { WebsiteJsonLd } from "@/components/seo/json-ld";
 import { getBaseURL } from "@/lib/utils";
 import { Sidebar } from "@/components/home/sidebar";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "整えて、創る。 - ネット集客に強い整体院サイトを制作",
+  description:
+    "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
+  alternates: {
+    canonical: getBaseURL(),
+  },
+  openGraph: {
+    url: getBaseURL(),
+    title: "整えて、創る。",
+    description:
+      "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
+  },
+  twitter: {
+    title: "整えて、創る。",
+    description:
+      "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
+  },
+};
 
 // ISRの再検証時間（秒） - 24時間ごとに再検証
 export const revalidate = 86400;

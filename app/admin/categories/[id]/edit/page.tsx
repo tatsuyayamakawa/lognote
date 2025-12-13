@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { CategoryForm } from "../../category-form"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "カテゴリ編集",
+}
 
 interface EditCategoryPageProps {
   params: Promise<{

@@ -3,6 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getCategories } from "@/lib/posts";
 import { PostForm } from "../../post-form";
 import type { Category } from "@/types";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "記事編集",
+};
 
 interface EditPostPageProps {
   params: Promise<{

@@ -48,12 +48,9 @@ export async function generateMetadata({
       title: category.name,
       description: description,
       url: categoryUrl,
-      type: "website",
-      siteName: "整えて、創る。",
       images: [ogImageUrl],
     },
     twitter: {
-      card: "summary_large_image",
       title: category.name,
       description: description,
       images: [ogImageUrl],

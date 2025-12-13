@@ -16,6 +16,8 @@ import Heading from "@tiptap/extension-heading"
 import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
 import { CtaButton } from "./extensions/cta-button"
+import { ImageGallery } from "./extensions/image-gallery"
+import { ImageGalleryClient } from "./image-gallery-client"
 
 // 見出しの階層的な番号を管理するクラス
 class HeadingNumbering {
@@ -115,6 +117,12 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
         },
         enableNodeView: false,
       }),
+      ImageGallery.configure({
+        HTMLAttributes: {
+          class: "image-gallery",
+        },
+        enableNodeView: false,
+      }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
@@ -166,5 +174,10 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
     return null
   }
 
-  return <EditorContent editor={editor} />
+  return (
+    <>
+      <EditorContent editor={editor} />
+      <ImageGalleryClient />
+    </>
+  )
 }
