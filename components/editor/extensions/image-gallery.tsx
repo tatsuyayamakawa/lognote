@@ -1,13 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { NodeViewWrapper } from '@tiptap/react'
-import { useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
 
 export interface ImageGalleryOptions {
   HTMLAttributes: Record<string, any>
@@ -18,6 +11,11 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     imageGallery: {
       setImageGallery: (options: {
+        images: Array<{ src: string; alt?: string; caption?: string }>
+        columns?: number
+        gap?: number
+      }) => ReturnType
+      updateImageGallery: (options: {
         images: Array<{ src: string; alt?: string; caption?: string }>
         columns?: number
         gap?: number
@@ -143,13 +141,17 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
               attrs: options,
             })
           },
+      updateImageGallery:
+        options =>
+          ({ commands }) => {
+            return commands.updateAttributes(this.name, options)
+          },
     }
   },
 })
 
 function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
   const { images, columns, gap } = node.attrs
-  const [selectedImage, setSelectedImage] = useState<{ src: string; alt?: string; caption?: string } | null>(null)
 
   const handleDoubleClick = () => {
     const pos = getPos()
@@ -164,11 +166,6 @@ function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
         })
       )
     }
-  }
-
-  const handleImageClick = (image: any, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setSelectedImage(image)
   }
 
   return (
@@ -211,8 +208,7 @@ function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
           {images.map((image: any, index: number) => (
             <div
               key={index}
-              className="overflow-hidden rounded cursor-zoom-in"
-              onClick={(e) => handleImageClick(image, e)}
+              className="overflow-hidden rounded"
             >
               <img
                 src={image.src}
@@ -229,31 +225,7 @@ function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
         </div>
       </div>
 
-      {/* 画像拡大ダイアログ */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[95vw]! max-h-[95vh] w-auto p-0 overflow-hidden sm:max-w-[95vw]!">
-          <DialogTitle className="sr-only">画像を拡大表示</DialogTitle>
-          <DialogDescription className="sr-only">
-            {selectedImage?.alt || selectedImage?.caption || '画像の拡大表示'}
-          </DialogDescription>
-          {selectedImage && (
-            <div className="relative">
-              <img
-                src={selectedImage.src}
-                alt={selectedImage.alt || selectedImage.caption || '画像'}
-                className="w-full h-auto max-h-[90vh] object-contain my-0"
-              />
-              {selectedImage.caption && (
-                <div className="p-4 bg-background">
-                  <p className="text-sm text-muted-foreground text-center">
-                    {selectedImage.caption}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+
     </NodeViewWrapper>
   )
 }

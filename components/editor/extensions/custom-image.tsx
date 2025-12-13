@@ -45,7 +45,7 @@ export const CustomImage = Image.extend<CustomImageOptions>({
         "figure",
         { class: "my-4 max-w-md" },
         ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg w-full h-auto cursor-zoom-in hover:opacity-90 transition-opacity" }],
-        ["figcaption", { class: "text-sm text-gray-600 dark:text-gray-400 mt-2" }, caption],
+        ["figcaption", { class: "text-sm text-gray-600 dark:text-gray-400 mt-2 text-center" }, caption],
       ];
     }
 
@@ -53,12 +53,27 @@ export const CustomImage = Image.extend<CustomImageOptions>({
   },
 });
 
-function CustomImageComponent({ node, deleteNode }: any) {
+function CustomImageComponent({ node, deleteNode, getPos }: any) {
   const { src, alt, caption } = node.attrs;
+
+  const handleDoubleClick = () => {
+    const pos = getPos();
+    if (typeof pos === 'number') {
+      // カスタムイベントを発火して編集ダイアログを開く
+      window.dispatchEvent(
+        new CustomEvent('edit-custom-image', {
+          detail: {
+            pos,
+            attrs: node.attrs,
+          },
+        })
+      );
+    }
+  };
 
   return (
     <NodeViewWrapper className="my-4 max-w-md">
-      <figure className="relative group">
+      <figure className="relative group" onDoubleClick={handleDoubleClick}>
         {deleteNode && (
           <button
             onClick={deleteNode}
@@ -68,9 +83,9 @@ function CustomImageComponent({ node, deleteNode }: any) {
             削除
           </button>
         )}
-        <img src={src} alt={alt || ""} className="rounded-lg w-full h-auto" />
+        <img src={src} alt={alt || ""} className="rounded-lg w-full h-auto cursor-pointer" />
         {caption && (
-          <figcaption className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          <figcaption className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
             {caption}
           </figcaption>
         )}

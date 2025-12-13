@@ -33,6 +33,7 @@ interface ImagePickerDialogProps {
   onOpenChange: (open: boolean) => void
   onSelect: (data: ImageData) => void
   postId?: string // 現在編集中の記事ID（任意）
+  initialData?: ImageData // 編集モード用の初期データ
 }
 
 export function ImagePickerDialog({
@@ -40,6 +41,7 @@ export function ImagePickerDialog({
   onOpenChange,
   onSelect,
   postId,
+  initialData,
 }: ImagePickerDialogProps) {
   const [images, setImages] = useState<StorageFile[]>([])
   const [loading, setLoading] = useState(false)
@@ -53,6 +55,22 @@ export function ImagePickerDialog({
   const [alt, setAlt] = useState("")
   const [caption, setCaption] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // 初期データがある場合は編集モード
+  useEffect(() => {
+    if (open && initialData) {
+      setSelectedImage(initialData.src)
+      setAlt(initialData.alt || "")
+      setCaption(initialData.caption || "")
+      setShowMetadataForm(true)
+    } else if (!open) {
+      // ダイアログが閉じられた時にリセット
+      setShowMetadataForm(false)
+      setSelectedImage(null)
+      setAlt("")
+      setCaption("")
+    }
+  }, [open, initialData])
 
   useEffect(() => {
     if (open) {

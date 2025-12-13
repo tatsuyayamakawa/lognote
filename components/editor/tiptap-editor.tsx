@@ -85,6 +85,7 @@ export function TiptapEditor({
   disabled = false,
 }: TiptapEditorProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageInitialData, setImageInitialData] = useState<{ src: string; alt?: string; caption?: string } | undefined>(undefined);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
@@ -418,6 +419,26 @@ export function TiptapEditor({
     };
   }, []);
 
+  // カスタム画像のダブルクリック編集イベントをリスン
+  useEffect(() => {
+    const handleEditCustomImage = (event: Event) => {
+      const customEvent = event as CustomEvent<{ pos: number; attrs: any }>;
+      // 既存の画像データを初期データとして設定
+      setImageInitialData({
+        src: customEvent.detail.attrs.src,
+        alt: customEvent.detail.attrs.alt,
+        caption: customEvent.detail.attrs.caption,
+      });
+      setImageDialogOpen(true);
+    };
+
+    window.addEventListener('edit-custom-image', handleEditCustomImage);
+
+    return () => {
+      window.removeEventListener('edit-custom-image', handleEditCustomImage);
+    };
+  }, []);
+
   if (!editor) {
     return null;
   }
@@ -428,6 +449,7 @@ export function TiptapEditor({
   };
 
   const addImage = () => {
+    setImageInitialData(undefined);
     setImageDialogOpen(true);
   };
 
@@ -459,7 +481,14 @@ export function TiptapEditor({
   };
 
   const handleImageSelect = (data: { src: string; alt?: string; caption?: string }) => {
-    editor.chain().focus().setImage(data).run();
+    if (imageInitialData) {
+      // 編集モード: 既存の画像を更新
+      editor.chain().focus().updateAttributes('image', data).run();
+      setImageInitialData(undefined);
+    } else {
+      // 新規作成モード
+      editor.chain().focus().setImage(data).run();
+    }
   };
 
   const handleCtaButtonSelect = (options: {
@@ -524,7 +553,7 @@ export function TiptapEditor({
   }) => {
     if (isEditingImageGallery) {
       // 編集モード: 既存のギャラリーを更新
-      editor.chain().focus().updateAttributes('imageGallery', data).run();
+      editor.chain().focus().updateImageGallery(data).run();
       setIsEditingImageGallery(false);
       setImageGalleryInitialData(undefined);
     } else {
@@ -1158,6 +1187,7 @@ export function TiptapEditor({
         open={imageDialogOpen}
         onOpenChange={setImageDialogOpen}
         onSelect={handleImageSelect}
+        initialData={imageInitialData}
       />
       <LinkDialog
         open={linkDialogOpen}
