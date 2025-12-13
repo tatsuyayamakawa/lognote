@@ -160,6 +160,7 @@ export function TiptapEditor({
       CustomImage.configure({
         inline: false,
         allowBase64: false,
+        enableNodeView: true,
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
         },

@@ -1,54 +1,60 @@
-import Image from '@tiptap/extension-image'
-import { ReactNodeViewRenderer } from '@tiptap/react'
-import { NodeViewWrapper } from '@tiptap/react'
+import Image from "@tiptap/extension-image";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+import { NodeViewWrapper } from "@tiptap/react";
 
 export interface CustomImageOptions {
-  inline: boolean
-  allowBase64: boolean
-  HTMLAttributes: Record<string, any>
-}
-
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    customImage: {
-      setImage: (options: {
-        src: string
-        alt?: string
-        title?: string
-        caption?: string
-      }) => ReturnType
-    }
-  }
+  inline: boolean;
+  allowBase64: boolean;
+  HTMLAttributes: Record<string, any>;
+  enableNodeView: boolean;
 }
 
 export const CustomImage = Image.extend<CustomImageOptions>({
-  name: 'customImage',
+  name: "image",
 
   addAttributes() {
     return {
       ...this.parent?.(),
       caption: {
         default: null,
-        parseHTML: element => element.getAttribute('data-caption'),
-        renderHTML: attributes => {
+        parseHTML: (element) => element.getAttribute("data-caption"),
+        renderHTML: (attributes) => {
           if (!attributes.caption) {
-            return {}
+            return {};
           }
           return {
-            'data-caption': attributes.caption,
-          }
+            "data-caption": attributes.caption,
+          };
         },
       },
-    }
+    };
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(CustomImageComponent)
+    if (!this.options.enableNodeView) {
+      return null;
+    }
+    return ReactNodeViewRenderer(CustomImageComponent);
   },
-})
+
+  renderHTML({ node, HTMLAttributes }) {
+    const { src, alt, caption } = node.attrs;
+
+    if (caption) {
+      return [
+        "figure",
+        { class: "my-4" },
+        ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg w-full h-auto" }],
+        ["figcaption", { class: "text-sm text-gray-600 dark:text-gray-400 mt-2 text-center" }, caption],
+      ];
+    }
+
+    return ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg w-full h-auto" }];
+  },
+});
 
 function CustomImageComponent({ node, deleteNode }: any) {
-  const { src, alt, caption } = node.attrs
+  const { src, alt, caption } = node.attrs;
 
   return (
     <NodeViewWrapper className="my-4">
@@ -62,11 +68,7 @@ function CustomImageComponent({ node, deleteNode }: any) {
             削除
           </button>
         )}
-        <img
-          src={src}
-          alt={alt || ''}
-          className="rounded-lg w-full h-auto"
-        />
+        <img src={src} alt={alt || ""} className="rounded-lg w-full h-auto" />
         {caption && (
           <figcaption className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
             {caption}
@@ -74,5 +76,5 @@ function CustomImageComponent({ node, deleteNode }: any) {
         )}
       </figure>
     </NodeViewWrapper>
-  )
+  );
 }

@@ -3,6 +3,7 @@
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
+import { CustomImage } from "./extensions/custom-image";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
@@ -128,6 +129,7 @@ export function TiptapRendererWithAds({
       CustomImage.configure({
         inline: false,
         allowBase64: false,
+        enableNodeView: false,
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto my-4",
         },
