@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 export function ImageGalleryClient() {
   const [selectedImage, setSelectedImage] = useState<{
@@ -14,18 +14,32 @@ export function ImageGalleryClient() {
     const handleImageClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
 
-      // 画像ギャラリー内の画像がクリックされたかチェック
-      if (target.tagName === "IMG" && target.closest(".image-gallery-item")) {
-        e.preventDefault()
+      // 画像ギャラリー内の画像、または通常の画像(prose内)がクリックされたかチェック
+      if (target.tagName === "IMG") {
+        const isGalleryImage = target.closest(".image-gallery-item")
+        const isProseImage = target.closest(".prose") && !target.closest(".image-gallery-wrapper")
 
-        const img = target as HTMLImageElement
-        const caption = img.parentElement?.querySelector("p")?.textContent || undefined
+        if (isGalleryImage || isProseImage) {
+          e.preventDefault()
 
-        setSelectedImage({
-          src: img.src,
-          alt: img.alt,
-          caption,
-        })
+          const img = target as HTMLImageElement
+          let caption: string | undefined
+
+          if (isGalleryImage) {
+            // ギャラリー画像のキャプション取得
+            caption = img.parentElement?.querySelector("p")?.textContent || undefined
+          } else if (isProseImage) {
+            // 通常の画像のキャプション取得(figcaption)
+            const figure = img.closest("figure")
+            caption = figure?.querySelector("figcaption")?.textContent || undefined
+          }
+
+          setSelectedImage({
+            src: img.src,
+            alt: img.alt,
+            caption,
+          })
+        }
       }
     }
 
@@ -39,8 +53,11 @@ export function ImageGalleryClient() {
 
   return (
     <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-      <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw]! max-h-[95vh] w-auto p-0 overflow-hidden sm:max-w-[95vw]!">
         <DialogTitle className="sr-only">画像を拡大表示</DialogTitle>
+        <DialogDescription className="sr-only">
+          {selectedImage?.alt || selectedImage?.caption || '画像の拡大表示'}
+        </DialogDescription>
         {selectedImage && (
           <div className="relative">
             <img

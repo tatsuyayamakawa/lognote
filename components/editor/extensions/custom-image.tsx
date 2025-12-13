@@ -43,13 +43,13 @@ export const CustomImage = Image.extend<CustomImageOptions>({
     if (caption) {
       return [
         "figure",
-        { class: "my-4" },
-        ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg w-full h-auto" }],
-        ["figcaption", { class: "text-sm text-gray-600 dark:text-gray-400 mt-2 text-center" }, caption],
+        { class: "my-4 max-w-md" },
+        ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg w-full h-auto cursor-zoom-in hover:opacity-90 transition-opacity" }],
+        ["figcaption", { class: "text-sm text-gray-600 dark:text-gray-400 mt-2" }, caption],
       ];
     }
 
-    return ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg w-full h-auto" }];
+    return ["img", { ...HTMLAttributes, src, alt: alt || "", class: "rounded-lg max-w-md w-full h-auto cursor-zoom-in hover:opacity-90 transition-opacity" }];
   },
 });
 
@@ -57,7 +57,7 @@ function CustomImageComponent({ node, deleteNode }: any) {
   const { src, alt, caption } = node.attrs;
 
   return (
-    <NodeViewWrapper className="my-4">
+    <NodeViewWrapper className="my-4 max-w-md">
       <figure className="relative group">
         {deleteNode && (
           <button
@@ -70,7 +70,7 @@ function CustomImageComponent({ node, deleteNode }: any) {
         )}
         <img src={src} alt={alt || ""} className="rounded-lg w-full h-auto" />
         {caption && (
-          <figcaption className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
+          <figcaption className="text-sm text-gray-600 dark:text-gray-400 mt-2">
             {caption}
           </figcaption>
         )}

@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 
 export interface ImageGalleryOptions {
@@ -129,9 +130,6 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
   },
 
   addNodeView() {
-    if (this.options.enableNodeView === false) {
-      return null
-    }
     return ReactNodeViewRenderer(ImageGalleryComponent)
   },
 
@@ -233,13 +231,16 @@ function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
 
       {/* 画像拡大ダイアログ */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden">
+        <DialogContent className="max-w-[95vw]! max-h-[95vh] w-auto p-0 overflow-hidden sm:max-w-[95vw]!">
           <DialogTitle className="sr-only">画像を拡大表示</DialogTitle>
+          <DialogDescription className="sr-only">
+            {selectedImage?.alt || selectedImage?.caption || '画像の拡大表示'}
+          </DialogDescription>
           {selectedImage && (
             <div className="relative">
               <img
                 src={selectedImage.src}
-                alt={selectedImage.alt || ''}
+                alt={selectedImage.alt || selectedImage.caption || '画像'}
                 className="w-full h-auto max-h-[90vh] object-contain my-0"
               />
               {selectedImage.caption && (
