@@ -22,10 +22,16 @@ interface StorageFile {
   id: string
 }
 
+interface ImageData {
+  src: string
+  alt?: string
+  caption?: string
+}
+
 interface ImagePickerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (url: string) => void
+  onSelect: (data: ImageData) => void
   postId?: string // 現在編集中の記事ID（任意）
 }
 
@@ -43,6 +49,9 @@ export function ImagePickerDialog({
   const [uploading, setUploading] = useState(false)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [showMetadataForm, setShowMetadataForm] = useState(false)
+  const [alt, setAlt] = useState("")
+  const [caption, setCaption] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -124,9 +133,10 @@ export function ImagePickerDialog({
         throw new Error(data.error || "アップロードに失敗しました")
       }
 
-      // アップロード成功したら即座に挿入
-      onSelect(data.url)
-      handleClose()
+      // アップロード成功したら、メタデータ入力画面へ
+      setSelectedImage(data.url)
+      setShowMetadataForm(true)
+      setUploading(false)
     } catch (err) {
       console.error("Upload error:", err)
       setUploadError(err instanceof Error ? err.message : "アップロードに失敗しました")
@@ -150,14 +160,31 @@ export function ImagePickerDialog({
     }
   }
 
-  const handleSelect = () => {
+  const handleSelectImage = () => {
     if (activeTab === "library" && selectedImage) {
-      onSelect(selectedImage)
-      handleClose()
+      setShowMetadataForm(true)
     } else if (activeTab === "url" && customUrl) {
-      onSelect(customUrl)
+      setSelectedImage(customUrl)
+      setShowMetadataForm(true)
+    }
+  }
+
+  const handleInsert = () => {
+    const url = selectedImage || customUrl
+    if (url) {
+      onSelect({
+        src: url,
+        alt: alt.trim() || undefined,
+        caption: caption.trim() || undefined,
+      })
       handleClose()
     }
+  }
+
+  const handleBack = () => {
+    setShowMetadataForm(false)
+    setAlt("")
+    setCaption("")
   }
 
   const handleClose = () => {
@@ -167,6 +194,9 @@ export function ImagePickerDialog({
     setUploadPreview(null)
     setUploadError(null)
     setUploading(false)
+    setShowMetadataForm(false)
+    setAlt("")
+    setCaption("")
     if (uploadPreview) {
       URL.revokeObjectURL(uploadPreview)
     }
@@ -177,13 +207,57 @@ export function ImagePickerDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>画像を挿入</DialogTitle>
+          <DialogTitle>
+            {showMetadataForm ? "画像情報を入力" : "画像を挿入"}
+          </DialogTitle>
           <DialogDescription>
-            画像をアップロード、ライブラリから選択、またはURLを入力してください
+            {showMetadataForm
+              ? "alt属性とキャプションを入力してください（任意）"
+              : "画像をアップロード、ライブラリから選択、またはURLを入力してください"}
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {showMetadataForm ? (
+          <div className="space-y-4">
+            <div className="relative aspect-video overflow-hidden rounded-lg border">
+              <Image
+                src={selectedImage || customUrl}
+                alt="Selected image"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="alt">代替テキスト (alt)</Label>
+                <Input
+                  id="alt"
+                  value={alt}
+                  onChange={(e) => setAlt(e.target.value)}
+                  placeholder="画像の説明を入力"
+                />
+                <p className="text-xs text-muted-foreground">
+                  画像が表示されない場合やスクリーンリーダー用のテキストです
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="caption">キャプション</Label>
+                <Input
+                  id="caption"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="画像の説明文"
+                />
+                <p className="text-xs text-muted-foreground">
+                  画像の下に表示される説明文です
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upload">アップロード</TabsTrigger>
             <TabsTrigger value="library">ライブラリ</TabsTrigger>
@@ -337,21 +411,35 @@ export function ImagePickerDialog({
             )}
           </TabsContent>
         </Tabs>
+        )}
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={handleClose}>
-            キャンセル
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSelect}
-            disabled={
-              (activeTab === "library" && !selectedImage) ||
-              (activeTab === "url" && !customUrl)
-            }
-          >
-            挿入
-          </Button>
+          {showMetadataForm ? (
+            <>
+              <Button type="button" variant="outline" onClick={handleBack}>
+                戻る
+              </Button>
+              <Button type="button" onClick={handleInsert}>
+                挿入
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button type="button" variant="outline" onClick={handleClose}>
+                キャンセル
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSelectImage}
+                disabled={
+                  (activeTab === "library" && !selectedImage) ||
+                  (activeTab === "url" && !customUrl)
+                }
+              >
+                次へ
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

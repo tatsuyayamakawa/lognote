@@ -3,7 +3,6 @@
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
-import Image from "@tiptap/extension-image"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
 import { Highlight } from "@tiptap/extension-highlight"
@@ -17,6 +16,7 @@ import { SpeechBubble } from "./extensions/speech-bubble"
 import { LinkCard } from "./extensions/link-card"
 import { CtaButton } from "./extensions/cta-button"
 import { ImageGallery } from "./extensions/image-gallery"
+import { CustomImage } from "./extensions/custom-image"
 import { ImageGalleryClient } from "./image-gallery-client"
 
 // 見出しの階層的な番号を管理するクラス
@@ -89,7 +89,9 @@ export function TiptapRenderer({ content, className }: TiptapRendererProps) {
           class: "text-primary underline hover:opacity-80",
         },
       }),
-      Image.configure({
+      CustomImage.configure({
+        inline: false,
+        allowBase64: false,
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto my-4",
         },

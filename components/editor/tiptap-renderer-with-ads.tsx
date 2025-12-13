@@ -3,7 +3,6 @@
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
@@ -22,6 +21,7 @@ import { ProductLinkBox } from "./extensions/product-link-box";
 import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
 import { ImageGallery } from "./extensions/image-gallery";
+import { CustomImage } from "./extensions/custom-image";
 import { AffiliateBoxRenderer } from "./extensions/affiliate-box-renderer";
 import { AdSense } from "../ads/adsense";
 import { ImageGalleryClient } from "./image-gallery-client";
@@ -125,7 +125,9 @@ export function TiptapRendererWithAds({
       }).configure({
         openOnClick: false,
       }),
-      Image.configure({
+      CustomImage.configure({
+        inline: false,
+        allowBase64: false,
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto my-4",
         },

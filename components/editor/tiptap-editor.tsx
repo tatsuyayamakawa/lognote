@@ -315,7 +315,7 @@ export function TiptapEditor({
                     // 画像を挿入
                     view.dispatch(
                       view.state.tr.replaceSelectionWith(
-                        view.state.schema.nodes.image.create({ src: data.url })
+                        view.state.schema.nodes.customImage.create({ src: data.url })
                       )
                     );
                   }
@@ -366,7 +366,7 @@ export function TiptapEditor({
                   view.dispatch(
                     view.state.tr.insert(
                       coordinates.pos,
-                      view.state.schema.nodes.image.create({ src: data.url })
+                      view.state.schema.nodes.customImage.create({ src: data.url })
                     )
                   );
                 }
@@ -457,8 +457,8 @@ export function TiptapEditor({
     editor.chain().focus().setYoutubeVideo({ src: url }).run();
   };
 
-  const handleImageSelect = (url: string) => {
-    editor.chain().focus().setImage({ src: url }).run();
+  const handleImageSelect = (data: { src: string; alt?: string; caption?: string }) => {
+    editor.chain().focus().setImage(data).run();
   };
 
   const handleCtaButtonSelect = (options: {
