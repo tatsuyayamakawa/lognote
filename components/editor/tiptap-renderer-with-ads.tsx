@@ -22,7 +22,6 @@ import { ProductLinkBox } from "./extensions/product-link-box";
 import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
 import { ImageGallery } from "./extensions/image-gallery";
-import { CustomImage } from "./extensions/custom-image";
 import { AffiliateBoxRenderer } from "./extensions/affiliate-box-renderer";
 import { AdSense } from "../ads/adsense";
 import { ImageGalleryClient } from "./image-gallery-client";
