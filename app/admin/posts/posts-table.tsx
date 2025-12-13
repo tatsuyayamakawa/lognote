@@ -39,19 +39,29 @@ interface PostsTableProps {
   posts: PostWithCategories[];
   currentPage: number;
   totalPages: number;
+  currentStatus: string;
 }
 
 export function PostsTable({
   posts,
   currentPage,
   totalPages,
+  currentStatus,
 }: PostsTableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PostWithCategories | null>(
     null
   );
   const [deleting, setDeleting] = useState(false);
+
+  const createStatusUrl = (status: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", status);
+    params.delete("page"); // ステータス変更時はページをリセット
+    return `?${params.toString()}`;
+  };
 
   const handleDeleteClick = (post: PostWithCategories) => {
     setDeleteTarget(post);
@@ -85,23 +95,61 @@ export function PostsTable({
     }
   };
 
-  if (posts.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>記事がありません</CardTitle>
-          <CardDescription>
-            新規作成ボタンから最初の記事を作成しましょう
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
     <>
-      {/* デスクトップ: テーブル表示 */}
-      <Card className="hidden md:block pb-0">
+      {/* フィルタリング */}
+      <div className="flex gap-2">
+        <Button
+          variant={currentStatus === "all" ? "default" : "outline"}
+          size="sm"
+          asChild
+        >
+          <Link href={createStatusUrl("all")}>すべて</Link>
+        </Button>
+        <Button
+          variant={currentStatus === "published" ? "default" : "outline"}
+          size="sm"
+          asChild
+        >
+          <Link href={createStatusUrl("published")}>公開</Link>
+        </Button>
+        <Button
+          variant={currentStatus === "draft" ? "default" : "outline"}
+          size="sm"
+          asChild
+        >
+          <Link href={createStatusUrl("draft")}>下書き</Link>
+        </Button>
+        <Button
+          variant={currentStatus === "private" ? "default" : "outline"}
+          size="sm"
+          asChild
+        >
+          <Link href={createStatusUrl("private")}>非公開</Link>
+        </Button>
+      </div>
+
+      {posts.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>記事がありません</CardTitle>
+            <CardDescription>
+              {currentStatus === "all"
+                ? "新規作成ボタンから最初の記事を作成しましょう"
+                : `${
+                    currentStatus === "published"
+                      ? "公開"
+                      : currentStatus === "draft"
+                      ? "下書き"
+                      : "非公開"
+                  }の記事がありません`}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : (
+        <>
+          {/* デスクトップ: テーブル表示 */}
+          <Card className="hidden md:block pb-0">
         <CardHeader className="pb-3">
           <CardTitle>記事一覧</CardTitle>
         </CardHeader>
@@ -361,6 +409,8 @@ export function PostsTable({
       {/* ページネーション */}
       {totalPages > 1 && (
         <PostsPagination currentPage={currentPage} totalPages={totalPages} />
+      )}
+        </>
       )}
 
       {/* 削除確認ダイアログ */}

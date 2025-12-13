@@ -1,23 +1,42 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Save, Monitor, Smartphone } from "lucide-react";
 
 export default function AdsLoadingPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">広告設定</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            各広告ユニットのスロットIDを設定します
+          <h1 className="text-3xl font-bold">広告レイアウト</h1>
+          <p className="text-muted-foreground">
+            レイアウトを見ながら広告を配置できます
           </p>
         </div>
+        <Button disabled size="lg">
+          <Save className="mr-2 h-4 w-4" />
+          保存
+        </Button>
       </div>
 
+      {/* デバイス切り替えタブ */}
+      <Tabs value="pc">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="pc" className="flex items-center gap-2" disabled>
+            <Monitor className="h-4 w-4" />
+            PC表示
+          </TabsTrigger>
+          <TabsTrigger value="mobile" className="flex items-center gap-2" disabled>
+            <Smartphone className="h-4 w-4" />
+            スマホ表示
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* 広告設定カード（スケルトン） */}
-      <div className="space-y-6">
+      <div className="mt-6 space-y-6">
         {Array.from({ length: 4 }).map((_, index) => (
           <Card key={index}>
             <CardHeader>
@@ -42,14 +61,6 @@ export default function AdsLoadingPage() {
             </CardContent>
           </Card>
         ))}
-
-        {/* 保存ボタン */}
-        <div className="flex justify-end">
-          <Button disabled size="lg">
-            <Save className="mr-2 h-4 w-4" />
-            設定を保存
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import {
 
 export interface ImageGalleryOptions {
   HTMLAttributes: Record<string, any>
+  enableNodeView?: boolean
 }
 
 declare module '@tiptap/core' {

@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 
 export default function PostsLoadingPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* ページヘッダー */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -15,6 +15,22 @@ export default function PostsLoadingPage() {
         <Button disabled className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           新規作成
+        </Button>
+      </div>
+
+      {/* フィルタリング */}
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" disabled>
+          すべて
+        </Button>
+        <Button variant="outline" size="sm" disabled>
+          公開
+        </Button>
+        <Button variant="outline" size="sm" disabled>
+          下書き
+        </Button>
+        <Button variant="outline" size="sm" disabled>
+          非公開
         </Button>
       </div>
 

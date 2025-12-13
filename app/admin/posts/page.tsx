@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 const POSTS_PER_PAGE = 10;
 
-async function getPosts(page: number = 1) {
+async function getPosts(page: number = 1, status?: string) {
   const supabase = await createClient();
 
   // Google Analyticsから閲覧数を同期（キャッシュ処理は後で追加予定）
@@ -24,15 +24,19 @@ async function getPosts(page: number = 1) {
     // 同期に失敗してもページは表示する
   }
 
-  // まず総件数を取得
-  const { count } = await supabase
-    .from("posts")
-    .select("*", { count: "exact", head: true });
+  // ステータスでフィルタリングするクエリを構築
+  let query = supabase.from("posts").select("*", { count: "exact", head: true });
+  
+  if (status && status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { count } = await query;
 
   const from = (page - 1) * POSTS_PER_PAGE;
   const to = from + POSTS_PER_PAGE - 1;
 
-  const { data: posts, error } = await supabase
+  let postsQuery = supabase
     .from("posts")
     .select(
       `
@@ -44,6 +48,12 @@ async function getPosts(page: number = 1) {
     )
     .order("published_at", { ascending: false })
     .range(from, to);
+
+  if (status && status !== "all") {
+    postsQuery = postsQuery.eq("status", status);
+  }
+
+  const { data: posts, error } = await postsQuery;
 
   if (error) {
     console.error("Error fetching posts:", error);
@@ -71,15 +81,15 @@ async function getPosts(page: number = 1) {
 export default async function AdminPostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; status?: string }>;
 }) {
-  const { page = "1" } = await searchParams;
+  const { page = "1", status = "all" } = await searchParams;
   const currentPage = parseInt(page, 10);
-  const { posts, total } = await getPosts(currentPage);
+  const { posts, total } = await getPosts(currentPage, status);
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* ページヘッダー */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -101,6 +111,7 @@ export default async function AdminPostsPage({
         posts={posts}
         currentPage={currentPage}
         totalPages={totalPages}
+        currentStatus={status}
       />
     </div>
   );
