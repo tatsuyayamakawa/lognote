@@ -154,10 +154,8 @@ export function PostForm({ categories, post }: PostFormProps) {
         return;
       }
 
-      // サムネイルが設定されていない場合は、OGP画像URLを自動生成
-      const finalThumbnailUrl =
-        thumbnailUrl ||
-        `${getBaseURL()}/api/og?title=${encodeURIComponent(title)}`;
+      // カスタムサムネイルが設定されている場合のみ保存、空の場合はnull
+      const finalThumbnailUrl = thumbnailUrl || null;
 
       // 記事データ
       const postData = {

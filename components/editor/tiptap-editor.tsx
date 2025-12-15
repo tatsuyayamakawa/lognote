@@ -614,7 +614,7 @@ export function TiptapEditor({
                 href: data.href,
                 title: postData.title,
                 description: postData.description,
-                thumbnail: postData.thumbnail_url || postData.og_image_url,
+                thumbnail: postData.og_image_url || postData.thumbnail_url,
               })
               .run();
           } else {

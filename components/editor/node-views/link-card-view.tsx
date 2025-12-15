@@ -30,7 +30,7 @@ export function LinkCardView({ node }: NodeViewProps) {
           setPostData({
             title: data.title,
             description: data.description,
-            thumbnail: data.thumbnail_url || data.og_image_url,
+            thumbnail: data.og_image_url || data.thumbnail_url,
           });
         }
       } catch (error) {
