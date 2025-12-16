@@ -318,6 +318,51 @@ export function TiptapRendererWithAds({
     });
   }, [editor]);
 
+  // 埋め込み広告のscriptタグを実行
+  useEffect(() => {
+    if (!editor) return;
+
+    const editorElement = editor.view.dom;
+    const embedAdBoxes = editorElement.querySelectorAll("[data-embed-ad-box]");
+
+    embedAdBoxes.forEach((box) => {
+      // 既に処理済みかチェック
+      if (box.hasAttribute("data-script-executed")) return;
+
+      const contentDiv = box.querySelector(".embed-ad-box-content");
+      if (!contentDiv) return;
+
+      // 処理済みマーク
+      box.setAttribute("data-script-executed", "true");
+
+      // innerHTML内のscriptタグを検出して実行
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = contentDiv.innerHTML;
+
+      const scripts = tempDiv.getElementsByTagName("script");
+
+      // scriptタグを順番に実行
+      Array.from(scripts).forEach((script) => {
+        const newScript = document.createElement("script");
+
+        if (script.src) {
+          newScript.src = script.src;
+          newScript.async = true;
+        } else {
+          newScript.textContent = script.textContent;
+        }
+
+        // 属性をコピー
+        Array.from(script.attributes).forEach((attr) => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+
+        // scriptをcontentDivに追加（実行される）
+        contentDiv.appendChild(newScript);
+      });
+    });
+  }, [editor]);
+
   if (!editor) {
     return null;
   }

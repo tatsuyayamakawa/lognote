@@ -827,16 +827,6 @@
 /* 埋め込み広告ボックススタイル - 記事コンテンツ内のみ適用 */
 .prose .embed-ad-box {
   margin: 2rem 0;
-  padding: 1rem;
-  border: 1px dashed #d1d5db;
-  border-radius: 0.5rem;
-  background: #f9fafb;
-  text-align: center;
-}
-
-.dark .prose .embed-ad-box {
-  border-color: #4b5563;
-  background: #1f2937;
 }
 
 .prose .embed-ad-box-content {
