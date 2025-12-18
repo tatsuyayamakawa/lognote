@@ -122,7 +122,9 @@ export function TiptapEditor({
   } | undefined>(undefined);
   const [isEditingImageGallery, setIsEditingImageGallery] = useState(false);
   const [embedAdBoxInitialData, setEmbedAdBoxInitialData] = useState<{
-    embedCode: string;
+    embedCode?: string;
+    pcEmbedCode?: string;
+    mobileEmbedCode?: string;
   } | undefined>(undefined);
   const [isEditingEmbedAdBox, setIsEditingEmbedAdBox] = useState(false);
   const [, forceUpdate] = useState({});
