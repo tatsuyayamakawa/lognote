@@ -349,14 +349,15 @@ function InArticleAdPortal({
           className="hidden md:block text-center w-full"
           style={{ minWidth: "300px", maxWidth: "100%" }}
         >
-          <span className="text-xs text-muted-foreground block mb-1">
+          <span className="text-xs text-muted-foreground block">
             スポンサーリンク
           </span>
           <AdSense
             adSlot={pcSlot}
             adFormat="fluid"
             fullWidthResponsive={true}
-            showSkeleton={false}
+            layout="in-article"
+            showSkeleton={true}
           />
         </div>
       )}
@@ -372,7 +373,7 @@ function InArticleAdPortal({
             height="250px"
             adFormat="rectangle"
             fullWidthResponsive={false}
-            showSkeleton={false}
+            showSkeleton={true}
           />
         </div>
       )}

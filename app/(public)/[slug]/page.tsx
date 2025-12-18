@@ -11,8 +11,6 @@ import { ShareButtons } from "@/components/post/share-buttons";
 import { RelatedPosts } from "@/components/post/related-posts";
 import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
 import { ResponsiveAd } from "@/components/ads/responsive-ad";
-import { DualAd } from "@/components/ads/dual-ad";
-import { AdSense } from "@/components/ads/adsense";
 import { getAdSettings } from "@/lib/ad-settings";
 import { TableOfContents } from "@/components/post/table-of-contents";
 import { Profile } from "@/components/home/profile";
@@ -220,33 +218,24 @@ export default async function PostPage({ params }: PostPageProps) {
         )}
 
         {/* 記事下広告（コンテンツ後） */}
-        {(adSettings?.article_bottom_pc_slot_1 ||
-          adSettings?.article_bottom_pc_slot_2 ||
-          adSettings?.article_bottom_mobile_slot) && (
+        {(adSettings?.article_bottom_pc_slot || adSettings?.article_bottom_mobile_slot) && (
           <div className="my-10">
-            {/* PC: rectangle 300x250 2つ横並び */}
-            <DualAd
-              slot1={adSettings?.article_bottom_pc_slot_1}
-              slot2={adSettings?.article_bottom_pc_slot_2}
-              width="300px"
-              height="250px"
+            <ResponsiveAd
+              pcSlot={adSettings?.article_bottom_pc_slot}
+              mobileSlot={adSettings?.article_bottom_mobile_slot}
+              pcConfig={{
+                adFormat: "fluid",
+                layout: "in-article",
+                fullWidthResponsive: true,
+                placeholderHeight: "300px",
+              }}
+              mobileConfig={{
+                width: "300px",
+                height: "250px",
+                adFormat: "rectangle",
+                fullWidthResponsive: false,
+              }}
             />
-            {/* スマホ: rectangle 300x250 1つ */}
-            {adSettings?.article_bottom_mobile_slot && (
-              <div className="block md:hidden text-center">
-                <span className="text-xs text-muted-foreground block mb-1">
-                  スポンサーリンク
-                </span>
-                <AdSense
-                  adSlot={adSettings.article_bottom_mobile_slot}
-                  width="300px"
-                  height="250px"
-                  adFormat="rectangle"
-                  fullWidthResponsive={false}
-                  showSkeleton={false}
-                />
-              </div>
-            )}
           </div>
         )}
 

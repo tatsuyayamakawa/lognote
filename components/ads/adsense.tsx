@@ -24,6 +24,10 @@ interface AdSenseProps {
    * 開発環境でスケルトンを表示するか（デフォルト: true）
    */
   showSkeleton?: boolean;
+  /**
+   * レイアウト種別（記事内広告用）
+   */
+  layout?: "in-article";
 }
 
 export function AdSense({
@@ -35,6 +39,7 @@ export function AdSense({
   height,
   placeholderHeight,
   showSkeleton = true,
+  layout,
 }: AdSenseProps) {
   const insRef = useRef<HTMLModElement>(null);
   const pathname = usePathname(); // ページ遷移検知
@@ -90,7 +95,7 @@ export function AdSense({
       isInitialized = true;
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (error) {
+      } catch {
         isInitialized = false; // エラー時はフラグをリセット
       }
     };
@@ -134,17 +139,34 @@ export function AdSense({
 
   // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
+    // 記事内広告用のスケルトン
+    const isInArticle = layout === "in-article" || adFormat === "fluid";
+    const skeletonLabel = isInArticle ? "記事内広告" :
+                          adFormat === "horizontal" ? "横長バナー広告" :
+                          adFormat === "rectangle" ? "スクエア広告" :
+                          adFormat === "vertical" ? "縦長広告" : "広告";
+
+    // 固定サイズかどうかの判定
+    const isFixedForSkeleton = !!(width && height);
+
     return (
-      <div className={`${className} flex justify-center`} style={{ minHeight: actualPlaceholderHeight }}>
+      <div
+        className={`${className}`}
+        style={{
+          minHeight: actualPlaceholderHeight,
+          display: isFixedForSkeleton ? "flex" : "block",
+          ...(isFixedForSkeleton && { justifyContent: "center" }),
+        }}
+      >
         <div
           className="flex items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 rounded"
           style={{ height: actualPlaceholderHeight, width: width || "100%" }}
         >
           <div className="text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-              AdSense Ad Slot
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">
+              {skeletonLabel}
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono">
               {adSlot}
             </p>
           </div>
@@ -165,12 +187,13 @@ export function AdSense({
     ? { display: "inline-block", width, height }
     : { display: "block", width: "100%" }; // fluid広告には幅100%を設定
 
-  // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ + 中央寄せ
+  // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ
+  // fluid広告の場合は幅100%、固定サイズの場合は中央寄せ
   const containerStyle: React.CSSProperties = {
     minHeight: actualPlaceholderHeight,
     width: width || "100%",
-    display: "flex",
-    justifyContent: "center",
+    display: isFixedSize ? "flex" : "block",
+    ...(isFixedSize && { justifyContent: "center" }),
   };
 
   return (
@@ -183,6 +206,7 @@ export function AdSense({
         data-ad-slot={adSlot}
         {...(!isFixedSize && { "data-ad-format": adFormat })}
         {...(!isFixedSize && { "data-full-width-responsive": fullWidthResponsive.toString() })}
+        {...(layout && { "data-ad-layout": layout })}
         suppressHydrationWarning
       />
     </div>

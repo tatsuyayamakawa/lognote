@@ -14,6 +14,8 @@ interface ResponsiveAdProps {
     height?: string
     adFormat?: "rectangle" | "horizontal" | "vertical" | "auto" | "fluid"
     fullWidthResponsive?: boolean
+    layout?: "in-article"
+    placeholderHeight?: string
   }
   /**
    * モバイル用の広告設定
@@ -23,6 +25,8 @@ interface ResponsiveAdProps {
     height?: string
     adFormat?: "rectangle" | "horizontal" | "vertical" | "auto" | "fluid"
     fullWidthResponsive?: boolean
+    layout?: "in-article"
+    placeholderHeight?: string
   }
 }
 
@@ -44,17 +48,19 @@ export function ResponsiveAd({
       <>
         {/* PC用広告 */}
         <div className={`hidden md:block ${className}`}>
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
+          <div className={pcConfig.adFormat === "fluid" ? "" : "text-center"}>
+            <span className="text-xs text-muted-foreground block text-center has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
               スポンサーリンク
             </span>
-            <div className="flex justify-center">
+            <div className={pcConfig.adFormat === "fluid" ? "" : "flex justify-center"}>
               <AdSense
                 adSlot={pcSlot}
                 adFormat={pcConfig.adFormat}
                 fullWidthResponsive={pcConfig.fullWidthResponsive}
                 width={pcConfig.width}
                 height={pcConfig.height}
+                layout={pcConfig.layout}
+                placeholderHeight={pcConfig.placeholderHeight}
               />
             </div>
           </div>
@@ -72,6 +78,8 @@ export function ResponsiveAd({
                 fullWidthResponsive={mobileConfig.fullWidthResponsive}
                 width={mobileConfig.width}
                 height={mobileConfig.height}
+                layout={mobileConfig.layout}
+                placeholderHeight={mobileConfig.placeholderHeight}
               />
             </div>
           </div>
@@ -84,17 +92,19 @@ export function ResponsiveAd({
   if (pcSlot) {
     return (
       <div className={`hidden md:block ${className}`}>
-        <div className="text-center">
-          <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
+        <div className={pcConfig.adFormat === "fluid" ? "" : "text-center"}>
+          <span className="text-xs text-muted-foreground block text-center has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
             スポンサーリンク
           </span>
-          <div className="flex justify-center">
+          <div className={pcConfig.adFormat === "fluid" ? "" : "flex justify-center"}>
             <AdSense
               adSlot={pcSlot}
               adFormat={pcConfig.adFormat}
               fullWidthResponsive={pcConfig.fullWidthResponsive}
               width={pcConfig.width}
               height={pcConfig.height}
+              layout={pcConfig.layout}
+              placeholderHeight={pcConfig.placeholderHeight}
             />
           </div>
         </div>
@@ -117,6 +127,8 @@ export function ResponsiveAd({
               fullWidthResponsive={mobileConfig.fullWidthResponsive}
               width={mobileConfig.width}
               height={mobileConfig.height}
+              layout={mobileConfig.layout}
+              placeholderHeight={mobileConfig.placeholderHeight}
             />
           </div>
         </div>

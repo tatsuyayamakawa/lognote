@@ -25,8 +25,7 @@ export function AdLayoutEditor({ initialSettings }: AdLayoutEditorProps) {
     article_top_mobile_slot: initialSettings?.article_top_mobile_slot || "",
     in_article_pc_slot: initialSettings?.in_article_pc_slot || "",
     in_article_mobile_slot: initialSettings?.in_article_mobile_slot || "",
-    article_bottom_pc_slot_1: initialSettings?.article_bottom_pc_slot_1 || "",
-    article_bottom_pc_slot_2: initialSettings?.article_bottom_pc_slot_2 || "",
+    article_bottom_pc_slot: initialSettings?.article_bottom_pc_slot || "",
     article_bottom_mobile_slot: initialSettings?.article_bottom_mobile_slot || "",
     sidebar_pc_slot: initialSettings?.sidebar_pc_slot || "",
     sidebar_mobile_slot: initialSettings?.sidebar_mobile_slot || "",
@@ -154,27 +153,14 @@ export function AdLayoutEditor({ initialSettings }: AdLayoutEditorProps) {
                   </div>
 
                   {/* コンテンツ後広告 */}
-                  <div className="mt-6">
-                    <div className="text-sm font-medium mb-4">コンテンツ後広告</div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <AdSlotZone
-                        id="article_bottom_pc_slot_1"
-                        label="広告1"
-                        description="300×250"
-                        value={adSlots.article_bottom_pc_slot_1}
-                        onChange={handleSlotChange}
-                        height="250px"
-                      />
-                      <AdSlotZone
-                        id="article_bottom_pc_slot_2"
-                        label="広告2"
-                        description="300×250"
-                        value={adSlots.article_bottom_pc_slot_2}
-                        onChange={handleSlotChange}
-                        height="250px"
-                      />
-                    </div>
-                  </div>
+                  <AdSlotZone
+                    id="article_bottom_pc_slot"
+                    label="コンテンツ後広告"
+                    description="記事内広告（fluid）"
+                    value={adSlots.article_bottom_pc_slot}
+                    onChange={handleSlotChange}
+                    height="280px"
+                  />
                 </Card>
               </div>
 
