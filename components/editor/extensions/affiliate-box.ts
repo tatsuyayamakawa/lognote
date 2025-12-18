@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import { AffiliateBoxNodeView } from "./affiliate-box-node-view";
+import { AffiliateBoxView } from "../node-views/affiliate-box-view";
 import { detectProvider } from "@/lib/detect-provider";
 
 export interface AffiliateBoxOptions {
@@ -114,7 +114,7 @@ export const AffiliateBox = Node.create<AffiliateBoxOptions>({
     if (!this.options.enableNodeView) {
       return null;
     }
-    return ReactNodeViewRenderer(AffiliateBoxNodeView);
+    return ReactNodeViewRenderer(AffiliateBoxView);
   },
 
   addCommands() {

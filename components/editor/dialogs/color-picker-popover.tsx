@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Palette, Plus, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { Palette, Plus, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface ColorPickerProps {
-  currentColor?: string
-  onColorChange: (color: string) => void
-  disabled?: boolean
+interface ColorPickerPopoverProps {
+  currentColor?: string;
+  onColorChange: (color: string) => void;
+  disabled?: boolean;
 }
 
 const DEFAULT_COLORS = [
@@ -24,54 +24,87 @@ const DEFAULT_COLORS = [
   { name: "黄", value: "#ca8a04" },
   { name: "紫", value: "#9333ea" },
   { name: "ピンク", value: "#db2777" },
-]
+] as const;
 
-const STORAGE_KEY = "tiptap-custom-colors"
+const STORAGE_KEY = "tiptap-custom-colors";
 
-export function ColorPicker({
+// localStorageから安全に読み込む関数
+const loadCustomColors = (): string[] => {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load custom colors:", error);
+  }
+  return [];
+};
+
+export function ColorPickerPopover({
   currentColor,
   onColorChange,
   disabled = false,
-}: ColorPickerProps) {
-  const [open, setOpen] = useState(false)
-  const [customColors, setCustomColors] = useState<string[]>([])
-  const [newColor, setNewColor] = useState("#000000")
-
-  // カスタムカラーをlocalStorageから読み込む
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        setCustomColors(JSON.parse(saved))
-      } catch (e) {
-        console.error("Failed to load custom colors:", e)
-      }
-    }
-  }, [])
+}: ColorPickerPopoverProps) {
+  const [open, setOpen] = useState(false);
+  // 初期値としてlocalStorageから読み込む（クライアントサイドのみ）
+  const [customColors, setCustomColors] = useState<string[]>(() => loadCustomColors());
+  const [newColor, setNewColor] = useState("#000000");
 
   // カスタムカラーを保存
-  const saveCustomColor = (color: string) => {
-    if (!color || customColors.includes(color)) return
+  const saveCustomColor = useCallback((color: string) => {
+    if (!color || typeof window === "undefined") return;
 
-    const updated = [...customColors, color]
-    setCustomColors(updated)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-  }
+    setCustomColors((prev) => {
+      if (prev.includes(color)) return prev;
+
+      const updated = [...prev, color];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (error) {
+        console.error("Failed to save custom color:", error);
+      }
+      return updated;
+    });
+  }, []);
 
   // カスタムカラーを削除
-  const removeCustomColor = (color: string) => {
-    const updated = customColors.filter((c) => c !== color)
-    setCustomColors(updated)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-  }
+  const removeCustomColor = useCallback((color: string) => {
+    if (typeof window === "undefined") return;
+
+    setCustomColors((prev) => {
+      const updated = prev.filter((c) => c !== color);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (error) {
+        console.error("Failed to remove custom color:", error);
+      }
+      return updated;
+    });
+  }, []);
 
   // カラーを適用
-  const applyColor = (color: string, closePopover = true) => {
-    onColorChange(color)
-    if (closePopover) {
-      setOpen(false)
-    }
-  }
+  const applyColor = useCallback(
+    (color: string, closePopover = true) => {
+      onColorChange(color);
+      if (closePopover) {
+        setOpen(false);
+      }
+    },
+    [onColorChange]
+  );
+
+  // カスタムカラーを追加して適用
+  const handleAddColor = useCallback(() => {
+    if (!newColor) return;
+    saveCustomColor(newColor);
+    applyColor(newColor, false);
+  }, [newColor, saveCustomColor, applyColor]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -89,6 +122,7 @@ export function ColorPicker({
             <span
               className="absolute bottom-0 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full"
               style={{ backgroundColor: currentColor }}
+              aria-hidden="true"
             />
           )}
         </Button>
@@ -114,6 +148,7 @@ export function ColorPicker({
                   )}
                   style={{ backgroundColor: color.value }}
                   title={color.name}
+                  aria-label={`${color.name}を選択`}
                 />
               ))}
             </div>
@@ -138,14 +173,16 @@ export function ColorPicker({
                           : "border-border"
                       )}
                       style={{ backgroundColor: color }}
+                      aria-label={`カスタムカラー ${color} を選択`}
                     />
                     <button
                       type="button"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        removeCustomColor(color)
+                        e.stopPropagation();
+                        removeCustomColor(color);
                       }}
                       className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground group-hover:flex"
+                      aria-label={`カラー ${color} を削除`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -166,6 +203,7 @@ export function ColorPicker({
                 value={newColor}
                 onChange={(e) => setNewColor(e.target.value)}
                 className="h-9 w-16 cursor-pointer"
+                aria-label="カラーピッカー"
               />
               <Input
                 type="text"
@@ -173,16 +211,15 @@ export function ColorPicker({
                 onChange={(e) => setNewColor(e.target.value)}
                 placeholder="#000000"
                 className="flex-1"
+                aria-label="カラーコード"
               />
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => {
-                  saveCustomColor(newColor)
-                  applyColor(newColor, false)
-                }}
+                onClick={handleAddColor}
                 disabled={!newColor || customColors.includes(newColor)}
+                aria-label="カラーを追加"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -191,5 +228,5 @@ export function ColorPicker({
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

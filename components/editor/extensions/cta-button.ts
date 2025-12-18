@@ -32,10 +32,10 @@ export const CtaButton = Node.create<CtaButtonOptions>({
   addAttributes() {
     return {
       href: {
-        default: null,
+        default: '',
       },
       text: {
-        default: 'クリックして詳細を見る',
+        default: '',
       },
       variant: {
         default: 'primary',
@@ -102,13 +102,13 @@ export const CtaButton = Node.create<CtaButtonOptions>({
       [
         'a',
         {
-          href: href || '#',
+          href,
           class: `inline-flex items-center justify-center rounded-lg px-8 py-4 text-lg font-semibold transition-all duration-300 ${buttonClass} ${animationClass} shadow-lg hover:shadow-xl transform hover:scale-105`,
           style: style ? Object.entries(style).map(([k, v]) => `${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}:${v}`).join(';') : undefined,
-          target: href?.startsWith('http') ? '_blank' : undefined,
-          rel: href?.startsWith('http') ? 'noopener noreferrer' : undefined,
+          target: href.startsWith('http') ? '_blank' : undefined,
+          rel: href.startsWith('http') ? 'noopener noreferrer' : undefined,
         },
-        text || 'クリックして詳細を見る',
+        text,
       ]
     ]
   },

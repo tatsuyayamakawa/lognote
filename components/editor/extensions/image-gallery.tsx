@@ -1,22 +1,34 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
-import { NodeViewWrapper } from '@tiptap/react'
+import { ImageGalleryView } from '../node-views/image-gallery-view'
 
 export interface ImageGalleryOptions {
-  HTMLAttributes: Record<string, any>
+  HTMLAttributes: Record<string, string | number | boolean>
   enableNodeView?: boolean
+}
+
+export interface ImageGalleryImage {
+  src: string
+  alt?: string
+  caption?: string
+}
+
+export interface ImageGalleryAttrs {
+  images: ImageGalleryImage[]
+  columns: number
+  gap: number
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     imageGallery: {
       setImageGallery: (options: {
-        images: Array<{ src: string; alt?: string; caption?: string }>
+        images: ImageGalleryImage[]
         columns?: number
         gap?: number
       }) => ReturnType
       updateImageGallery: (options: {
-        images: Array<{ src: string; alt?: string; caption?: string }>
+        images: ImageGalleryImage[]
         columns?: number
         gap?: number
       }) => ReturnType
@@ -84,7 +96,7 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
   },
 
   renderHTML({ node }) {
-    const { images, columns, gap } = node.attrs
+    const { images, columns, gap } = node.attrs as ImageGalleryAttrs
 
     return [
       'div',
@@ -102,15 +114,15 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
           'data-columns': columns,
           style: `gap: ${gap}px; grid-template-columns: repeat(1, 1fr);`,
         },
-        ...images.map((image: any) => [
+        ...images.map((image: ImageGalleryImage) => [
           'div',
-          { class: 'overflow-hidden rounded cursor-zoom-in image-gallery-item' },
+          { class: 'overflow-hidden rounded image-gallery-item' },
           [
             'img',
             {
               src: image.src,
               alt: image.alt || '',
-              class: 'w-full h-auto object-cover hover:opacity-90 transition-opacity my-0!',
+              class: 'w-full h-auto object-cover my-0!',
             },
           ],
           ...(image.caption
@@ -128,7 +140,7 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(ImageGalleryComponent)
+    return ReactNodeViewRenderer(ImageGalleryView)
   },
 
   addCommands() {
@@ -149,83 +161,3 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
     }
   },
 })
-
-function ImageGalleryComponent({ node, deleteNode, getPos }: any) {
-  const { images, columns, gap } = node.attrs
-
-  const handleDoubleClick = () => {
-    const pos = getPos()
-    if (typeof pos === 'number') {
-      // カスタムイベントを発火して編集ダイアログを開く
-      window.dispatchEvent(
-        new CustomEvent('edit-image-gallery', {
-          detail: {
-            pos,
-            attrs: node.attrs,
-          },
-        })
-      )
-    }
-  }
-
-  return (
-    <NodeViewWrapper className="image-gallery-wrapper my-6">
-      <div className="relative group">
-        {deleteNode && (
-          <button
-            onClick={deleteNode}
-            className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded p-1 text-xs hover:bg-red-600"
-            contentEditable={false}
-          >
-            削除
-          </button>
-        )}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 cursor-pointer"
-          style={{
-            gridTemplateColumns: `repeat(1, 1fr)`,
-            gap: `${gap}px`,
-          }}
-          data-columns={columns}
-          onDoubleClick={handleDoubleClick}
-        >
-          <style>{`
-            [data-columns="1"] { grid-template-columns: repeat(1, 1fr) !important; }
-            [data-columns="2"] { grid-template-columns: repeat(1, 1fr); }
-            @media (min-width: 768px) {
-              [data-columns="2"] { grid-template-columns: repeat(2, 1fr) !important; }
-              [data-columns="3"] { grid-template-columns: repeat(2, 1fr) !important; }
-              [data-columns="4"] { grid-template-columns: repeat(2, 1fr) !important; }
-            }
-            @media (min-width: 1024px) {
-              [data-columns="3"] { grid-template-columns: repeat(3, 1fr) !important; }
-              [data-columns="4"] { grid-template-columns: repeat(3, 1fr) !important; }
-            }
-            @media (min-width: 1280px) {
-              [data-columns="4"] { grid-template-columns: repeat(4, 1fr) !important; }
-            }
-          `}</style>
-          {images.map((image: any, index: number) => (
-            <div
-              key={index}
-              className="overflow-hidden rounded"
-            >
-              <img
-                src={image.src}
-                alt={image.alt || ''}
-                className="w-full h-auto object-cover hover:opacity-90 transition-opacity my-0!"
-              />
-              {image.caption && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center mb-0">
-                  {image.caption}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-
-    </NodeViewWrapper>
-  )
-}

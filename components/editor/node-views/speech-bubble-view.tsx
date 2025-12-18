@@ -6,7 +6,7 @@ export function SpeechBubbleView({ node }: NodeViewProps) {
   const { position } = node.attrs;
 
   return (
-    <NodeViewWrapper>
+    <NodeViewWrapper data-speech-bubble="">
       <div className="speech-bubble" data-position={position}>
         <NodeViewContent />
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, startTransition } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -36,31 +36,12 @@ export function LinkDialog({
   // 初期データがある場合は編集モード
   const isEditMode = !!initialData;
 
-  const [url, setUrl] = useState("");
-  const [text, setText] = useState("");
+  // 初期値を直接セット（initialDataがあればそれを使用、なければ空文字/external）
+  const [url, setUrl] = useState(initialData?.href || "");
+  const [text, setText] = useState(initialData?.text || "");
   const [linkTarget, setLinkTarget] = useState<"internal" | "external">(
-    "external"
+    initialData?.href?.startsWith("/") ? "internal" : "external"
   );
-
-  useEffect(() => {
-    if (open && initialData) {
-      // 編集モードの場合は初期データをセット（startTransitionでラップ）
-      startTransition(() => {
-        setUrl(initialData.href || "");
-        setText(initialData.text || "");
-        setLinkTarget(
-          initialData.href?.startsWith("/") ? "internal" : "external"
-        );
-      });
-    } else if (!open) {
-      // ダイアログが閉じたらリセット（startTransitionでラップ）
-      startTransition(() => {
-        setUrl("");
-        setText("");
-        setLinkTarget("external");
-      });
-    }
-  }, [open, initialData]);
 
   const handleInsert = () => {
     if (!url) return;
@@ -75,7 +56,11 @@ export function LinkDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      key={initialData?.href || 'new'}
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>

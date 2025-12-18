@@ -34,6 +34,7 @@ interface ImagePickerDialogProps {
   onSelect: (data: ImageData) => void
   postId?: string // 現在編集中の記事ID（任意）
   initialData?: ImageData // 編集モード用の初期データ
+  simpleMode?: boolean // trueの場合、画像URLのみ選択（alt/captionなし）
 }
 
 export function ImagePickerDialog({
@@ -42,35 +43,21 @@ export function ImagePickerDialog({
   onSelect,
   postId,
   initialData,
+  simpleMode = false,
 }: ImagePickerDialogProps) {
   const [images, setImages] = useState<StorageFile[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  // 初期値を直接セット（initialDataがあればそれを使用、なければnull/空文字）
+  const [selectedImage, setSelectedImage] = useState<string | null>(initialData?.src || null)
   const [customUrl, setCustomUrl] = useState("")
   const [activeTab, setActiveTab] = useState("upload")
   const [uploading, setUploading] = useState(false)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const [showMetadataForm, setShowMetadataForm] = useState(false)
-  const [alt, setAlt] = useState("")
-  const [caption, setCaption] = useState("")
+  const [showMetadataForm, setShowMetadataForm] = useState(!!initialData)
+  const [alt, setAlt] = useState(initialData?.alt || "")
+  const [caption, setCaption] = useState(initialData?.caption || "")
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // 初期データがある場合は編集モード
-  useEffect(() => {
-    if (open && initialData) {
-      setSelectedImage(initialData.src)
-      setAlt(initialData.alt || "")
-      setCaption(initialData.caption || "")
-      setShowMetadataForm(true)
-    } else if (!open) {
-      // ダイアログが閉じられた時にリセット
-      setShowMetadataForm(false)
-      setSelectedImage(null)
-      setAlt("")
-      setCaption("")
-    }
-  }, [open, initialData])
 
   useEffect(() => {
     if (open) {
@@ -222,7 +209,11 @@ export function ImagePickerDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog
+      key={initialData?.src || 'new'}
+      open={open}
+      onOpenChange={handleClose}
+    >
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>
@@ -246,33 +237,35 @@ export function ImagePickerDialog({
               />
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="alt">代替テキスト (alt)</Label>
-                <Input
-                  id="alt"
-                  value={alt}
-                  onChange={(e) => setAlt(e.target.value)}
-                  placeholder="画像の説明を入力"
-                />
-                <p className="text-xs text-muted-foreground">
-                  画像が表示されない場合やスクリーンリーダー用のテキストです
-                </p>
-              </div>
+            {!simpleMode && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="alt">代替テキスト (alt)</Label>
+                  <Input
+                    id="alt"
+                    value={alt}
+                    onChange={(e) => setAlt(e.target.value)}
+                    placeholder="画像の説明を入力"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    画像が表示されない場合やスクリーンリーダー用のテキストです
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="caption">キャプション</Label>
-                <Input
-                  id="caption"
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  placeholder="画像の説明文"
-                />
-                <p className="text-xs text-muted-foreground">
-                  画像の下に表示される説明文です
-                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="caption">キャプション</Label>
+                  <Input
+                    id="caption"
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    placeholder="画像の説明文"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    画像の下に表示される説明文です
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -70,23 +70,12 @@ export function ProductLinkBoxDialog({
   const [selectedRakuten, setSelectedRakuten] =
     useState<ProductSearchResult | null>(null);
 
-  // 手動入力用の状態
+  // 手動入力用の状態（initialDataがあればそれを使用、なければ空文字）
   const [manualAmazonUrl, setManualAmazonUrl] = useState(initialData?.amazonUrl || "");
   const [manualRakutenUrl, setManualRakutenUrl] = useState(initialData?.rakutenUrl || "");
   const [yahooUrl, setYahooUrl] = useState(initialData?.yahooUrl || "");
   const [manualProductName, setManualProductName] = useState(initialData?.productName || "");
   const [manualProductImage, setManualProductImage] = useState(initialData?.productImage || "");
-
-  // 編集モードの時、initialDataが変更されたら状態を更新
-  useEffect(() => {
-    if (isEditMode && initialData) {
-      setManualAmazonUrl(initialData.amazonUrl || "");
-      setManualRakutenUrl(initialData.rakutenUrl || "");
-      setYahooUrl(initialData.yahooUrl || "");
-      setManualProductName(initialData.productName || "");
-      setManualProductImage(initialData.productImage || "");
-    }
-  }, [isEditMode, initialData]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -171,7 +160,11 @@ export function ProductLinkBoxDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      key={initialData?.productName || 'new'}
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "商品リンクボックスを編集" : "商品リンクボックスを挿入"}</DialogTitle>

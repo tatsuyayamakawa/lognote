@@ -127,13 +127,18 @@
 }
 
 /* CTAボタンのスタイル */
-[data-cta-button] a {
-  text-decoration: none !important;
+.prose [data-cta-button] {
+  display: flex;
+  justify-content: center;
+}
+
+.prose [data-cta-button] a {
+  text-decoration: none;
   min-width: 300px;
 }
 
-[data-cta-button] a:hover {
-  text-decoration: none !important;
+.prose [data-cta-button] a:hover {
+  text-decoration: none;
 }
 
 @media (max-width: 300px) {
@@ -826,7 +831,9 @@
 
 /* 埋め込み広告ボックススタイル - 記事コンテンツ内のみ適用 */
 .prose .embed-ad-box {
-  margin: 2rem 0;
+  margin: 1rem 0;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .prose .embed-ad-box-content {
@@ -841,6 +848,30 @@
   height: auto;
 }
 
+/* エディタ内の埋め込み広告ボックスのリンクを無効化 */
+.ProseMirror .embed-ad-box-content a {
+  pointer-events: none;
+}
+
+/* エディタ内のダブルクリック可能な要素のホバー効果 */
+.ProseMirror .embed-ad-box:hover,
+.ProseMirror .image-gallery-wrapper:hover,
+.ProseMirror .product-link-box:hover,
+.ProseMirror figure:has(img):hover {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
+}
+
+/* 通常の画像スタイル */
+.prose img {
+  transition: none;
+}
+
+.prose img:hover {
+  opacity: 1;
+}
+
 /* 画像ギャラリースタイル - 記事コンテンツ内のみ適用 */
 .prose .image-gallery-wrapper {
   margin: 2rem 0;
@@ -848,6 +879,13 @@
 
 .prose .image-gallery-wrapper img {
   margin: 0;
+  width: 100%;
+  height: auto;
+  transition: none;
+}
+
+.prose .image-gallery-wrapper img:hover {
+  opacity: 1;
 }
 
 /* ギャラリー内の画像のキャプション段落マージンをリセット */
@@ -856,7 +894,7 @@
 }
 
 .prose [data-columns="1"] {
-  grid-template-columns: repeat(1, 1fr) !important;
+  grid-template-columns: repeat(1, 1fr);
 }
 
 .prose [data-columns="2"] {
@@ -873,30 +911,30 @@
 
 @media (min-width: 768px) {
   .prose [data-columns="2"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .prose [data-columns="3"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .prose [data-columns="4"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .prose [data-columns="3"] {
-    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .prose [data-columns="4"] {
-    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1280px) {
   .prose [data-columns="4"] {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(4, 1fr);
   }
 }

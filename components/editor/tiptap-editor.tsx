@@ -20,6 +20,7 @@ import { CtaButton } from "./extensions/cta-button";
 import { ProductLinkBox } from "./extensions/product-link-box";
 import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
+import { AffiliateBox } from "./extensions/affiliate-box";
 import { ImageGallery } from "./extensions/image-gallery";
 import { CustomImage } from "./extensions/custom-image";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,6 @@ import {
   RemoveFormatting,
   Underline as UnderlineIcon,
   MessageSquare,
-  MessageSquareText,
   MousePointerClick,
   Table as TableIcon,
   Columns,
@@ -54,16 +54,16 @@ import {
   Images,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ImagePickerDialog } from "./image-picker-dialog";
-import { LinkDialog } from "./link-dialog";
-import { ColorPicker } from "./color-picker";
-import { SpeechBubbleDialog } from "./speech-bubble-dialog";
-import { CtaButtonDialog } from "./cta-button-dialog";
-import { PointBoxDialog } from "./point-box-dialog";
-import { ProductLinkBoxDialog } from "./product-link-box-dialog";
-import { EmbedAdBoxDialog } from "./embed-ad-box-dialog";
-import { YoutubeDialog } from "./youtube-dialog";
-import { ImageGalleryDialog } from "./image-gallery-dialog";
+import { ImagePickerDialog } from "./dialogs/image-picker-dialog";
+import { LinkDialog } from "./dialogs/link-dialog";
+import { ColorPickerPopover } from "./dialogs/color-picker-popover";
+import { SpeechBubbleDialog } from "./dialogs/speech-bubble-dialog";
+import { CtaButtonDialog } from "./dialogs/cta-button-dialog";
+import { PointBoxDialog } from "./dialogs/point-box-dialog";
+import { ProductLinkBoxDialog } from "./dialogs/product-link-box-dialog";
+import { EmbedAdBoxDialog } from "./dialogs/embed-ad-box-dialog";
+import { YoutubePopover } from "./dialogs/youtube-popover";
+import { ImageGalleryDialog } from "./dialogs/image-gallery-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -91,7 +91,7 @@ export function TiptapEditor({
   const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
   const [productLinkBoxDialogOpen, setProductLinkBoxDialogOpen] = useState(false);
   const [embedAdBoxDialogOpen, setEmbedAdBoxDialogOpen] = useState(false);
-  const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
+  const [youtubePopoverOpen, setYoutubePopoverOpen] = useState(false);
   const [pointBoxDialogOpen, setPointBoxDialogOpen] = useState(false);
   const [imageGalleryDialogOpen, setImageGalleryDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
@@ -103,6 +103,7 @@ export function TiptapEditor({
     textColor?: string;
     animation?: 'none' | 'pulse' | 'bounce' | 'shine' | 'glow';
   } | undefined>(undefined);
+  const [isEditingCtaButton, setIsEditingCtaButton] = useState(false);
   const [productLinkBoxInitialData, setProductLinkBoxInitialData] = useState<{
     productName?: string;
     productImage?: string;
@@ -120,6 +121,10 @@ export function TiptapEditor({
     gap: number;
   } | undefined>(undefined);
   const [isEditingImageGallery, setIsEditingImageGallery] = useState(false);
+  const [embedAdBoxInitialData, setEmbedAdBoxInitialData] = useState<{
+    embedCode: string;
+  } | undefined>(undefined);
+  const [isEditingEmbedAdBox, setIsEditingEmbedAdBox] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -199,6 +204,9 @@ export function TiptapEditor({
       PointBox.configure({
         enableNodeView: true,
       }),
+      AffiliateBox.configure({
+        enableNodeView: true,
+      }),
       ImageGallery.configure({
         enableNodeView: true,
       }),
@@ -241,37 +249,17 @@ export function TiptapEditor({
       editorElement.addEventListener('click', (event) => {
         const target = event.target as HTMLElement;
 
-        // CTAボタンがクリックされた場合（リンクより先にチェック）
-        const ctaButtonElement = target.closest('[data-cta-button]');
-
-        if (ctaButtonElement && !disabled) {
-          event.preventDefault();
-
-          try {
-            const pos = editor.view.posAtDOM(ctaButtonElement, 0);
-            const node = editor.view.state.doc.nodeAt(pos);
-
-            if (node && node.type.name === 'ctaButton') {
-              setCtaButtonInitialData({
-                href: node.attrs.href || '',
-                text: node.attrs.text || '',
-                variant: node.attrs.variant || 'primary',
-                bgColor: node.attrs.bgColor,
-                textColor: node.attrs.textColor,
-                animation: node.attrs.animation || 'none',
-              });
-              setCtaButtonDialogOpen(true);
-            }
-          } catch (error) {
-            console.error('Error handling CTA button click:', error);
-          }
-          return;
-        }
-
         // リンクがクリックされた場合
         const linkElement = target.closest('a');
 
         if (linkElement && !disabled) {
+          // 埋め込み広告ボックス内のリンクかチェック
+          const embedAdBox = linkElement.closest('[data-embed-ad-box]');
+          if (embedAdBox) {
+            // 埋め込み広告ボックス内のリンクは編集ダイアログを開かない
+            return;
+          }
+
           event.preventDefault();
           const href = linkElement.getAttribute('href') || '';
           const text = linkElement.textContent || '';
@@ -311,20 +299,28 @@ export function TiptapEditor({
                 method: 'POST',
                 body: formData,
               })
-                .then((res) => res.json())
+                .then(async (res) => {
+                  const data = await res.json();
+                  if (!res.ok) {
+                    throw new Error(data.error || 'アップロードに失敗しました');
+                  }
+                  return data;
+                })
                 .then((data) => {
                   if (data.url) {
                     // 画像を挿入
                     view.dispatch(
                       view.state.tr.replaceSelectionWith(
-                        view.state.schema.nodes.customImage.create({ src: data.url })
+                        view.state.schema.nodes.image.create({ src: data.url })
                       )
                     );
+                  } else {
+                    throw new Error('画像URLが取得できませんでした');
                   }
                 })
                 .catch((error) => {
                   console.error('Failed to upload image:', error);
-                  alert('画像のアップロードに失敗しました');
+                  alert(error instanceof Error ? error.message : '画像のアップロードに失敗しました');
                 });
             }
             return true;
@@ -354,7 +350,13 @@ export function TiptapEditor({
             method: 'POST',
             body: formData,
           })
-            .then((res) => res.json())
+            .then(async (res) => {
+              const data = await res.json();
+              if (!res.ok) {
+                throw new Error(data.error || 'アップロードに失敗しました');
+              }
+              return data;
+            })
             .then((data) => {
               if (data.url) {
                 // ドロップ位置を計算
@@ -368,15 +370,17 @@ export function TiptapEditor({
                   view.dispatch(
                     view.state.tr.insert(
                       coordinates.pos,
-                      view.state.schema.nodes.customImage.create({ src: data.url })
+                      view.state.schema.nodes.image.create({ src: data.url })
                     )
                   );
                 }
+              } else {
+                throw new Error('画像URLが取得できませんでした');
               }
             })
             .catch((error) => {
               console.error('Failed to upload image:', error);
-              alert('画像のアップロードに失敗しました');
+              alert(error instanceof Error ? error.message : '画像のアップロードに失敗しました');
             });
 
           return true;
@@ -390,7 +394,7 @@ export function TiptapEditor({
   // 商品リンクボックスのダブルクリック編集イベントをリスン
   useEffect(() => {
     const handleEditProductLinkBox = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: any }>;
+      const customEvent = event as CustomEvent<{ pos: number; attrs: Record<string, unknown> }>;
       setProductLinkBoxInitialData(customEvent.detail.attrs);
       setIsEditingProductLinkBox(true);
       setProductLinkBoxDialogOpen(true);
@@ -403,10 +407,12 @@ export function TiptapEditor({
     };
   }, []);
 
+
+
   // 画像ギャラリーのダブルクリック編集イベントをリスン
   useEffect(() => {
     const handleEditImageGallery = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: any }>;
+      const customEvent = event as CustomEvent<{ pos: number; attrs: { images: { src: string; alt?: string; caption?: string }[]; columns: number; gap: number } }>;
       setImageGalleryInitialData(customEvent.detail.attrs);
       setIsEditingImageGallery(true);
       setImageGalleryDialogOpen(true);
@@ -422,7 +428,7 @@ export function TiptapEditor({
   // カスタム画像のダブルクリック編集イベントをリスン
   useEffect(() => {
     const handleEditCustomImage = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: any }>;
+      const customEvent = event as CustomEvent<{ pos: number; attrs: { src: string; alt?: string; caption?: string } }>;
       // 既存の画像データを初期データとして設定
       setImageInitialData({
         src: customEvent.detail.attrs.src,
@@ -436,6 +442,50 @@ export function TiptapEditor({
 
     return () => {
       window.removeEventListener('edit-custom-image', handleEditCustomImage);
+    };
+  }, []);
+
+  // 埋め込み広告のダブルクリック編集イベントをリスン
+  useEffect(() => {
+    const handleEditEmbedAdBox = (event: Event) => {
+      const customEvent = event as CustomEvent<{ pos: number; attrs: { embedCode: string } }>;
+      setEmbedAdBoxInitialData({
+        embedCode: customEvent.detail.attrs.embedCode,
+      });
+      setIsEditingEmbedAdBox(true);
+      setEmbedAdBoxDialogOpen(true);
+    };
+
+    window.addEventListener('edit-embed-ad-box', handleEditEmbedAdBox);
+
+    return () => {
+      window.removeEventListener('edit-embed-ad-box', handleEditEmbedAdBox);
+    };
+  }, []);
+
+  // CTAボタンの編集イベントをリスン
+  useEffect(() => {
+    const handleEditCtaButton = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        pos: number;
+        attrs: {
+          href: string;
+          text: string;
+          variant: "primary" | "secondary" | "outline";
+          bgColor?: string;
+          textColor?: string;
+          animation?: "none" | "pulse" | "bounce" | "shine" | "glow";
+        };
+      }>;
+      setCtaButtonInitialData(customEvent.detail.attrs);
+      setIsEditingCtaButton(true);
+      setCtaButtonDialogOpen(true);
+    };
+
+    window.addEventListener('edit-cta-button', handleEditCtaButton);
+
+    return () => {
+      window.removeEventListener('edit-cta-button', handleEditCtaButton);
     };
   }, []);
 
@@ -470,10 +520,6 @@ export function TiptapEditor({
 
   const addEmbedAdBox = () => {
     setEmbedAdBoxDialogOpen(true);
-  };
-
-  const addYoutube = () => {
-    setYoutubeDialogOpen(true);
   };
 
   const handleYoutubeInsert = (url: string) => {
@@ -760,7 +806,7 @@ export function TiptapEditor({
                   >
                     <UnderlineIcon className="h-4 w-4" />
                   </Button>
-                  <ColorPicker
+                  <ColorPickerPopover
                     currentColor={editor.getAttributes("textStyle").color}
                     onColorChange={(color) => editor.chain().focus().setColor(color).run()}
                     disabled={disabled}
@@ -918,7 +964,11 @@ export function TiptapEditor({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setImageGalleryDialogOpen(true)}
+                    onClick={() => {
+                      setImageGalleryInitialData(undefined);
+                      setIsEditingImageGallery(false);
+                      setImageGalleryDialogOpen(true);
+                    }}
                     className={
                       editor.isActive("imageGallery")
                         ? "bg-accent border-2 border-primary"
@@ -929,21 +979,26 @@ export function TiptapEditor({
                   >
                     <Images className="h-4 w-4" />
                   </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addYoutube}
-                    className={
-                      editor.isActive("youtube")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="YouTube動画"
+                  <YoutubePopover
+                    open={youtubePopoverOpen}
+                    onOpenChange={setYoutubePopoverOpen}
+                    onInsert={handleYoutubeInsert}
                   >
-                    <YoutubeIcon className="h-4 w-4" />
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className={
+                        editor.isActive("youtube")
+                          ? "bg-accent border-2 border-primary"
+                          : ""
+                      }
+                      disabled={disabled}
+                      title="YouTube動画"
+                    >
+                      <YoutubeIcon className="h-4 w-4" />
+                    </Button>
+                  </YoutubePopover>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -1202,14 +1257,16 @@ export function TiptapEditor({
       />
       <CtaButtonDialog
         open={ctaButtonDialogOpen}
-        onOpenChange={setCtaButtonDialogOpen}
+        onOpenChange={(open) => {
+          setCtaButtonDialogOpen(open);
+          if (!open) {
+            setIsEditingCtaButton(false);
+            setCtaButtonInitialData(undefined);
+          }
+        }}
         onSelect={handleCtaButtonSelect}
         initialData={ctaButtonInitialData}
-      />
-      <YoutubeDialog
-        open={youtubeDialogOpen}
-        onOpenChange={setYoutubeDialogOpen}
-        onInsert={handleYoutubeInsert}
+        isEditMode={isEditingCtaButton}
       />
       <PointBoxDialog
         open={pointBoxDialogOpen}
@@ -1225,12 +1282,26 @@ export function TiptapEditor({
       />
       <EmbedAdBoxDialog
         open={embedAdBoxDialogOpen}
-        onOpenChange={setEmbedAdBoxDialogOpen}
+        onOpenChange={(open) => {
+          setEmbedAdBoxDialogOpen(open);
+          if (!open) {
+            setIsEditingEmbedAdBox(false);
+            setEmbedAdBoxInitialData(undefined);
+          }
+        }}
         onInsert={handleEmbedAdBoxInsert}
+        initialData={embedAdBoxInitialData}
+        isEditMode={isEditingEmbedAdBox}
       />
       <ImageGalleryDialog
         open={imageGalleryDialogOpen}
-        onOpenChange={setImageGalleryDialogOpen}
+        onOpenChange={(open) => {
+          setImageGalleryDialogOpen(open);
+          if (!open) {
+            setIsEditingImageGallery(false);
+            setImageGalleryInitialData(undefined);
+          }
+        }}
         onSubmit={handleImageGalleryInsert}
         initialData={imageGalleryInitialData}
         isEditMode={isEditingImageGallery}

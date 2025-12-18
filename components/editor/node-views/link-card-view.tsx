@@ -52,7 +52,7 @@ export function LinkCardView({ node }: NodeViewProps) {
 
   if (loading) {
     return (
-      <NodeViewWrapper className="my-4">
+      <NodeViewWrapper className="my-4" data-link-card="">
         <div className="link-card animate-pulse" data-type="internal">
           <div className="link-card-thumbnail">
             <div className="h-full w-full bg-muted" />
@@ -67,8 +67,8 @@ export function LinkCardView({ node }: NodeViewProps) {
   }
 
   return (
-    <NodeViewWrapper className="my-4">
-      <a href={href || "#"} className="link-card" data-type="internal">
+    <NodeViewWrapper className="my-4" data-link-card="">
+      <a href={href} className="link-card" data-type="internal">
         {displayData.thumbnail && (
           <div className="link-card-thumbnail">
             <Image

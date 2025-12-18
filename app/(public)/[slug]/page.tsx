@@ -6,7 +6,7 @@ import {
   getRelatedPosts,
 } from "@/lib/posts";
 import { formatDate, getBaseURL } from "@/lib/utils";
-import { TiptapRendererWithAds } from "@/components/editor/tiptap-renderer-with-ads";
+import { TiptapRenderer } from "@/components/editor/tiptap-renderer";
 import { ShareButtons } from "@/components/post/share-buttons";
 import { RelatedPosts } from "@/components/post/related-posts";
 import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
@@ -212,7 +212,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* 記事本文（記事内広告対応） */}
         {post.content && (
-          <TiptapRendererWithAds
+          <TiptapRenderer
             content={post.content as string}
             inArticlePcSlot={adSettings?.in_article_pc_slot}
             inArticleMobileSlot={adSettings?.in_article_mobile_slot}

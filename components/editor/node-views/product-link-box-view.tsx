@@ -2,8 +2,11 @@
 
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import Image from "next/image";
+import { createProductLinkBoxEditHandler } from "../utils/node-edit-helper";
+import { Button } from "@/components/ui/button";
 
-export function ProductLinkBoxView({ node, getPos, editor }: NodeViewProps) {
+export function ProductLinkBoxView(props: NodeViewProps) {
+  const { node, deleteNode, editor } = props;
   const {
     productName,
     productImage,
@@ -15,27 +18,32 @@ export function ProductLinkBoxView({ node, getPos, editor }: NodeViewProps) {
     yahooPrice,
   } = node.attrs;
 
-  const handleDoubleClick = () => {
-    if (typeof getPos === 'function') {
-      const pos = getPos();
-      if (pos !== undefined) {
-        editor.chain().focus().setTextSelection(pos).run();
-
-        // Dispatch custom event to open edit dialog
-        window.dispatchEvent(new CustomEvent('edit-product-link-box', {
-          detail: { pos, attrs: node.attrs }
-        }));
-      }
-    }
-  };
+  const isEditorMode = editor.isEditable;
+  const handleDoubleClick = createProductLinkBoxEditHandler(props);
 
   return (
     <NodeViewWrapper
-      className="product-link-box"
+      className="product-link-box relative group"
       data-product-link-box=""
       contentEditable={false}
       onDoubleClick={handleDoubleClick}
     >
+      {isEditorMode && deleteNode && (
+        <Button
+          onClick={deleteNode}
+          variant="destructive"
+          size="sm"
+          className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity text-xs h-6 px-2"
+          contentEditable={false}
+        >
+          削除
+        </Button>
+      )}
+      {isEditorMode && (
+        <div className="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-primary text-primary-foreground rounded px-2 py-1 text-xs font-medium pointer-events-none">
+          ダブルクリックで編集
+        </div>
+      )}
       <div className="product-link-box-content">
         {productImage && (
           <div className="product-link-box-image">

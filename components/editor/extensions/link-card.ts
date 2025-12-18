@@ -30,7 +30,7 @@ export const LinkCard = Node.create<LinkCardOptions>({
   addAttributes() {
     return {
       href: {
-        default: null,
+        default: '',
       },
       title: {
         default: null,
@@ -82,7 +82,7 @@ export const LinkCard = Node.create<LinkCardOptions>({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-link-card': '',
         'data-type': 'internal',
-        'href': href || '#',
+        'href': href,
       }),
       ...contentChildren
     ]

@@ -21,6 +21,7 @@ export function PointBoxView({ node }: NodeViewProps) {
       className={`point-box ${config.class}`}
       data-point-box=""
       data-type={type}
+      contentEditable={false}
     >
       <div className="point-box-header">
         <span className="point-box-icon">{config.icon}</span>
