@@ -16,9 +16,11 @@ import { Textarea } from "@/components/ui/textarea"
 interface EmbedAdBoxDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onInsert: (embedCode: string) => void
+  onInsert: (embedCode?: string, pcEmbedCode?: string, mobileEmbedCode?: string) => void
   initialData?: {
-    embedCode: string
+    embedCode?: string
+    pcEmbedCode?: string
+    mobileEmbedCode?: string
   }
   isEditMode?: boolean
 }
@@ -29,37 +31,53 @@ function EmbedAdBoxDialogContent({
   initialData,
   isEditMode = false,
 }: Omit<EmbedAdBoxDialogProps, 'open'>) {
-  const [embedCode, setEmbedCode] = useState(initialData?.embedCode || '')
+  const [pcEmbedCode, setPcEmbedCode] = useState(initialData?.pcEmbedCode || initialData?.embedCode || '')
+  const [mobileEmbedCode, setMobileEmbedCode] = useState(initialData?.mobileEmbedCode || '')
 
   const handleInsert = () => {
-    if (!embedCode.trim()) return
+    if (!pcEmbedCode.trim() && !mobileEmbedCode.trim()) return
 
-    onInsert(embedCode)
+    onInsert(undefined, pcEmbedCode, mobileEmbedCode)
     onOpenChange(false)
   }
 
   return (
-    <DialogContent className="sm:max-w-2xl">
+    <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{isEditMode ? '埋め込み広告を編集' : '埋め込み広告を挿入'}</DialogTitle>
         <DialogDescription>
-          A8.net、もしもアフィリエイトなどの埋め込みコードを貼り付けてください
+          PC用とスマホ用の広告コードを別々に登録することで、デバイス別のレポート分析が可能になります
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="embed-code">埋め込みコード</Label>
+          <Label htmlFor="pc-embed-code">PC用広告コード</Label>
           <Textarea
-            id="embed-code"
+            id="pc-embed-code"
             placeholder="<script>...</script> または <iframe>...</iframe>"
-            value={embedCode}
-            onChange={(e) => setEmbedCode(e.target.value)}
-            rows={10}
+            value={pcEmbedCode}
+            onChange={(e) => setPcEmbedCode(e.target.value)}
+            rows={8}
             className="font-mono text-sm"
           />
           <p className="text-xs text-muted-foreground">
-            A8.net、もしもアフィリエイト、バリューコマースなどの広告コードをそのまま貼り付けてください
+            PC・タブレット表示用の広告コードを貼り付けてください
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="mobile-embed-code">スマホ用広告コード</Label>
+          <Textarea
+            id="mobile-embed-code"
+            placeholder="<script>...</script> または <iframe>...</iframe>"
+            value={mobileEmbedCode}
+            onChange={(e) => setMobileEmbedCode(e.target.value)}
+            rows={8}
+            className="font-mono text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            スマホ表示用の広告コードを貼り付けてください（オプション）
           </p>
         </div>
       </div>
@@ -75,7 +93,7 @@ function EmbedAdBoxDialogContent({
         <Button
           type="button"
           onClick={handleInsert}
-          disabled={!embedCode.trim()}
+          disabled={!pcEmbedCode.trim() && !mobileEmbedCode.trim()}
         >
           {isEditMode ? '更新' : '挿入'}
         </Button>
@@ -93,7 +111,7 @@ export function EmbedAdBoxDialog({
 }: EmbedAdBoxDialogProps) {
   // keyを使ってコンポーネントを完全にリマウントすることで状態をリセット
   const dialogKey = isEditMode && initialData
-    ? `edit-${initialData.embedCode.slice(0, 20)}`
+    ? `edit-${(initialData.pcEmbedCode || initialData.embedCode || '').slice(0, 20)}`
     : 'new';
 
   return (

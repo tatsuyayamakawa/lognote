@@ -448,9 +448,11 @@ export function TiptapEditor({
   // 埋め込み広告のダブルクリック編集イベントをリスン
   useEffect(() => {
     const handleEditEmbedAdBox = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: { embedCode: string } }>;
+      const customEvent = event as CustomEvent<{ pos: number; attrs: { embedCode?: string; pcEmbedCode?: string; mobileEmbedCode?: string } }>;
       setEmbedAdBoxInitialData({
         embedCode: customEvent.detail.attrs.embedCode,
+        pcEmbedCode: customEvent.detail.attrs.pcEmbedCode,
+        mobileEmbedCode: customEvent.detail.attrs.mobileEmbedCode,
       });
       setIsEditingEmbedAdBox(true);
       setEmbedAdBoxDialogOpen(true);
@@ -588,8 +590,16 @@ export function TiptapEditor({
     }
   };
 
-  const handleEmbedAdBoxInsert = (embedCode: string) => {
-    editor.chain().focus().setEmbedAdBox({ embedCode }).run();
+  const handleEmbedAdBoxInsert = (embedCode?: string, pcEmbedCode?: string, mobileEmbedCode?: string) => {
+    if (isEditingEmbedAdBox) {
+      // 編集モード: 既存の埋め込み広告を更新
+      editor.chain().focus().updateAttributes('embedAdBox', { embedCode, pcEmbedCode, mobileEmbedCode }).run();
+      setIsEditingEmbedAdBox(false);
+      setEmbedAdBoxInitialData(undefined);
+    } else {
+      // 新規作成モード
+      editor.chain().focus().setEmbedAdBox({ embedCode, pcEmbedCode, mobileEmbedCode }).run();
+    }
   };
 
   const handleImageGalleryInsert = (data: {

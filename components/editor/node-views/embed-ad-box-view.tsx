@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 
 export function EmbedAdBoxView(props: NodeViewProps) {
   const { node, editor, deleteNode } = props;
-  const { embedCode } = node.attrs;
-  const codeContainerRef = useRef<HTMLDivElement>(null);
+  const { embedCode, pcEmbedCode, mobileEmbedCode } = node.attrs;
+  const pcCodeContainerRef = useRef<HTMLDivElement>(null);
+  const mobileCodeContainerRef = useRef<HTMLDivElement>(null);
 
   // エディタモードかビューアモードかを判定
   const isEditorMode = editor.isEditable;
@@ -25,16 +26,16 @@ export function EmbedAdBoxView(props: NodeViewProps) {
 
   // ビューアモード時のみscriptタグを実行
   useEffect(() => {
-    if (!isEditorMode && codeContainerRef.current && embedCode) {
-      const container = codeContainerRef.current;
+    if (isEditorMode) return;
 
-      // scriptタグを検出して実行
+    // PC用広告の実行
+    if (pcCodeContainerRef.current && pcEmbedCode) {
+      const container = pcCodeContainerRef.current;
       const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = embedCode;
+      tempDiv.innerHTML = pcEmbedCode;
 
       const scripts = tempDiv.getElementsByTagName("script");
 
-      // scriptタグを順番に実行
       Array.from(scripts).forEach((script) => {
         const newScript = document.createElement("script");
 
@@ -45,7 +46,6 @@ export function EmbedAdBoxView(props: NodeViewProps) {
           newScript.textContent = script.textContent;
         }
 
-        // 属性をコピー
         Array.from(script.attributes).forEach((attr) => {
           newScript.setAttribute(attr.name, attr.value);
         });
@@ -53,7 +53,6 @@ export function EmbedAdBoxView(props: NodeViewProps) {
         container.appendChild(newScript);
       });
 
-      // scriptタグ以外のコンテンツも追加
       const nonScriptContent = Array.from(tempDiv.children)
         .filter((child) => child.tagName !== "SCRIPT")
         .map((child) => child.outerHTML)
@@ -65,7 +64,81 @@ export function EmbedAdBoxView(props: NodeViewProps) {
         container.insertBefore(contentDiv, container.firstChild);
       }
     }
-  }, [embedCode, isEditorMode]);
+
+    // スマホ用広告の実行
+    if (mobileCodeContainerRef.current && mobileEmbedCode) {
+      const container = mobileCodeContainerRef.current;
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = mobileEmbedCode;
+
+      const scripts = tempDiv.getElementsByTagName("script");
+
+      Array.from(scripts).forEach((script) => {
+        const newScript = document.createElement("script");
+
+        if (script.src) {
+          newScript.src = script.src;
+          newScript.async = true;
+        } else {
+          newScript.textContent = script.textContent;
+        }
+
+        Array.from(script.attributes).forEach((attr) => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+
+        container.appendChild(newScript);
+      });
+
+      const nonScriptContent = Array.from(tempDiv.children)
+        .filter((child) => child.tagName !== "SCRIPT")
+        .map((child) => child.outerHTML)
+        .join("");
+
+      if (nonScriptContent) {
+        const contentDiv = document.createElement("div");
+        contentDiv.innerHTML = nonScriptContent;
+        container.insertBefore(contentDiv, container.firstChild);
+      }
+    }
+
+    // 旧形式（embedCode）の下位互換性サポート
+    if (!pcEmbedCode && !mobileEmbedCode && embedCode && pcCodeContainerRef.current) {
+      const container = pcCodeContainerRef.current;
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = embedCode;
+
+      const scripts = tempDiv.getElementsByTagName("script");
+
+      Array.from(scripts).forEach((script) => {
+        const newScript = document.createElement("script");
+
+        if (script.src) {
+          newScript.src = script.src;
+          newScript.async = true;
+        } else {
+          newScript.textContent = script.textContent;
+        }
+
+        Array.from(script.attributes).forEach((attr) => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+
+        container.appendChild(newScript);
+      });
+
+      const nonScriptContent = Array.from(tempDiv.children)
+        .filter((child) => child.tagName !== "SCRIPT")
+        .map((child) => child.outerHTML)
+        .join("");
+
+      if (nonScriptContent) {
+        const contentDiv = document.createElement("div");
+        contentDiv.innerHTML = nonScriptContent;
+        container.insertBefore(contentDiv, container.firstChild);
+      }
+    }
+  }, [embedCode, pcEmbedCode, mobileEmbedCode, isEditorMode]);
 
   return (
     <NodeViewWrapper
@@ -93,13 +166,44 @@ export function EmbedAdBoxView(props: NodeViewProps) {
       )}
       {isEditorMode ? (
         // エディタモード: dangerouslySetInnerHTMLで表示（scriptは実行しない）
-        <div
-          className="embed-ad-box-content"
-          dangerouslySetInnerHTML={{ __html: embedCode }}
-        />
+        <div className="space-y-4">
+          {(pcEmbedCode || embedCode) && (
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">PC用広告</div>
+              <div
+                className="embed-ad-box-content"
+                dangerouslySetInnerHTML={{ __html: pcEmbedCode || embedCode }}
+              />
+            </div>
+          )}
+          {mobileEmbedCode && (
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">スマホ用広告</div>
+              <div
+                className="embed-ad-box-content"
+                dangerouslySetInnerHTML={{ __html: mobileEmbedCode }}
+              />
+            </div>
+          )}
+        </div>
       ) : (
-        // ビューアモード: scriptタグを実行
-        <div ref={codeContainerRef} className="embed-ad-box-content" />
+        // ビューアモード: scriptタグを実行（メディアクエリで表示切り替え）
+        <>
+          {/* PC用広告（タブレット以上で表示） */}
+          {(pcEmbedCode || embedCode) && (
+            <div
+              ref={pcCodeContainerRef}
+              className="embed-ad-box-content hidden md:block"
+            />
+          )}
+          {/* スマホ用広告（スマホサイズで表示） */}
+          {mobileEmbedCode && (
+            <div
+              ref={mobileCodeContainerRef}
+              className="embed-ad-box-content block md:hidden"
+            />
+          )}
+        </>
       )}
     </NodeViewWrapper>
   );

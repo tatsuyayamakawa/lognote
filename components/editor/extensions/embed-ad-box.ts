@@ -11,7 +11,9 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     embedAdBox: {
       setEmbedAdBox: (options: {
-        embedCode: string
+        embedCode?: string
+        pcEmbedCode?: string
+        mobileEmbedCode?: string
       }) => ReturnType
     }
   }
@@ -29,6 +31,12 @@ export const EmbedAdBox = Node.create<EmbedAdBoxOptions>({
       embedCode: {
         default: '',
       },
+      pcEmbedCode: {
+        default: '',
+      },
+      mobileEmbedCode: {
+        default: '',
+      },
     }
   },
 
@@ -41,7 +49,7 @@ export const EmbedAdBox = Node.create<EmbedAdBoxOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const { embedCode } = node.attrs
+    const { embedCode, pcEmbedCode, mobileEmbedCode } = node.attrs
 
     return [
       'div',
@@ -53,7 +61,9 @@ export const EmbedAdBox = Node.create<EmbedAdBoxOptions>({
         'div',
         {
           class: 'embed-ad-box-content',
-          innerHTML: embedCode
+          'data-embed-code': embedCode || '',
+          'data-pc-embed-code': pcEmbedCode || '',
+          'data-mobile-embed-code': mobileEmbedCode || '',
         },
       ],
     ]
