@@ -8,6 +8,7 @@ import {
 } from "@/lib/google-analytics/analytics";
 import { getSearchKeywords } from "@/lib/google-analytics/search-console";
 import { AnalyticsCharts } from "./analytics-charts";
+import { AdSenseSection } from "./adsense-section";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -27,6 +28,10 @@ export default async function DashboardPage({
   const gaConfigured =
     !!process.env.GA4_PROPERTY_ID &&
     (!!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !!process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+  // AdSenseが設定されているかチェック
+  const adsenseConfigured =
+    !!process.env.GOOGLE_ADSENSE_CLIENT_ID && !!process.env.GOOGLE_ADSENSE_CLIENT_SECRET;
 
   // サイトのURLを取得（Search Consoleのプロパティタイプに対応）
   const searchConsoleUrl = getSearchConsoleURL();
@@ -60,6 +65,9 @@ export default async function DashboardPage({
           </Link>
         </Button>
       </div>
+
+      {/* AdSense 収益セクション */}
+      {adsenseConfigured && <AdSenseSection period={period} />}
 
       {/* Analytics グラフセクション */}
       {gaConfigured ? (

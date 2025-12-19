@@ -151,7 +151,7 @@ export function AnalyticsCharts({
   return (
     <div className="space-y-6">
       {/* 期間選択 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold">アナリティクス</h2>
           <p className="text-sm text-muted-foreground">
@@ -159,7 +159,7 @@ export function AnalyticsCharts({
           </p>
         </div>
         <Select value={currentPeriod} onValueChange={handlePeriodChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="期間を選択" />
           </SelectTrigger>
           <SelectContent>
@@ -439,14 +439,14 @@ function AnalyticsChartsSkeleton({ currentPeriod }: { currentPeriod: string }) {
   return (
     <div className="space-y-6">
       {/* 期間選択 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold">アナリティクス</h2>
           <p className="text-sm text-muted-foreground">
             {getPeriodLabel()}のデータ
           </p>
         </div>
-        <Skeleton className="h-10 w-[180px]" />
+        <Skeleton className="h-10 w-full sm:w-[180px]" />
       </div>
 
       {/* ページビューグラフ */}
