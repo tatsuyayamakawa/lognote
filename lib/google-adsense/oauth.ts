@@ -36,8 +36,8 @@ export function generateAuthUrl() {
  */
 export async function saveTokens(tokens: {
   access_token: string;
-  refresh_token?: string;
-  expiry_date?: number;
+  refresh_token?: string | null;
+  expiry_date?: number | null;
 }) {
   const supabase = await createClient();
 
