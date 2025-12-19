@@ -70,24 +70,29 @@ export function AdSense({
     const checkVisibility = () => {
       if (isInitialized) return;
 
-      // 要素のサイズと表示状態をチェック（data-adsbygoogle-statusチェックより前）
-      const rect = container.getBoundingClientRect();
-      const parentWidth = container.parentElement?.clientWidth || 0;
-      const isVisible = rect.width > 0 && rect.height > 0;
-
-      // 要素が表示されていない（display:none等）場合はスキップ
-      if (!isVisible) {
-        return;
-      }
-
-      // すでに処理済みの場合はスキップ（ただし表示されている場合のみチェック）
+      // すでに処理済みの場合はスキップ
       if (container.getAttribute("data-adsbygoogle-status")) {
         isInitialized = true;
         return;
       }
 
-      // 親要素の幅が250px未満の場合は初期化しない（fluid広告の最小幅）
-      if (parentWidth < 250) {
+      // 要素のサイズと表示状態をチェック
+      const rect = container.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(container);
+      const isDisplayNone = computedStyle.display === "none";
+      const isVisibilityHidden = computedStyle.visibility === "hidden";
+
+      // display:noneやvisibility:hiddenの場合はスキップ
+      if (isDisplayNone || isVisibilityHidden) {
+        return;
+      }
+
+      // 固定サイズ広告でない場合（fluid広告）は、親要素の幅をチェック
+      const parentWidth = container.parentElement?.clientWidth || 0;
+      const isFluid = layout === "in-article" || adFormat === "fluid";
+
+      // fluid広告の場合、親要素の幅が250px未満ならスキップ
+      if (isFluid && parentWidth < 250) {
         return;
       }
 
@@ -95,7 +100,8 @@ export function AdSense({
       isInitialized = true;
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch {
+      } catch (error) {
+        console.error("AdSense initialization error:", error);
         isInitialized = false; // エラー時はフラグをリセット
       }
     };
@@ -204,8 +210,8 @@ export function AdSense({
         style={adStyle}
         data-ad-client="ca-pub-7839828582645189"
         data-ad-slot={adSlot}
-        {...(!isFixedSize && { "data-ad-format": adFormat })}
-        {...(!isFixedSize && { "data-full-width-responsive": fullWidthResponsive.toString() })}
+        {...(adFormat && adFormat !== "auto" && { "data-ad-format": adFormat })}
+        {...(fullWidthResponsive !== undefined && !isFixedSize && { "data-full-width-responsive": fullWidthResponsive.toString() })}
         {...(layout && { "data-ad-layout": layout })}
         suppressHydrationWarning
       />
