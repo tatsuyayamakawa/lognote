@@ -77,7 +77,6 @@ export function AdSense({
       }
 
       // 要素のサイズと表示状態をチェック
-      const rect = container.getBoundingClientRect();
       const computedStyle = window.getComputedStyle(container);
       const isDisplayNone = computedStyle.display === "none";
       const isVisibilityHidden = computedStyle.visibility === "hidden";
@@ -198,8 +197,10 @@ export function AdSense({
   const containerStyle: React.CSSProperties = {
     minHeight: actualPlaceholderHeight,
     width: "100%", // 常に100%にして中央寄せを有効にする
+    maxWidth: "100%", // 親要素からはみ出さないようにする
     display: isFixedSize ? "flex" : "block",
     ...(isFixedSize && { justifyContent: "center" }),
+    overflow: "hidden", // はみ出し防止
   };
 
   return (

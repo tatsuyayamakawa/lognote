@@ -46,20 +46,20 @@ export default function ArticleLoadingPage() {
 
       {/* コンテンツセクション（max-w-7xl） */}
       <div className="mx-auto max-w-7xl pb-8 md:px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 xl:grid-cols-[1fr_320px]">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* メインコンテンツ */}
-          <article className="min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
+          <article className="flex-1 min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
             {/* 記事本文、シェアボタン、関連記事はサーバーサイドで完全にレンダリングされるためスケルトン不要 */}
           </article>
 
-          {/* 右サイドバー（PCのみ）*/}
-          <aside className="hidden xl:block">
-            <div className="sticky top-4 space-y-6">
+          {/* 右サイドバー */}
+          <aside className="w-full lg:w-80 shrink-0 px-4 md:px-0">
+            <div className="lg:sticky lg:top-4 space-y-6">
               {/* プロフィール */}
               <Profile />
 
-              {/* 目次 */}
-              <div className="rounded-lg border bg-card p-5">
+              {/* 目次（デスクトップのみ） */}
+              <div className="hidden lg:block rounded-lg border bg-card p-5">
                 <Skeleton className="mb-4 h-6 w-24" />
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />

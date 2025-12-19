@@ -89,9 +89,9 @@ export default async function Home() {
 
       {/* メインコンテンツ - 2カラムレイアウト */}
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* メインカラム */}
-          <main>
+          <main className="flex-1 min-w-0">
             {/* カテゴリナビゲーション */}
             <div className="mb-8 flex flex-wrap gap-3">
               <Link

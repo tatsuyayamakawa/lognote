@@ -89,7 +89,7 @@ export default async function PostPage({ params }: PostPageProps) {
   // 関連記事と広告設定を取得
   const categoryIds = post.categories?.map((c) => c.id) || [];
   const [relatedPosts, adSettings] = await Promise.all([
-    getRelatedPosts(post.id, categoryIds, 3),
+    getRelatedPosts(post.id, categoryIds, 6),
     getAdSettings(),
   ]);
 
@@ -204,9 +204,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* コンテンツセクション */}
         <div className="mx-auto max-w-7xl pb-8 md:px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 xl:grid-cols-[1fr_320px]">
+          <div className="flex flex-col lg:flex-row gap-8">
             {/* メインコンテンツ */}
-            <article className="min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
+            <article className="flex-1 min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
 
         {/* 記事本文（記事内広告対応） */}
         {post.content && (
@@ -252,14 +252,14 @@ export default async function PostPage({ params }: PostPageProps) {
               <RelatedPosts posts={relatedPosts} />
             </article>
 
-            {/* 右サイドバー - プロフィール・目次（PCのみ）320px固定 */}
-            <aside className="hidden xl:block">
-              <div className="sticky top-4 space-y-6">
+            {/* 右サイドバー - プロフィール・目次 */}
+            <aside className="w-full lg:w-80 shrink-0 px-4 md:px-0">
+              <div className="lg:sticky lg:top-4 space-y-6">
                 {/* プロフィール */}
                 <Profile />
 
-                {/* 目次 */}
-                <div className="bg-card rounded-lg border p-5">
+                {/* 目次（デスクトップのみ） */}
+                <div className="hidden lg:block bg-card rounded-lg border p-5">
                   <TableOfContents />
                 </div>
               </div>
