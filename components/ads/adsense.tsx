@@ -211,7 +211,11 @@ export function AdSense({
         data-ad-client="ca-pub-7839828582645189"
         data-ad-slot={adSlot}
         {...(adFormat && adFormat !== "auto" && { "data-ad-format": adFormat })}
-        {...(fullWidthResponsive !== undefined && !isFixedSize && { "data-full-width-responsive": fullWidthResponsive.toString() })}
+        {...(!isFixedSize && fullWidthResponsive !== undefined
+          ? { "data-full-width-responsive": fullWidthResponsive.toString() }
+          : isFixedSize
+          ? { "data-full-width-responsive": "false" }
+          : {})}
         {...(layout && { "data-ad-layout": layout })}
         suppressHydrationWarning
       />
