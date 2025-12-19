@@ -194,10 +194,10 @@ export function AdSense({
     : { display: "block", width: "100%" }; // fluid広告には幅100%を設定
 
   // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ
-  // fluid広告の場合は幅100%、固定サイズの場合は中央寄せ
+  // 固定サイズの場合は中央寄せ、fluid広告の場合は幅100%
   const containerStyle: React.CSSProperties = {
     minHeight: actualPlaceholderHeight,
-    width: width || "100%",
+    width: "100%", // 常に100%にして中央寄せを有効にする
     display: isFixedSize ? "flex" : "block",
     ...(isFixedSize && { justifyContent: "center" }),
   };

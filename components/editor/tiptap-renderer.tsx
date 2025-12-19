@@ -364,18 +364,20 @@ function InArticleAdPortal({
       )}
       {/* モバイル用広告 */}
       {mobileSlot && (
-        <div className="block md:hidden text-center">
-          <span className="text-xs text-muted-foreground block mb-1">
+        <div className="block md:hidden">
+          <span className="text-xs text-muted-foreground block text-center mb-1">
             スポンサーリンク
           </span>
-          <AdSense
-            adSlot={mobileSlot}
-            width="300px"
-            height="250px"
-            adFormat="rectangle"
-            fullWidthResponsive={false}
-            showSkeleton={true}
-          />
+          <div className="flex justify-center">
+            <AdSense
+              adSlot={mobileSlot}
+              width="300px"
+              height="250px"
+              adFormat="rectangle"
+              fullWidthResponsive={false}
+              showSkeleton={true}
+            />
+          </div>
         </div>
       )}
     </>,
