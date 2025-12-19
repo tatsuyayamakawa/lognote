@@ -12,7 +12,7 @@ export async function Sidebar({ categories }: SidebarProps) {
   const adSettings = await getAdSettings();
 
   return (
-    <aside className="w-full lg:w-80 shrink-0 px-4 md:px-0 space-y-6">
+    <aside className="w-full lg:w-80 shrink-0 space-y-6">
       {/* サイドバー広告 */}
       {(adSettings?.sidebar_pc_slot || adSettings?.sidebar_mobile_slot) && (
         <ResponsiveAd
