@@ -23,6 +23,7 @@ import { PointBox } from "./extensions/point-box";
 import { AffiliateBox } from "./extensions/affiliate-box";
 import { ImageGallery } from "./extensions/image-gallery";
 import { CustomImage } from "./extensions/custom-image";
+import { LeftHeaderTable } from "./extensions/left-header-table";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -52,6 +53,7 @@ import {
   Youtube as YoutubeIcon,
   Lightbulb,
   Images,
+  LayoutList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./dialogs/image-picker-dialog";
@@ -64,6 +66,7 @@ import { ProductLinkBoxDialog } from "./dialogs/product-link-box-dialog";
 import { EmbedAdBoxDialog } from "./dialogs/embed-ad-box-dialog";
 import { YoutubePopover } from "./dialogs/youtube-popover";
 import { ImageGalleryDialog } from "./dialogs/image-gallery-dialog";
+import { LeftHeaderTableDialog } from "./dialogs/left-header-table-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -94,6 +97,7 @@ export function TiptapEditor({
   const [youtubePopoverOpen, setYoutubePopoverOpen] = useState(false);
   const [pointBoxDialogOpen, setPointBoxDialogOpen] = useState(false);
   const [imageGalleryDialogOpen, setImageGalleryDialogOpen] = useState(false);
+  const [leftHeaderTableDialogOpen, setLeftHeaderTableDialogOpen] = useState(false);
   const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
   const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
     href: string;
@@ -212,6 +216,9 @@ export function TiptapEditor({
       ImageGallery.configure({
         enableNodeView: true,
       }),
+      LeftHeaderTable.configure({
+        enableNodeView: true,
+      }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
@@ -223,12 +230,16 @@ export function TiptapEditor({
           class: "border-b",
         },
       }),
-      TableHeader.configure({
+      TableHeader.extend({
+        content: 'inline*',
+      }).configure({
         HTMLAttributes: {
           class: "border border-border bg-muted p-2 text-left font-bold",
         },
       }),
-      TableCell.configure({
+      TableCell.extend({
+        content: 'inline*',
+      }).configure({
         HTMLAttributes: {
           class: "border border-border p-2",
         },
@@ -569,6 +580,14 @@ export function TiptapEditor({
     content: string;
   }) => {
     editor.chain().focus().setPointBox(data).run();
+  };
+
+  const handleLeftHeaderTableInsert = (data: {
+    rows: number;
+    cols: number;
+    data: string[][];
+  }) => {
+    editor.chain().focus().setLeftHeaderTable(data).run();
   };
 
   const handleProductLinkBoxInsert = (data: {
@@ -1039,6 +1058,16 @@ export function TiptapEditor({
                   >
                     <TableIcon className="h-4 w-4" />
                   </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setLeftHeaderTableDialogOpen(true)}
+                    disabled={disabled}
+                    title="左端列見出しテーブル"
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </Button>
                   {editor.isActive("table") && (
                     <>
                       <Button
@@ -1317,6 +1346,11 @@ export function TiptapEditor({
         onSubmit={handleImageGalleryInsert}
         initialData={imageGalleryInitialData}
         isEditMode={isEditingImageGallery}
+      />
+      <LeftHeaderTableDialog
+        open={leftHeaderTableDialogOpen}
+        onOpenChange={setLeftHeaderTableDialogOpen}
+        onInsert={handleLeftHeaderTableInsert}
       />
     </>
   );

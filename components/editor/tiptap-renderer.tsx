@@ -24,6 +24,7 @@ import { EmbedAdBox } from "./extensions/embed-ad-box";
 import { PointBox } from "./extensions/point-box";
 import { ImageGallery } from "./extensions/image-gallery";
 import { AffiliateBox } from "./extensions/affiliate-box";
+import { LeftHeaderTable } from "./extensions/left-header-table";
 import { AdSense } from "../ads/adsense";
 
 // 見出しの階層的な番号を管理するクラス
@@ -180,6 +181,12 @@ export function TiptapRenderer({
         },
         enableNodeView: false,
       }),
+      LeftHeaderTable.configure({
+        HTMLAttributes: {
+          class: "left-header-table-wrapper",
+        },
+        enableNodeView: false,
+      }),
       AffiliateBox.configure({
         enableNodeView: false,
       }),
@@ -201,12 +208,16 @@ export function TiptapRenderer({
           class: "border-b",
         },
       }),
-      TableHeader.configure({
+      TableHeader.extend({
+        content: 'inline*',
+      }).configure({
         HTMLAttributes: {
           class: "border border-border bg-muted p-2 text-left font-bold",
         },
       }),
-      TableCell.configure({
+      TableCell.extend({
+        content: 'inline*',
+      }).configure({
         HTMLAttributes: {
           class: "border border-border p-2",
         },

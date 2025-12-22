@@ -48,11 +48,11 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.35 0.005 285.823);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
+  --card-foreground: oklch(0.35 0.005 285.823);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
+  --popover-foreground: oklch(0.35 0.005 285.823);
   --primary: oklch(0.21 0.006 285.885);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.967 0.001 286.375);
@@ -72,7 +72,7 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-foreground: oklch(0.35 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.967 0.001 286.375);
@@ -405,6 +405,7 @@
 }
 
 .prose .point-box-content {
+  font-size: 1rem;
   padding: 1rem;
   line-height: 1.7;
 }
@@ -612,6 +613,91 @@
   animation: glow 2s ease-in-out infinite;
 }
 
+/* Tiptapエディタと記事表示の見出しスタイル */
+.tiptap h2,
+.prose h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 2.5em;
+  margin-bottom: 1em;
+  padding: 0.75em 1em;
+  border-left: 8px solid var(--primary);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--muted),
+    var(--muted) 3px,
+    transparent 3px,
+    transparent 7px
+  );
+  color: var(--foreground);
+}
+
+.tiptap h3,
+.prose h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 2em;
+  margin-bottom: 0.875em;
+  padding: 0 0.5em 0.5em;
+  border-bottom: 3px solid var(--muted);
+  position: relative;
+  color: var(--foreground);
+}
+
+.tiptap h3::after,
+.prose h3::after {
+  position: absolute;
+  content: " ";
+  display: block;
+  border-bottom: 3px solid var(--primary);
+  bottom: -3px;
+  left: 0;
+  width: 20%;
+}
+
+.tiptap h4,
+.prose h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 1.75em;
+  margin-bottom: 0.75em;
+  padding-left: 0.5em;
+  border-left: 4px solid var(--muted-foreground);
+  color: var(--foreground);
+}
+
+/* エディタと記事表示の行間調整 */
+.tiptap p,
+.prose p {
+  font-size: 1rem;
+  line-height: 1.9;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.tiptap li,
+.prose li {
+  line-height: 1.8;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.tiptap pre,
+.prose pre {
+  line-height: 1.7;
+}
+
+/* Bold要素の色調整 */
+.tiptap strong,
+.tiptap b,
+.prose strong,
+.prose b {
+  color: var(--foreground);
+}
+
 /* Tiptapテーブルスタイル */
 .tiptap table {
   border-collapse: collapse;
@@ -635,6 +721,15 @@
   font-weight: bold;
   text-align: left;
   background-color: var(--muted);
+}
+
+/* 左端列を見出しスタイルにするテーブル */
+.tiptap table.left-header td:first-child,
+.tiptap table.left-header th:first-child,
+.prose table.left-header td:first-child,
+.prose table.left-header th:first-child {
+  background-color: var(--muted);
+  font-weight: bold;
 }
 
 .tiptap table .selectedCell:after {
@@ -863,7 +958,7 @@
   box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
 }
 
-/* 通常の画像スタイル */
+/* 画像スタイル */
 .prose img {
   transition: none;
 }
@@ -881,11 +976,6 @@
   margin: 0;
   width: 100%;
   height: auto;
-  transition: none;
-}
-
-.prose .image-gallery-wrapper img:hover {
-  opacity: 1;
 }
 
 /* ギャラリー内の画像のキャプション段落マージンをリセット */
