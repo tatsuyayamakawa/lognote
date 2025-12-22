@@ -62,6 +62,7 @@ export default function RootLayout({
           title="整えて、創る。 RSS Feed"
           href="/feed.xml"
         />
+        <script async src="https://www.instagram.com/embed.js"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

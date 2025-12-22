@@ -3,7 +3,8 @@
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Youtube from "@tiptap/extension-youtube";
+import { CustomYoutube } from "./extensions/custom-youtube";
+import { Instagram } from "./extensions/instagram";
 import { CustomImage } from "./extensions/custom-image";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
@@ -190,11 +191,16 @@ export function TiptapRenderer({
       AffiliateBox.configure({
         enableNodeView: false,
       }),
-      Youtube.configure({
+      CustomYoutube.configure({
         width: 640,
         height: 360,
         HTMLAttributes: {
           class: "rounded-lg my-4",
+        },
+      }),
+      Instagram.configure({
+        HTMLAttributes: {
+          class: "my-4",
         },
       }),
       Table.configure({
@@ -247,6 +253,40 @@ export function TiptapRenderer({
       },
     },
   });
+
+  // Instagram埋め込みスクリプトを処理
+  useEffect(() => {
+    if (!editor) return;
+
+    // Instagram埋め込みスクリプトを読み込む
+    const loadInstagramScript = () => {
+      if (typeof window === "undefined") return;
+
+      const existingScript = document.querySelector('script[src="https://www.instagram.com/embed.js"]');
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = "https://www.instagram.com/embed.js";
+        script.async = true;
+        script.onload = () => {
+          // スクリプト読み込み後に埋め込みを処理
+          if (window.instgrm) {
+            window.instgrm.Embeds.process();
+          }
+        };
+        document.body.appendChild(script);
+      } else if (window.instgrm) {
+        // スクリプトが既に存在する場合は即座に処理
+        window.instgrm.Embeds.process();
+      }
+    };
+
+    // 少し遅延させて確実に処理
+    const timer = setTimeout(() => {
+      loadInstagramScript();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [editor]);
 
   // H2の数をカウント
   useEffect(() => {
@@ -394,4 +434,15 @@ function InArticleAdPortal({
     </>,
     container
   );
+}
+
+// Instagram埋め込みスクリプトのグローバル型定義
+declare global {
+  interface Window {
+    instgrm?: {
+      Embeds: {
+        process: () => void;
+      };
+    };
+  }
 }

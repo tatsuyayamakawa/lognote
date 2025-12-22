@@ -6,7 +6,7 @@ import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import Youtube from "@tiptap/extension-youtube";
+import { CustomYoutube } from "./extensions/custom-youtube";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
@@ -24,6 +24,7 @@ import { AffiliateBox } from "./extensions/affiliate-box";
 import { ImageGallery } from "./extensions/image-gallery";
 import { CustomImage } from "./extensions/custom-image";
 import { LeftHeaderTable } from "./extensions/left-header-table";
+import { Instagram } from "./extensions/instagram";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
@@ -51,6 +52,7 @@ import {
   Package,
   MonitorPlay,
   Youtube as YoutubeIcon,
+  Instagram as InstagramIcon,
   Lightbulb,
   Images,
   LayoutList,
@@ -65,6 +67,7 @@ import { PointBoxDialog } from "./dialogs/point-box-dialog";
 import { ProductLinkBoxDialog } from "./dialogs/product-link-box-dialog";
 import { EmbedAdBoxDialog } from "./dialogs/embed-ad-box-dialog";
 import { YoutubePopover } from "./dialogs/youtube-popover";
+import { InstagramPopover } from "./dialogs/instagram-popover";
 import { ImageGalleryDialog } from "./dialogs/image-gallery-dialog";
 import { LeftHeaderTableDialog } from "./dialogs/left-header-table-dialog";
 import {
@@ -95,6 +98,7 @@ export function TiptapEditor({
   const [productLinkBoxDialogOpen, setProductLinkBoxDialogOpen] = useState(false);
   const [embedAdBoxDialogOpen, setEmbedAdBoxDialogOpen] = useState(false);
   const [youtubePopoverOpen, setYoutubePopoverOpen] = useState(false);
+  const [instagramPopoverOpen, setInstagramPopoverOpen] = useState(false);
   const [pointBoxDialogOpen, setPointBoxDialogOpen] = useState(false);
   const [imageGalleryDialogOpen, setImageGalleryDialogOpen] = useState(false);
   const [leftHeaderTableDialogOpen, setLeftHeaderTableDialogOpen] = useState(false);
@@ -177,11 +181,17 @@ export function TiptapEditor({
           class: "rounded-lg max-w-full h-auto",
         },
       }),
-      Youtube.configure({
+      CustomYoutube.configure({
         width: 640,
         height: 360,
         HTMLAttributes: {
           class: "rounded-lg my-4",
+        },
+      }),
+      Instagram.configure({
+        enableNodeView: true,
+        HTMLAttributes: {
+          class: "my-4",
         },
       }),
       Placeholder.configure({
@@ -539,6 +549,10 @@ export function TiptapEditor({
 
   const handleYoutubeInsert = (url: string) => {
     editor.chain().focus().setYoutubeVideo({ src: url }).run();
+  };
+
+  const handleInstagramInsert = (url: string) => {
+    editor.chain().focus().setInstagram({ url }).run();
   };
 
   const handleImageSelect = (data: { src: string; alt?: string; caption?: string }) => {
@@ -1030,6 +1044,26 @@ export function TiptapEditor({
                       <YoutubeIcon className="h-4 w-4" />
                     </Button>
                   </YoutubePopover>
+                  <InstagramPopover
+                    open={instagramPopoverOpen}
+                    onOpenChange={setInstagramPopoverOpen}
+                    onInsert={handleInstagramInsert}
+                  >
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className={
+                        editor.isActive("instagram")
+                          ? "bg-accent border-2 border-primary"
+                          : ""
+                      }
+                      disabled={disabled}
+                      title="Instagram投稿"
+                    >
+                      <InstagramIcon className="h-4 w-4" />
+                    </Button>
+                  </InstagramPopover>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
