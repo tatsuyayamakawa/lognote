@@ -360,8 +360,6 @@ export async function syncViewCountsFromAnalytics(
     }
   }
 
-  console.log("[Posts] Fetching fresh view counts from Google Analytics");
-
   // Google Analyticsから記事ごとの閲覧数を取得
   const { getPostViewCounts } = await import(
     "@/lib/google-analytics/analytics"
@@ -369,7 +367,6 @@ export async function syncViewCountsFromAnalytics(
   const viewCounts = await getPostViewCounts();
 
   if (viewCounts.length === 0) {
-    console.log("[Posts] No view counts to sync");
     const result = { updated: 0, errors: 0, skipped: 0 };
     await saveSyncResultToCache(
       supabase,
@@ -433,9 +430,6 @@ export async function syncViewCountsFromAnalytics(
   }
 
   const result = { updated, errors, skipped };
-  console.log(
-    `[Posts] View counts synced: ${updated} updated, ${skipped} skipped (no change), ${errors} errors`
-  );
 
   // 結果をキャッシュに保存
   await saveSyncResultToCache(
