@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface Heading {
@@ -16,6 +16,7 @@ interface TableOfContentsProps {
 export function TableOfContents({ className }: TableOfContentsProps) {
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const tocListRef = useRef<HTMLUListElement | null>(null);
 
   // 見出しを抽出（MutationObserverで動的に監視）
   useEffect(() => {
@@ -97,6 +98,44 @@ export function TableOfContents({ className }: TableOfContentsProps) {
     };
   }, [headings]);
 
+  // アクティブな項目が変わったら目次内でスクロール
+  useEffect(() => {
+    if (!activeId || !tocListRef.current) return;
+
+    const activeElement = tocListRef.current.querySelector(
+      `a[href="#${activeId}"]`
+    )?.parentElement;
+
+    if (activeElement) {
+      const tocList = tocListRef.current;
+      const tocListRect = tocList.getBoundingClientRect();
+      const activeRect = activeElement.getBoundingClientRect();
+
+      // 目次リストの相対位置を計算
+      const relativeTop = activeRect.top - tocListRect.top + tocList.scrollTop;
+      const relativeBottom = relativeTop + activeRect.height;
+
+      // 現在のスクロール範囲
+      const scrollTop = tocList.scrollTop;
+      const scrollBottom = scrollTop + tocList.clientHeight;
+
+      // 要素が見えていない場合、スクロール
+      if (relativeTop < scrollTop) {
+        // 上にスクロール
+        tocList.scrollTo({
+          top: relativeTop - 20, // 余白を持たせる
+          behavior: "smooth",
+        });
+      } else if (relativeBottom > scrollBottom) {
+        // 下にスクロール
+        tocList.scrollTo({
+          top: relativeBottom - tocList.clientHeight + 20, // 余白を持たせる
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [activeId]);
+
   // クリックハンドラ
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -119,7 +158,7 @@ export function TableOfContents({ className }: TableOfContentsProps) {
   return (
     <nav className={cn("space-y-1", className)}>
       <p className="mb-4 text-base font-bold text-foreground">目次</p>
-      <ul className="space-y-1 text-sm">
+      <ul ref={tocListRef} className="space-y-1 text-sm max-h-[55vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent hover:scrollbar-thumb-primary/50">
         {headings.map((heading) => (
           <li
             key={heading.id}
