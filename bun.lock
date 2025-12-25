@@ -28,6 +28,7 @@
         "@tiptap/extension-table-header": "^3.12.1",
         "@tiptap/extension-table-row": "^3.12.1",
         "@tiptap/extension-text-style": "^3.11.0",
+        "@tiptap/extension-youtube": "^3.13.0",
         "@tiptap/react": "^3.11.0",
         "@tiptap/starter-kit": "^3.11.0",
         "class-variance-authority": "^0.7.1",
@@ -42,6 +43,7 @@
         "react": "19.2.0",
         "react-day-picker": "^9.11.1",
         "react-dom": "19.2.0",
+        "react-icons": "^5.5.0",
         "recharts": "2.15.4",
         "sonner": "^2.0.7",
         "tailwind-merge": "^3.4.0",
@@ -451,6 +453,8 @@
     "@tiptap/extension-text-style": ["@tiptap/extension-text-style@3.11.0", "", { "peerDependencies": { "@tiptap/core": "^3.11.0" } }, "sha512-q8RM4gzmdnUHosL65SIJzTTmL29bm+3hNPdloOuJyLd4sTYs2q+cues5mH5/n85HqX3+TvKrfrTVb1Yj62E1NA=="],
 
     "@tiptap/extension-underline": ["@tiptap/extension-underline@3.11.0", "", { "peerDependencies": { "@tiptap/core": "^3.11.0" } }, "sha512-D3PsS/84RlQKFjd5eerMIUioC0mNh4yy1RRV/WbXx6ugu+6T+0hT42gNk9Ap8pDsVQZCk0SHfDyBEUFC2KOwKw=="],
+
+    "@tiptap/extension-youtube": ["@tiptap/extension-youtube@3.14.0", "", { "peerDependencies": { "@tiptap/core": "^3.14.0" } }, "sha512-scXwDYrjivhNyPkGYPAmU4FGqXF+1QPJkJ6uoEgVGd9FYujQIYyjcLGjsgyYirIo/KLagk3gKeqT6oTTc3TH1w=="],
 
     "@tiptap/extensions": ["@tiptap/extensions@3.11.0", "", { "peerDependencies": { "@tiptap/core": "^3.11.0", "@tiptap/pm": "^3.11.0" } }, "sha512-g43beA73ZMLezez1st9LEwYrRHZ0FLzlsSlOZKk7sdmtHLmuqWHf4oyb0XAHol1HZIdGv104rYaGNgmQXr1ecQ=="],
 
@@ -1209,6 +1213,8 @@
     "react-day-picker": ["react-day-picker@9.11.1", "", { "dependencies": { "@date-fns/tz": "^1.4.1", "date-fns": "^4.1.0", "date-fns-jalali": "^4.1.0-0" }, "peerDependencies": { "react": ">=16.8.0" } }, "sha512-l3ub6o8NlchqIjPKrRFUCkTUEq6KwemQlfv3XZzzwpUeGwmDJ+0u0Upmt38hJyd7D/vn2dQoOoLV/qAp0o3uUw=="],
 
     "react-dom": ["react-dom@19.2.0", "", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.0" } }, "sha512-UlbRu4cAiGaIewkPyiRGJk0imDN2T3JjieT6spoL2UeSf5od4n5LB/mQ4ejmxhCFT1tYe8IvaFulzynWovsEFQ=="],
+
+    "react-icons": ["react-icons@5.5.0", "", { "peerDependencies": { "react": "*" } }, "sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw=="],
 
     "react-is": ["react-is@18.3.1", "", {}, "sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg=="],
 
