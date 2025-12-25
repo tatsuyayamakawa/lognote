@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       console.error("[AdSense Callback] OAuth error:", error);
       return NextResponse.redirect(
         new URL(
-          `/admin/dashboard?adsense_error=${encodeURIComponent(error)}`,
+          `/admin/ads/reports?adsense_error=${encodeURIComponent(error)}`,
           request.url
         )
       );
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (!code) {
       return NextResponse.redirect(
         new URL(
-          "/admin/dashboard?adsense_error=missing_code",
+          "/admin/ads/reports?adsense_error=missing_code",
           request.url
         )
       );
@@ -46,16 +46,16 @@ export async function GET(request: NextRequest) {
       expiry_date: tokens.expiry_date,
     });
 
-    // ダッシュボードにリダイレクト
+    // AdSenseレポートページにリダイレクト
     return NextResponse.redirect(
-      new URL("/admin/dashboard?adsense_success=true", request.url)
+      new URL("/admin/ads/reports?adsense_success=true", request.url)
     );
   } catch (error) {
     console.error("[AdSense Callback] Error processing callback:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.redirect(
       new URL(
-        `/admin/dashboard?adsense_error=${encodeURIComponent(errorMessage)}`,
+        `/admin/ads/reports?adsense_error=${encodeURIComponent(errorMessage)}`,
         request.url
       )
     );

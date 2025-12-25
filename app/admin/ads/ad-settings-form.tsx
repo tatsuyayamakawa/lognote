@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AdSettings } from "@/types/ad";
 import { toast } from "sonner";
-import { Monitor, Smartphone, GripVertical, Trash2 } from "lucide-react";
+import { Monitor, Smartphone, GripVertical, Trash2, Save } from "lucide-react";
 
 interface AdSettingsFormProps {
   initialSettings: AdSettings | null;
@@ -73,19 +73,6 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* ヘッダー */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">広告レイアウト</h1>
-          <p className="text-muted-foreground">
-            レイアウトを見ながら広告を配置できます
-          </p>
-        </div>
-        <Button onClick={handleSubmit} disabled={isSubmitting} size="lg">
-          {isSubmitting ? "保存中..." : "保存"}
-        </Button>
-      </div>
-
       {/* デバイス切り替え */}
       <Tabs value={deviceView} onValueChange={(v) => setDeviceView(v as "pc" | "mobile")}>
         <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -282,6 +269,14 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* 保存ボタン */}
+      <div className="flex justify-start">
+        <Button onClick={handleSubmit} disabled={isSubmitting} size="lg">
+          <Save className="mr-2 h-4 w-4" />
+          {isSubmitting ? "保存中..." : "保存"}
+        </Button>
+      </div>
     </div>
   );
 }

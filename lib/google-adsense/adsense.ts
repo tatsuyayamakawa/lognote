@@ -131,6 +131,16 @@ export interface AdSenseSummary {
   averageRpm: number;
 }
 
+export interface AdUnitRevenueData {
+  adUnitId: string;
+  adUnitName: string;
+  earnings: number;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  rpm: number;
+}
+
 /**
  * AdSense収益サマリーを取得
  * @param days 取得する日数（デフォルト: 30日）
@@ -198,5 +208,76 @@ export async function getAdSenseSummary(
       console.error("[AdSense] Error details:", error.message);
     }
     return null;
+  }
+}
+
+/**
+ * 広告ユニット別の収益データを取得
+ * @param days 取得する日数（デフォルト: 30日）
+ */
+export async function getAdUnitRevenue(
+  days: number = 30
+): Promise<AdUnitRevenueData[]> {
+  const client = await getAdSenseClient();
+  if (!client) {
+    return [];
+  }
+
+  const accountId = await getAdSenseAccountId();
+  if (!accountId) {
+    return [];
+  }
+
+  try {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const response = await client.accounts.reports.generate({
+      account: accountId,
+      dateRange: "CUSTOM",
+      "startDate.year": startDate.getFullYear(),
+      "startDate.month": startDate.getMonth() + 1,
+      "startDate.day": startDate.getDate(),
+      "endDate.year": endDate.getFullYear(),
+      "endDate.month": endDate.getMonth() + 1,
+      "endDate.day": endDate.getDate(),
+      dimensions: ["AD_UNIT_ID", "AD_UNIT_NAME"],
+      metrics: ["ESTIMATED_EARNINGS", "CLICKS", "IMPRESSIONS"],
+    } as any); // Type workaround for googleapis typing issue
+
+    const rows = response.data.rows || [];
+
+    const result: AdUnitRevenueData[] = rows.map((row) => {
+      const adUnitId = row.cells?.[0]?.value || "";
+      const adUnitName = row.cells?.[1]?.value || "";
+      const earnings = parseFloat(row.cells?.[2]?.value || "0");
+      const clicks = parseInt(row.cells?.[3]?.value || "0");
+      const impressions = parseInt(row.cells?.[4]?.value || "0");
+
+      const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+      const rpm = impressions > 0 ? (earnings / impressions) * 1000 : 0;
+
+      return {
+        adUnitId,
+        adUnitName,
+        earnings,
+        clicks,
+        impressions,
+        ctr,
+        rpm,
+      };
+    });
+
+    // Sort by earnings in descending order
+    result.sort((a, b) => b.earnings - a.earnings);
+
+    return result;
+  } catch (error) {
+    console.error("[AdSense] Error fetching ad unit revenue:", error);
+    if (error instanceof Error) {
+      console.error("[AdSense] Error details:", error.message);
+    }
+    return [];
   }
 }
