@@ -140,7 +140,7 @@ export function AdSense({
       resizeObserver.disconnect();
       clearTimeout(initialCheck);
     };
-  }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
+  }, [pathname, isProduction, adSlot, adFormat, fullWidthResponsive, className, width, height, placeholderHeight, showSkeleton, layout]); // pathnameが変わるたびに再初期化
 
   // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
@@ -204,7 +204,11 @@ export function AdSense({
   };
 
   return (
-    <div className={className} style={containerStyle} suppressHydrationWarning>
+    <div
+      className={`${className} bg-zinc-50 dark:bg-black md:bg-card`}
+      style={containerStyle}
+      suppressHydrationWarning
+    >
       <ins
         ref={insRef}
         className="adsbygoogle"
