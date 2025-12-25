@@ -8,17 +8,12 @@ export default function AdsLoadingPage() {
   return (
     <div className="space-y-6">
       {/* ページヘッダー */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">広告レイアウト</h1>
-          <p className="text-muted-foreground">
-            レイアウトを見ながら広告を配置できます
-          </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex-1">
+          <Skeleton className="h-8 w-32 sm:h-9 mb-2" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <Button disabled size="lg">
-          <Save className="mr-2 h-4 w-4" />
-          保存
-        </Button>
+        <Skeleton className="h-10 w-full sm:w-40" />
       </div>
 
       {/* デバイス切り替えタブ */}
@@ -61,6 +56,14 @@ export default function AdsLoadingPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* 保存ボタン（フッター） */}
+      <div className="flex justify-start">
+        <Button disabled size="lg">
+          <Save className="mr-2 h-4 w-4" />
+          保存
+        </Button>
       </div>
     </div>
   );
