@@ -213,7 +213,7 @@ export function AdSense({
 
   // 背景色: variantに応じて記事内/記事外で切り替え
   const bgClassName = variant === "in-article"
-    ? "bg-zinc-50 dark:bg-black md:bg-card md:dark:bg-card"
+    ? "bg-zinc-50 dark:bg-black md:bg-card"
     : "bg-zinc-50 dark:bg-black";
 
   return (
