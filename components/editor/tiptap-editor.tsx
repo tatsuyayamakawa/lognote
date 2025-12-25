@@ -135,6 +135,12 @@ export function TiptapEditor({
     mobileEmbedCode?: string;
   } | undefined>(undefined);
   const [isEditingEmbedAdBox, setIsEditingEmbedAdBox] = useState(false);
+  const [pointBoxInitialData, setPointBoxInitialData] = useState<{
+    type?: 'point' | 'warning' | 'danger' | 'success' | 'info';
+    title?: string;
+    content?: string;
+  } | undefined>(undefined);
+  const [isEditingPointBox, setIsEditingPointBox] = useState(false);
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -488,6 +494,26 @@ export function TiptapEditor({
     };
   }, []);
 
+  // ポイントボックスのダブルクリック編集イベントをリスン
+  useEffect(() => {
+    const handleEditPointBox = (event: Event) => {
+      const customEvent = event as CustomEvent<{ pos: number; attrs: { type?: 'point' | 'warning' | 'danger' | 'success' | 'info'; title?: string; content?: string } }>;
+      setPointBoxInitialData({
+        type: customEvent.detail.attrs.type,
+        title: customEvent.detail.attrs.title,
+        content: customEvent.detail.attrs.content,
+      });
+      setIsEditingPointBox(true);
+      setPointBoxDialogOpen(true);
+    };
+
+    window.addEventListener('edit-point-box', handleEditPointBox);
+
+    return () => {
+      window.removeEventListener('edit-point-box', handleEditPointBox);
+    };
+  }, []);
+
   // CTAボタンの編集イベントをリスン
   useEffect(() => {
     const handleEditCtaButton = (event: Event) => {
@@ -593,7 +619,13 @@ export function TiptapEditor({
     title: string;
     content: string;
   }) => {
-    editor.chain().focus().setPointBox(data).run();
+    if (isEditingPointBox) {
+      // 編集モード: 既存のポイントボックスを更新
+      editor.chain().focus().updateAttributes('pointBox', data).run();
+    } else {
+      // 新規挿入
+      editor.chain().focus().setPointBox(data).run();
+    }
   };
 
   const handleLeftHeaderTableInsert = (data: {
@@ -1345,8 +1377,17 @@ export function TiptapEditor({
       />
       <PointBoxDialog
         open={pointBoxDialogOpen}
-        onOpenChange={setPointBoxDialogOpen}
+        onOpenChange={(open) => {
+          setPointBoxDialogOpen(open);
+          if (!open) {
+            // ダイアログが閉じたときにリセット
+            setIsEditingPointBox(false);
+            setPointBoxInitialData(undefined);
+          }
+        }}
         onInsert={handlePointBoxInsert}
+        initialData={pointBoxInitialData}
+        isEditMode={isEditingPointBox}
       />
       <ProductLinkBoxDialog
         open={productLinkBoxDialogOpen}

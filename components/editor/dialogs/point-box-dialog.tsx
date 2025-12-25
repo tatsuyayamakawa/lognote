@@ -23,16 +23,27 @@ interface PointBoxDialogProps {
     title: string
     content: string
   }) => void
+  initialData?: {
+    type?: 'point' | 'warning' | 'danger' | 'success' | 'info'
+    title?: string
+    content?: string
+  }
+  isEditMode?: boolean
 }
 
 export function PointBoxDialog({
   open,
   onOpenChange,
   onInsert,
+  initialData,
+  isEditMode = false,
 }: PointBoxDialogProps) {
-  const [selectedType, setSelectedType] = useState<'point' | 'warning' | 'danger' | 'success' | 'info'>('point')
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  // 初期データがある場合はそれを使用、なければデフォルト値
+  const [selectedType, setSelectedType] = useState<'point' | 'warning' | 'danger' | 'success' | 'info'>(
+    initialData?.type || 'point'
+  )
+  const [title, setTitle] = useState(initialData?.title || '')
+  const [content, setContent] = useState(initialData?.content || '')
 
   const types = [
     { value: 'point' as const, label: 'ポイント', icon: Lightbulb, color: 'text-blue-600' },
@@ -52,9 +63,11 @@ export function PointBoxDialog({
     })
 
     // リセット
-    setSelectedType('point')
-    setTitle('')
-    setContent('')
+    if (!isEditMode) {
+      setSelectedType('point')
+      setTitle('')
+      setContent('')
+    }
     onOpenChange(false)
   }
 
@@ -62,7 +75,7 @@ export function PointBoxDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>ポイントボックスを挿入</DialogTitle>
+          <DialogTitle>{isEditMode ? 'ポイントボックスを編集' : 'ポイントボックスを挿入'}</DialogTitle>
           <DialogDescription>
             ボックスの種類を選択し、内容を入力してください
           </DialogDescription>
@@ -128,7 +141,7 @@ export function PointBoxDialog({
             onClick={handleInsert}
             disabled={!content.trim()}
           >
-            挿入
+            {isEditMode ? '更新' : '挿入'}
           </Button>
         </DialogFooter>
       </DialogContent>
