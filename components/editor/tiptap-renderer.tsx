@@ -27,6 +27,7 @@ import { ImageGallery } from "./extensions/image-gallery";
 import { AffiliateBox } from "./extensions/affiliate-box";
 import { LeftHeaderTable } from "./extensions/left-header-table";
 import { AdSense } from "../ads/adsense";
+import { InlineTableOfContents } from "../post/inline-table-of-contents";
 
 // 見出しの階層的な番号を管理するクラス
 class HeadingNumbering {
@@ -310,6 +311,45 @@ export function TiptapRenderer({
     );
   }, [editor, inArticlePcSlot, inArticleMobileSlot]);
 
+  // 最初のH2の前に目次を挿入（遅延実行で確実に挿入）
+  useEffect(() => {
+    if (!editor) return;
+
+    const insertToc = () => {
+      const editorElement = editor.view.dom;
+      const h2Elements = editorElement.querySelectorAll("h2");
+
+      if (h2Elements.length > 0) {
+        const firstH2 = h2Elements[0];
+
+        // 既に目次が挿入されているかチェック
+        const existingToc = document.getElementById("inline-toc-container");
+        if (existingToc) return;
+
+        // 目次要素を作成
+        const tocContainer = document.createElement("div");
+        tocContainer.setAttribute("data-inline-toc", "true");
+        tocContainer.className = "not-prose";
+        tocContainer.id = "inline-toc-container";
+
+        // H2の前に挿入
+        firstH2.parentNode?.insertBefore(tocContainer, firstH2);
+      }
+    };
+
+    // 即座に実行
+    insertToc();
+
+    // 念のため遅延実行も追加（DOM更新を待つ）
+    const timer = setTimeout(insertToc, 100);
+    const timer2 = setTimeout(insertToc, 500);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+    };
+  }, [editor]);
+
   // 2つ目のH2の前に広告を挿入
   useEffect(() => {
     if (!editor || !showInArticleAd) return;
@@ -345,6 +385,9 @@ export function TiptapRenderer({
     <div className="relative">
       <EditorContent editor={editor} />
 
+      {/* 目次を Portal で挿入 */}
+      <InlineTocPortal />
+
       {/* 記事内広告を Portal で挿入 */}
       {showInArticleAd && (inArticlePcSlot || inArticleMobileSlot) && (
         <InArticleAdPortal
@@ -353,6 +396,52 @@ export function TiptapRenderer({
         />
       )}
     </div>
+  );
+}
+
+// 目次をポータルで挿入するコンポーネント
+function InlineTocPortal() {
+  const [container, setContainer] = useState<Element | null>(null);
+
+  useEffect(() => {
+    // コンテナを探す（複数回試行）
+    const findContainer = () => {
+      const found = document.getElementById("inline-toc-container");
+      if (found) {
+        setContainer(found);
+        return true;
+      }
+      return false;
+    };
+
+    // 即座に試行
+    if (findContainer()) return;
+
+    // 見つからない場合は定期的に再試行
+    const interval = setInterval(() => {
+      if (findContainer()) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    // 最大5秒でタイムアウト
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  if (!container) {
+    return null;
+  }
+
+  return createPortal(
+    <InlineTableOfContents />,
+    container
   );
 }
 
