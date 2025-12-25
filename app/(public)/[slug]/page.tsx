@@ -186,6 +186,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <ResponsiveAd
               pcSlot={adSettings?.article_top_pc_slot}
               mobileSlot={adSettings?.article_top_mobile_slot}
+              variant="outside-article"
               pcConfig={{
                 width: "728px",
                 height: "90px",

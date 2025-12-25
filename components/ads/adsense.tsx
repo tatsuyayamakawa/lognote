@@ -28,6 +28,13 @@ interface AdSenseProps {
    * レイアウト種別（記事内広告用）
    */
   layout?: "in-article";
+  /**
+   * 広告の配置場所による背景色の変更
+   * - "in-article": 記事内（md:bg-card）
+   * - "outside-article": 記事外（md:bg-zinc-50）
+   * デフォルトは "in-article"
+   */
+  variant?: "in-article" | "outside-article";
 }
 
 export function AdSense({
@@ -40,6 +47,7 @@ export function AdSense({
   placeholderHeight,
   showSkeleton = true,
   layout,
+  variant = "in-article",
 }: AdSenseProps) {
   const insRef = useRef<HTMLModElement>(null);
   const pathname = usePathname(); // ページ遷移検知
@@ -140,7 +148,7 @@ export function AdSense({
       resizeObserver.disconnect();
       clearTimeout(initialCheck);
     };
-  }, [pathname, isProduction, adSlot, adFormat, fullWidthResponsive, className, width, height, placeholderHeight, showSkeleton, layout]); // pathnameが変わるたびに再初期化
+  }, [pathname, isProduction, adSlot, adFormat, fullWidthResponsive, className, width, height, placeholderHeight, showSkeleton, layout, variant]); // pathnameが変わるたびに再初期化
 
   // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
@@ -203,9 +211,14 @@ export function AdSense({
     overflow: "hidden", // はみ出し防止
   };
 
+  // 背景色: variantに応じて記事内/記事外で切り替え
+  const bgClassName = variant === "in-article"
+    ? "bg-zinc-50 dark:bg-black md:bg-card"
+    : "bg-zinc-50 dark:bg-black";
+
   return (
     <div
-      className={`${className} bg-zinc-50 dark:bg-black md:bg-card`}
+      className={`${className} ${bgClassName}`}
       style={containerStyle}
       suppressHydrationWarning
     >
