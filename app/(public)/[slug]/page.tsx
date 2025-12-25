@@ -212,8 +212,20 @@ export default async function PostPage({ params }: PostPageProps) {
         {post.content && (
           <TiptapRenderer
             content={post.content as string}
-            inArticlePcSlot={adSettings?.in_article_pc_slot}
-            inArticleMobileSlot={adSettings?.in_article_mobile_slot}
+            inArticlePcSlots={[
+              adSettings?.in_article_pc_slot_1,
+              adSettings?.in_article_pc_slot_2,
+              adSettings?.in_article_pc_slot_3,
+              adSettings?.in_article_pc_slot_4,
+              adSettings?.in_article_pc_slot_5,
+            ]}
+            inArticleMobileSlots={[
+              adSettings?.in_article_mobile_slot_1,
+              adSettings?.in_article_mobile_slot_2,
+              adSettings?.in_article_mobile_slot_3,
+              adSettings?.in_article_mobile_slot_4,
+              adSettings?.in_article_mobile_slot_5,
+            ]}
           />
         )}
 
@@ -230,10 +242,10 @@ export default async function PostPage({ params }: PostPageProps) {
                 placeholderHeight: "300px",
               }}
               mobileConfig={{
-                width: "300px",
-                height: "250px",
-                adFormat: "rectangle",
-                fullWidthResponsive: false,
+                adFormat: "fluid",
+                layout: "in-article",
+                fullWidthResponsive: true,
+                placeholderHeight: "300px",
               }}
             />
           </div>

@@ -61,15 +61,15 @@ class HeadingNumbering {
 
 interface TiptapRendererProps {
   content: string | JSONContent;
-  inArticlePcSlot?: string;
-  inArticleMobileSlot?: string;
+  inArticlePcSlots?: (string | undefined)[];  // 最大5つの広告スロット
+  inArticleMobileSlots?: (string | undefined)[];  // 最大5つの広告スロット
   className?: string;
 }
 
 export function TiptapRenderer({
   content,
-  inArticlePcSlot,
-  inArticleMobileSlot,
+  inArticlePcSlots = [],
+  inArticleMobileSlots = [],
   className,
 }: TiptapRendererProps) {
   const parsedContent =
@@ -306,10 +306,9 @@ export function TiptapRenderer({
     };
 
     countH2(content);
-    setShowInArticleAd(
-      count >= 2 && !!(inArticlePcSlot || inArticleMobileSlot)
-    );
-  }, [editor, inArticlePcSlot, inArticleMobileSlot]);
+    const hasAdSlots = inArticlePcSlots.some(slot => slot) || inArticleMobileSlots.some(slot => slot);
+    setShowInArticleAd(count >= 2 && hasAdSlots);
+  }, [editor, inArticlePcSlots, inArticleMobileSlots]);
 
   // 最初のH2の前に目次を挿入（遅延実行で確実に挿入）
   useEffect(() => {
@@ -350,7 +349,7 @@ export function TiptapRenderer({
     };
   }, [editor]);
 
-  // 2つ目のH2の前に広告を挿入
+  // 2つ目以降のH2の前に広告を挿入（最大5個まで）
   useEffect(() => {
     if (!editor || !showInArticleAd) return;
 
@@ -358,22 +357,27 @@ export function TiptapRenderer({
     const h2Elements = editorElement.querySelectorAll("h2");
 
     if (h2Elements.length >= 2) {
-      const secondH2 = h2Elements[1];
+      // 2つ目以降のH2に広告を挿入（最大5個まで）
+      const maxAds = Math.min(h2Elements.length - 1, 5);
 
-      // 既に広告が挿入されているかチェック
-      const existingAd = secondH2.previousElementSibling?.querySelector(
-        "[data-in-article-ad]"
-      );
-      if (existingAd) return;
+      for (let i = 1; i <= maxAds; i++) {
+        const h2 = h2Elements[i];
 
-      // 広告要素を作成
-      const adContainer = document.createElement("div");
-      adContainer.setAttribute("data-in-article-ad", "true");
-      adContainer.className = "my-10 not-prose";
-      adContainer.id = "in-article-ad-container";
+        // 既に広告が挿入されているかチェック
+        const existingAd = h2.previousElementSibling?.querySelector(
+          "[data-in-article-ad]"
+        );
+        if (existingAd) continue;
 
-      // H2の前に挿入
-      secondH2.parentNode?.insertBefore(adContainer, secondH2);
+        // 広告要素を作成
+        const adContainer = document.createElement("div");
+        adContainer.setAttribute("data-in-article-ad", "true");
+        adContainer.setAttribute("data-ad-index", i.toString());
+        adContainer.className = "my-10 not-prose";
+
+        // H2の前に挿入
+        h2.parentNode?.insertBefore(adContainer, h2);
+      }
     }
   }, [editor, showInArticleAd]);
 
@@ -389,10 +393,10 @@ export function TiptapRenderer({
       <InlineTocPortal />
 
       {/* 記事内広告を Portal で挿入 */}
-      {showInArticleAd && (inArticlePcSlot || inArticleMobileSlot) && (
+      {showInArticleAd && (
         <InArticleAdPortal
-          pcSlot={inArticlePcSlot}
-          mobileSlot={inArticleMobileSlot}
+          pcSlots={inArticlePcSlots}
+          mobileSlots={inArticleMobileSlots}
         />
       )}
     </div>
@@ -447,81 +451,104 @@ function InlineTocPortal() {
 
 // 記事内広告をポータルで挿入するコンポーネント
 function InArticleAdPortal({
-  pcSlot,
-  mobileSlot,
+  pcSlots,
+  mobileSlots,
 }: {
-  pcSlot?: string;
-  mobileSlot?: string;
+  pcSlots: (string | undefined)[];
+  mobileSlots: (string | undefined)[];
 }) {
-  const [mounted, setMounted] = useState(false);
+  const [containers, setContainers] = useState<Element[]>([]);
 
   useEffect(() => {
-    // 次のイベントループでマウント状態を更新（同期的なsetStateを回避）
-    const timer = setTimeout(() => {
-      setMounted(true);
-    }, 0);
-    return () => clearTimeout(timer);
+    // コンテナを探す（複数回試行）
+    const findContainers = () => {
+      const found = Array.from(document.querySelectorAll(`[data-in-article-ad="true"]`));
+      if (found.length > 0) {
+        setContainers(found);
+        return true;
+      }
+      return false;
+    };
+
+    // 即座に試行
+    if (findContainers()) return;
+
+    // 見つからない場合は定期的に再試行
+    const interval = setInterval(() => {
+      if (findContainers()) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    // 最大5秒でタイムアウト
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
+  if (containers.length === 0) return null;
 
-    const container = document.querySelector(`[data-in-article-ad="true"]`);
-    if (!container) return;
-
-    // すでに広告が挿入されているかチェック
-    if (container.hasAttribute("data-ad-inserted")) return;
-
-    // 広告挿入済みフラグを設定
-    container.setAttribute("data-ad-inserted", "true");
-  }, [mounted, pcSlot, mobileSlot]);
-
-  if (!mounted) return null;
-
-  const container = document.querySelector(`[data-in-article-ad="true"]`);
-  if (!container) return null;
-
-  return createPortal(
+  // 各広告コンテナにポータルで広告を挿入
+  return (
     <>
-      {/* PC用広告 */}
-      {pcSlot && (
-        <div
-          className="hidden md:block w-full"
-          style={{ minWidth: "300px", maxWidth: "100%" }}
-        >
-          <span className="text-xs text-muted-foreground block text-center mb-2">
-            スポンサーリンク
-          </span>
-          <AdSense
-            adSlot={pcSlot}
-            adFormat="fluid"
-            fullWidthResponsive={true}
-            layout="in-article"
-            showSkeleton={true}
-            placeholderHeight="300px"
-          />
-        </div>
-      )}
-      {/* モバイル用広告 */}
-      {mobileSlot && (
-        <div className="block md:hidden">
-          <span className="text-xs text-muted-foreground block text-center mb-1">
-            スポンサーリンク
-          </span>
-          <div className="flex justify-center">
-            <AdSense
-              adSlot={mobileSlot}
-              width="300px"
-              height="250px"
-              adFormat="rectangle"
-              fullWidthResponsive={false}
-              showSkeleton={true}
-            />
-          </div>
-        </div>
-      )}
-    </>,
-    container
+      {containers.map((container, index) => {
+        // 位置に応じた広告スロットを取得（0-indexed）
+        const pcSlot = pcSlots[index];
+        const mobileSlot = mobileSlots[index];
+
+        // 両方のスロットがない場合はスキップ
+        if (!pcSlot && !mobileSlot) return null;
+
+        return createPortal(
+          <>
+            {/* PC用広告 */}
+            {pcSlot && (
+              <div
+                className="hidden md:block w-full"
+                style={{ minWidth: "300px", maxWidth: "100%" }}
+              >
+                <span className="text-xs text-muted-foreground block text-center mb-2">
+                  スポンサーリンク
+                </span>
+                <AdSense
+                  adSlot={pcSlot}
+                  adFormat="fluid"
+                  fullWidthResponsive={true}
+                  layout="in-article"
+                  showSkeleton={true}
+                  placeholderHeight="300px"
+                />
+              </div>
+            )}
+            {/* モバイル用広告 */}
+            {mobileSlot && (
+              <div className="block md:hidden">
+                <span className="text-xs text-muted-foreground block text-center mb-1">
+                  スポンサーリンク
+                </span>
+                <div className="flex justify-center">
+                  <AdSense
+                    adSlot={mobileSlot}
+                    width="300px"
+                    height="250px"
+                    adFormat="rectangle"
+                    fullWidthResponsive={false}
+                    showSkeleton={true}
+                  />
+                </div>
+              </div>
+            )}
+          </>,
+          container,
+          `in-article-ad-${index}`
+        );
+      })}
+    </>
   );
 }
 

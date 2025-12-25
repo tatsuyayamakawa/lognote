@@ -1,4 +1,4 @@
-import { AdLayoutEditor } from "@/components/admin/ad-layout-editor"
+import { AdSettingsForm } from "./ad-settings-form"
 import { getAdSettings } from "@/lib/ad-settings"
 import type { Metadata } from "next"
 
@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 export default async function AdsPage() {
   const settings = await getAdSettings()
 
-  return <AdLayoutEditor initialSettings={settings} />
+  return <AdSettingsForm initialSettings={settings} />
 }

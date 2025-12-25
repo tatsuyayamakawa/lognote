@@ -23,9 +23,17 @@ export interface AdSettings {
   // タイトル下広告
   article_top_pc_slot?: string // PC: 記事内広告
   article_top_mobile_slot?: string // スマホ: ディスプレイ
-  // 記事内広告（H2の上）
-  in_article_pc_slot?: string // PC: 記事内広告
-  in_article_mobile_slot?: string // スマホ: ディスプレイ
+  // 記事内広告（H2の上）- 位置1〜5
+  in_article_pc_slot_1?: string // PC: 記事内広告（2つ目のH2前）
+  in_article_mobile_slot_1?: string // スマホ: 記事内広告（2つ目のH2前）
+  in_article_pc_slot_2?: string // PC: 記事内広告（3つ目のH2前）
+  in_article_mobile_slot_2?: string // スマホ: 記事内広告（3つ目のH2前）
+  in_article_pc_slot_3?: string // PC: 記事内広告（4つ目のH2前）
+  in_article_mobile_slot_3?: string // スマホ: 記事内広告（4つ目のH2前）
+  in_article_pc_slot_4?: string // PC: 記事内広告（5つ目のH2前）
+  in_article_mobile_slot_4?: string // スマホ: 記事内広告（5つ目のH2前）
+  in_article_pc_slot_5?: string // PC: 記事内広告（6つ目のH2前）
+  in_article_mobile_slot_5?: string // スマホ: 記事内広告（6つ目のH2前）
   // コンテンツ後広告
   article_bottom_pc_slot?: string // PC: 記事内広告
   article_bottom_mobile_slot?: string // スマホ: ディスプレイ
@@ -38,8 +46,16 @@ export interface AdSettings {
 export interface AdSettingsFormData {
   article_top_pc_slot?: string
   article_top_mobile_slot?: string
-  in_article_pc_slot?: string
-  in_article_mobile_slot?: string
+  in_article_pc_slot_1?: string
+  in_article_mobile_slot_1?: string
+  in_article_pc_slot_2?: string
+  in_article_mobile_slot_2?: string
+  in_article_pc_slot_3?: string
+  in_article_mobile_slot_3?: string
+  in_article_pc_slot_4?: string
+  in_article_mobile_slot_4?: string
+  in_article_pc_slot_5?: string
+  in_article_mobile_slot_5?: string
   article_bottom_pc_slot?: string
   article_bottom_mobile_slot?: string
   sidebar_pc_slot?: string
