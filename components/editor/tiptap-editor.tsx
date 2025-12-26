@@ -1376,6 +1376,7 @@ export function TiptapEditor({
         isEditMode={isEditingCtaButton}
       />
       <PointBoxDialog
+        key={pointBoxInitialData ? JSON.stringify(pointBoxInitialData) : 'new'}
         open={pointBoxDialogOpen}
         onOpenChange={(open) => {
           setPointBoxDialogOpen(open);
