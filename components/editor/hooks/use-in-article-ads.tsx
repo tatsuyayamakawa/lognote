@@ -40,7 +40,7 @@ export function useInArticleAds({
 
       h2.parentNode?.insertBefore(adContainer, h2);
     }
-  }, [editor, showInArticleAd, pcSlots.length, mobileSlots.length]);
+  }, [editor, showInArticleAd, pcSlots, mobileSlots]);
 
   const renderAds = () => {
     if (!showInArticleAd || typeof document === "undefined") return null;
