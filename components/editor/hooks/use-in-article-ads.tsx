@@ -36,14 +36,15 @@ export function useInArticleAds({
 
     for (let i = 1; i < Math.min(h2Elements.length, 6); i++) {
       const h2 = h2Elements[i];
+      const adIndex = i - 1; // Adjust index to start from 0 for slots array
       let adContainer = h2.parentNode?.querySelector(
-        `[data-in-article-ad][data-ad-index="${i}"]`
+        `[data-in-article-ad][data-ad-index="${adIndex}"]`
       ) as Element;
 
       if (!adContainer) {
         adContainer = document.createElement("div");
         adContainer.setAttribute("data-in-article-ad", "true");
-        adContainer.setAttribute("data-ad-index", i.toString());
+        adContainer.setAttribute("data-ad-index", adIndex.toString());
         adContainer.className = "my-10 not-prose";
         adContainer.setAttribute("contenteditable", "false");
         adContainer.setAttribute("data-tiptap-ignore", "true");
