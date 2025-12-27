@@ -14,7 +14,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Heading from "@tiptap/extension-heading";
 import { SpeechBubble } from "./extensions/speech-bubble";
@@ -72,8 +72,45 @@ export function TiptapRenderer({
   inArticleMobileSlots = [],
   className,
 }: TiptapRendererProps) {
-  const parsedContent =
-    typeof content === "string" ? JSON.parse(content) : content;
+  // contentをメモ化してパース（文字列の場合のみパースし、再計算を防ぐ）
+  const parsedContent = useMemo(() => {
+    return typeof content === "string" ? JSON.parse(content) : content;
+  }, [content]);
+
+  // 最後のノードが空の段落の場合は削除（メモ化して不要な再計算を防ぐ）
+  const cleanedContent = useMemo(() => {
+    const cleanContent = (data: JSONContent): JSONContent => {
+      if (!data.content || data.content.length === 0) {
+        return data;
+      }
+
+      const lastNode = data.content[data.content.length - 1];
+      
+      // 最後のノードが段落で、内容が空またはテキストノードのみで空の場合
+      if (lastNode.type === 'paragraph') {
+        const hasContent = lastNode.content &&
+          lastNode.content.some((node) => {
+            if (!node.type) return false;
+            if (node.type === 'text' && node.text && node.text.trim()) {
+              return true;
+            }
+            return node.type !== 'text';
+          });
+        
+        // 最後の段落が空で、かつドキュメントに他のコンテンツがある場合は削除
+        if (!hasContent && data.content.length > 1) {
+          return {
+            ...data,
+            content: data.content.slice(0, -1)
+          };
+        }
+      }
+
+      return data;
+    };
+
+    return cleanContent(parsedContent);
+  }, [parsedContent]);
 
   const [showInArticleAd, setShowInArticleAd] = useState(false);
 
@@ -230,7 +267,7 @@ export function TiptapRenderer({
         },
       }),
     ],
-    content: parsedContent,
+    content: cleanedContent,
     editable: false,
     editorProps: {
       attributes: {
@@ -346,6 +383,129 @@ export function TiptapRenderer({
     return () => {
       clearTimeout(timer);
       clearTimeout(timer2);
+    };
+  }, [editor]);
+
+
+  // テーブルを横スクロール可能なラッパーで囲む
+  useEffect(() => {
+    if (!editor) return;
+
+    const wrappedTables = new WeakSet<HTMLTableElement>();
+
+    const checkScrollable = (wrapper: HTMLElement) => {
+      // スクロール可能かどうかをチェック
+      const isScrollable = wrapper.scrollWidth > wrapper.clientWidth;
+      
+      if (isScrollable) {
+        wrapper.classList.add('has-scroll');
+      } else {
+        wrapper.classList.remove('has-scroll');
+      }
+
+      // スクロールイベントを監視
+      const handleScroll = () => {
+        wrapper.classList.add('is-scrolling');
+        const wrapperWithTimeout = wrapper as HTMLElement & { _scrollTimeout?: ReturnType<typeof setTimeout> };
+        clearTimeout(wrapperWithTimeout._scrollTimeout);
+        wrapperWithTimeout._scrollTimeout = setTimeout(() => {
+          wrapper.classList.remove('is-scrolling');
+        }, 1000);
+      };
+
+      wrapper.removeEventListener('scroll', handleScroll);
+      wrapper.addEventListener('scroll', handleScroll);
+    };
+
+    const wrapTables = () => {
+      const editorElement = editor.view.dom;
+      const tables = editorElement.querySelectorAll('table');
+
+      tables.forEach((table) => {
+        // 既に処理済みのテーブルはスキップ
+        if (wrappedTables.has(table as HTMLTableElement)) {
+          // ただし、親がラッパーでなくなっている場合は再ラップ
+          const parent = table.parentElement;
+          if (!parent || (!parent.classList.contains('table-scroll-wrapper') && !parent.classList.contains('tableWrapper'))) {
+            wrappedTables.delete(table as HTMLTableElement);
+          } else {
+            // スクロール可能性を再チェック
+            checkScrollable(parent);
+            return;
+          }
+        }
+
+        // 既にラッパーで囲まれているかチェック
+        const parent = table.parentElement;
+        if (parent && (parent.classList.contains('table-scroll-wrapper') || parent.classList.contains('tableWrapper'))) {
+          wrappedTables.add(table as HTMLTableElement);
+          checkScrollable(parent);
+          return;
+        }
+
+        // ラッパー要素を作成
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-scroll-wrapper';
+        wrapper.setAttribute('data-table-wrapper', 'true');
+
+        // テーブルの前にラッパーを挿入
+        table.parentNode?.insertBefore(wrapper, table);
+
+        // テーブルをラッパーの中に移動
+        wrapper.appendChild(table);
+        
+        // 処理済みとしてマーク
+        wrappedTables.add(table as HTMLTableElement);
+
+        // スクロール可能性をチェック
+        setTimeout(() => checkScrollable(wrapper), 0);
+      });
+    };
+
+    // 即座に実行
+    wrapTables();
+
+    // MutationObserverでDOMの変更を監視
+    const editorElement = editor.view.dom;
+    const observer = new MutationObserver((mutations) => {
+      const hasTableChange = mutations.some(mutation => {
+        if (mutation.type === 'childList') {
+          const addedNodes = Array.from(mutation.addedNodes);
+          const removedNodes = Array.from(mutation.removedNodes);
+          return addedNodes.some(node => 
+            node.nodeName === 'TABLE' || 
+            (node instanceof Element && node.querySelector('table'))
+          ) || removedNodes.some(node =>
+            node.nodeName === 'TABLE' ||
+            (node instanceof Element && node.querySelector('table'))
+          );
+        }
+        return false;
+      });
+
+      if (hasTableChange) {
+        wrapTables();
+      }
+    });
+
+    observer.observe(editorElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    // ResizeObserverでウィンドウサイズの変更を監視
+    const resizeObserver = new ResizeObserver(() => {
+      const wrappers = editorElement.querySelectorAll('.table-scroll-wrapper, .tableWrapper');
+      wrappers.forEach((wrapper) => {
+        checkScrollable(wrapper as HTMLElement);
+      });
+    });
+
+    resizeObserver.observe(editorElement);
+
+    return () => {
+      observer.disconnect();
+      resizeObserver.disconnect();
     };
   }, [editor]);
 

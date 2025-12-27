@@ -540,6 +540,78 @@ export function TiptapEditor({
     };
   }, []);
 
+
+  // テーブルを横スクロール可能なラッパーで囲む
+  useEffect(() => {
+    if (!editor) return;
+
+    const checkScrollable = (wrapper: HTMLElement) => {
+      const isScrollable = wrapper.scrollWidth > wrapper.clientWidth;
+      
+      if (isScrollable) {
+        wrapper.classList.add('has-scroll');
+      } else {
+        wrapper.classList.remove('has-scroll');
+      }
+
+      const handleScroll = () => {
+        wrapper.classList.add('is-scrolling');
+        clearTimeout((wrapper as any)._scrollTimeout);
+        (wrapper as any)._scrollTimeout = setTimeout(() => {
+          wrapper.classList.remove('is-scrolling');
+        }, 1000);
+      };
+
+      wrapper.removeEventListener('scroll', handleScroll);
+      wrapper.addEventListener('scroll', handleScroll);
+    };
+
+    const wrapTables = () => {
+      const editorElement = editor.view.dom;
+      const tables = editorElement.querySelectorAll('table');
+
+      tables.forEach((table) => {
+        const parent = table.parentElement;
+        if (parent && (parent.classList.contains('table-scroll-wrapper') || parent.classList.contains('tableWrapper'))) {
+          checkScrollable(parent);
+          return;
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-scroll-wrapper';
+
+        table.parentNode?.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+
+        setTimeout(() => checkScrollable(wrapper), 0);
+      });
+    };
+
+    wrapTables();
+
+    const handleUpdate = () => {
+      setTimeout(wrapTables, 0);
+    };
+
+    editor.on('update', handleUpdate);
+
+    // ResizeObserverでウィンドウサイズの変更を監視
+    const editorElement = editor.view.dom;
+    const resizeObserver = new ResizeObserver(() => {
+      const wrappers = editorElement.querySelectorAll('.table-scroll-wrapper, .tableWrapper');
+      wrappers.forEach((wrapper) => {
+        checkScrollable(wrapper as HTMLElement);
+      });
+    });
+
+    resizeObserver.observe(editorElement);
+
+    return () => {
+      editor.off('update', handleUpdate);
+      resizeObserver.disconnect();
+    };
+  }, [editor]);
+
   if (!editor) {
     return null;
   }
