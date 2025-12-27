@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/react";
 import { AdSense } from "@/components/ads/adsense";
@@ -16,40 +16,53 @@ export function useInArticleAds({
   pcSlots,
   mobileSlots,
 }: UseInArticleAdsProps) {
+  const [adContainers, setAdContainers] = useState<Element[]>([]);
+
   useEffect(() => {
-    if (!editor || !showInArticleAd) return;
+    if (!editor || !showInArticleAd) {
+      setAdContainers([]);
+      return;
+    }
 
     const editorElement = editor.view.dom;
     const h2Elements = editorElement.querySelectorAll("h2");
 
-    if (h2Elements.length < 2) return;
+    if (h2Elements.length < 2) {
+      setAdContainers([]);
+      return;
+    }
+
+    const containers: Element[] = [];
 
     for (let i = 1; i < Math.min(h2Elements.length, 6); i++) {
       const h2 = h2Elements[i];
-      const existingAd = h2.parentNode?.querySelector(
+      let adContainer = h2.parentNode?.querySelector(
         `[data-in-article-ad][data-ad-index="${i}"]`
-      );
-      if (existingAd) continue;
+      ) as Element;
 
-      const adContainer = document.createElement("div");
-      adContainer.setAttribute("data-in-article-ad", "true");
-      adContainer.setAttribute("data-ad-index", i.toString());
-      adContainer.className = "my-10 not-prose";
-      adContainer.setAttribute("contenteditable", "false");
-      adContainer.setAttribute("data-tiptap-ignore", "true");
+      if (!adContainer) {
+        adContainer = document.createElement("div");
+        adContainer.setAttribute("data-in-article-ad", "true");
+        adContainer.setAttribute("data-ad-index", i.toString());
+        adContainer.className = "my-10 not-prose";
+        adContainer.setAttribute("contenteditable", "false");
+        adContainer.setAttribute("data-tiptap-ignore", "true");
 
-      h2.parentNode?.insertBefore(adContainer, h2);
+        h2.parentNode?.insertBefore(adContainer, h2);
+      }
+
+      containers.push(adContainer);
     }
+
+    setAdContainers(containers);
   }, [editor, showInArticleAd, pcSlots, mobileSlots]);
 
   const renderAds = () => {
-    if (!showInArticleAd || typeof document === "undefined") return null;
-
-    const adContainers = document.querySelectorAll("[data-in-article-ad]");
+    if (!showInArticleAd || adContainers.length === 0) return null;
 
     return (
       <>
-        {Array.from(adContainers).map((container, index) => {
+        {adContainers.map((container, index) => {
           const pcSlot = pcSlots[index];
           const mobileSlot = mobileSlots[index];
 
@@ -67,7 +80,7 @@ export function useInArticleAds({
                     adFormat="fluid"
                     layout="in-article"
                     fullWidthResponsive={true}
-                    showSkeleton={true}
+                    showSkeleton={false}
                     placeholderHeight="300px"
                   />
                 </div>
@@ -82,7 +95,7 @@ export function useInArticleAds({
                     adFormat="fluid"
                     layout="in-article"
                     fullWidthResponsive={true}
-                    showSkeleton={true}
+                    showSkeleton={false}
                     placeholderHeight="300px"
                   />
                 </div>
