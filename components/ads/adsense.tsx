@@ -153,11 +153,12 @@ export function AdSense({
   // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
     // 記事内広告用のスケルトン
-    const isInArticle = layout === "in-article" || adFormat === "fluid";
+    const isInArticle = layout === "in-article";
     const skeletonLabel = isInArticle ? "記事内広告" :
                           adFormat === "horizontal" ? "横長バナー広告" :
                           adFormat === "rectangle" ? "スクエア広告" :
-                          adFormat === "vertical" ? "縦長広告" : "広告";
+                          adFormat === "vertical" ? "縦長広告" :
+                          adFormat === "fluid" ? "レスポンシブ広告" : "広告";
 
     // 固定サイズかどうかの判定
     const isFixedForSkeleton = !!(width && height);
@@ -176,10 +177,10 @@ export function AdSense({
           style={{ height: actualPlaceholderHeight, width: width || "100%" }}
         >
           <div className="text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">
+            <p className="text-xs! text-gray-500! dark:text-gray-400! font-semibold! my-0!">
               {skeletonLabel}
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono">
+            <p className="text-[10px]! text-gray-400! dark:text-gray-500! mt-1! mb-0! font-mono!">
               {adSlot}
             </p>
           </div>

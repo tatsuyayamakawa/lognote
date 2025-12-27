@@ -54,7 +54,7 @@ export function ResponsiveAd({
         {/* PC用広告 */}
         <div className={`hidden md:block ${className}`}>
           <div className={pcConfig.adFormat === "fluid" ? "" : "text-center"}>
-            <span className="text-xs text-muted-foreground block text-center has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
+            <span className="text-xs text-muted-foreground block text-center mb-2 has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
               スポンサーリンク
             </span>
             <div className={pcConfig.adFormat === "fluid" ? "" : "flex justify-center"}>
@@ -73,11 +73,11 @@ export function ResponsiveAd({
         </div>
         {/* モバイル用広告 */}
         <div className={`block md:hidden ${className}`}>
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
+          <div className={mobileConfig.adFormat === "fluid" ? "" : "text-center"}>
+            <span className="text-xs text-muted-foreground block text-center mb-2 has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
               スポンサーリンク
             </span>
-            <div className="flex justify-center">
+            <div className={mobileConfig.adFormat === "fluid" ? "" : "flex justify-center"}>
               <AdSense
                 adSlot={mobileSlot}
                 adFormat={mobileConfig.adFormat}
@@ -100,7 +100,7 @@ export function ResponsiveAd({
     return (
       <div className={`hidden md:block ${className}`}>
         <div className={pcConfig.adFormat === "fluid" ? "" : "text-center"}>
-          <span className="text-xs text-muted-foreground block text-center has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
+          <span className="text-xs text-muted-foreground block text-center mb-2 has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
             スポンサーリンク
           </span>
           <div className={pcConfig.adFormat === "fluid" ? "" : "flex justify-center"}>
@@ -124,11 +124,11 @@ export function ResponsiveAd({
   if (mobileSlot) {
     return (
       <div className={`block md:hidden ${className}`}>
-        <div className="text-center">
-          <span className="text-xs text-muted-foreground has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
+        <div className={mobileConfig.adFormat === "fluid" ? "" : "text-center"}>
+          <span className="text-xs text-muted-foreground block text-center mb-2 has-[+div>.adsbygoogle[data-ad-status='unfilled']]:hidden has-[+div>.adsbygoogle:empty]:hidden">
             スポンサーリンク
           </span>
-          <div className="flex justify-center">
+          <div className={mobileConfig.adFormat === "fluid" ? "" : "flex justify-center"}>
             <AdSense
               adSlot={mobileSlot}
               adFormat={mobileConfig.adFormat}

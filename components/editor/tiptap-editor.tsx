@@ -25,57 +25,19 @@ import { ImageGallery } from "./extensions/image-gallery";
 import { CustomImage } from "./extensions/custom-image";
 import { LeftHeaderTable } from "./extensions/left-header-table";
 import { Instagram } from "./extensions/instagram";
-import { Button } from "@/components/ui/button";
-import {
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Quote,
-  Code,
-  Code2,
-  Heading2,
-  Heading3,
-  Heading4,
-  Link2,
-  ImageIcon,
-  Undo,
-  Redo,
-  RemoveFormatting,
-  Underline as UnderlineIcon,
-  MessageSquare,
-  MousePointerClick,
-  Table as TableIcon,
-  Columns,
-  Rows,
-  Trash2,
-  Package,
-  MonitorPlay,
-  Youtube as YoutubeIcon,
-  Instagram as InstagramIcon,
-  Lightbulb,
-  Images,
-  LayoutList,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./dialogs/image-picker-dialog";
 import { LinkDialog } from "./dialogs/link-dialog";
-import { ColorPickerPopover } from "./dialogs/color-picker-popover";
 import { SpeechBubbleDialog } from "./dialogs/speech-bubble-dialog";
 import { CtaButtonDialog } from "./dialogs/cta-button-dialog";
 import { PointBoxDialog } from "./dialogs/point-box-dialog";
 import { ProductLinkBoxDialog } from "./dialogs/product-link-box-dialog";
 import { EmbedAdBoxDialog } from "./dialogs/embed-ad-box-dialog";
-import { YoutubePopover } from "./dialogs/youtube-popover";
-import { InstagramPopover } from "./dialogs/instagram-popover";
 import { ImageGalleryDialog } from "./dialogs/image-gallery-dialog";
 import { LeftHeaderTableDialog } from "./dialogs/left-header-table-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { EditorToolbar } from "./editor-toolbar";
+import { useEditorDialogs } from "./hooks/use-editor-dialogs";
+import { useEditorEvents } from "./hooks/use-editor-events";
 
 interface TiptapEditorProps {
   content: JSONContent | null;
@@ -90,58 +52,8 @@ export function TiptapEditor({
   placeholder = "記事の本文を入力してください...",
   disabled = false,
 }: TiptapEditorProps) {
-  const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  const [imageInitialData, setImageInitialData] = useState<{ src: string; alt?: string; caption?: string } | undefined>(undefined);
-  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
-  const [speechBubbleDialogOpen, setSpeechBubbleDialogOpen] = useState(false);
-  const [ctaButtonDialogOpen, setCtaButtonDialogOpen] = useState(false);
-  const [productLinkBoxDialogOpen, setProductLinkBoxDialogOpen] = useState(false);
-  const [embedAdBoxDialogOpen, setEmbedAdBoxDialogOpen] = useState(false);
-  const [youtubePopoverOpen, setYoutubePopoverOpen] = useState(false);
-  const [instagramPopoverOpen, setInstagramPopoverOpen] = useState(false);
-  const [pointBoxDialogOpen, setPointBoxDialogOpen] = useState(false);
-  const [imageGalleryDialogOpen, setImageGalleryDialogOpen] = useState(false);
-  const [leftHeaderTableDialogOpen, setLeftHeaderTableDialogOpen] = useState(false);
-  const [linkInitialData, setLinkInitialData] = useState<{ href: string; text?: string } | undefined>(undefined);
-  const [ctaButtonInitialData, setCtaButtonInitialData] = useState<{
-    href: string;
-    text: string;
-    variant: 'primary' | 'secondary' | 'outline';
-    bgColor?: string;
-    textColor?: string;
-    animation?: 'none' | 'pulse' | 'bounce' | 'shine' | 'glow';
-  } | undefined>(undefined);
-  const [isEditingCtaButton, setIsEditingCtaButton] = useState(false);
-  const [productLinkBoxInitialData, setProductLinkBoxInitialData] = useState<{
-    productName?: string;
-    productImage?: string;
-    amazonUrl?: string;
-    amazonPrice?: string;
-    rakutenUrl?: string;
-    rakutenPrice?: string;
-    yahooUrl?: string;
-    yahooPrice?: string;
-  } | undefined>(undefined);
-  const [isEditingProductLinkBox, setIsEditingProductLinkBox] = useState(false);
-  const [imageGalleryInitialData, setImageGalleryInitialData] = useState<{
-    images: { src: string; alt?: string; caption?: string }[];
-    columns: number;
-    gap: number;
-  } | undefined>(undefined);
-  const [isEditingImageGallery, setIsEditingImageGallery] = useState(false);
-  const [embedAdBoxInitialData, setEmbedAdBoxInitialData] = useState<{
-    embedCode?: string;
-    pcEmbedCode?: string;
-    mobileEmbedCode?: string;
-  } | undefined>(undefined);
-  const [isEditingEmbedAdBox, setIsEditingEmbedAdBox] = useState(false);
-  const [pointBoxInitialData, setPointBoxInitialData] = useState<{
-    type?: 'point' | 'warning' | 'danger' | 'success' | 'info';
-    title?: string;
-    content?: string;
-  } | undefined>(undefined);
-  const [isEditingPointBox, setIsEditingPointBox] = useState(false);
   const [, forceUpdate] = useState({});
+  const dialogs = useEditorDialogs();
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -272,30 +184,19 @@ export function TiptapEditor({
       forceUpdate({});
     },
     onCreate: ({ editor }) => {
-      // エディタ作成時にクリックイベントを追加
       const editorElement = editor.view.dom;
-
       editorElement.addEventListener('click', (event) => {
         const target = event.target as HTMLElement;
-
-        // リンクがクリックされた場合
         const linkElement = target.closest('a');
 
         if (linkElement && !disabled) {
-          // 埋め込み広告ボックス内のリンクかチェック
           const embedAdBox = linkElement.closest('[data-embed-ad-box]');
-          if (embedAdBox) {
-            // 埋め込み広告ボックス内のリンクは編集ダイアログを開かない
-            return;
-          }
+          if (embedAdBox) return;
 
           event.preventDefault();
           const href = linkElement.getAttribute('href') || '';
           const text = linkElement.textContent || '';
-
-          setLinkInitialData({ href, text });
-          setLinkDialogOpen(true);
-          return;
+          dialogs.setLinkDialog({ open: true, initialData: { href, text } });
         }
       });
     },
@@ -420,146 +321,43 @@ export function TiptapEditor({
     },
   });
 
-  // 商品リンクボックスのダブルクリック編集イベントをリスン
-  useEffect(() => {
-    const handleEditProductLinkBox = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: Record<string, unknown> }>;
-      setProductLinkBoxInitialData(customEvent.detail.attrs);
-      setIsEditingProductLinkBox(true);
-      setProductLinkBoxDialogOpen(true);
-    };
-
-    window.addEventListener('edit-product-link-box', handleEditProductLinkBox);
-
-    return () => {
-      window.removeEventListener('edit-product-link-box', handleEditProductLinkBox);
-    };
-  }, []);
-
-
-
-  // 画像ギャラリーのダブルクリック編集イベントをリスン
-  useEffect(() => {
-    const handleEditImageGallery = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: { images: { src: string; alt?: string; caption?: string }[]; columns: number; gap: number } }>;
-      setImageGalleryInitialData(customEvent.detail.attrs);
-      setIsEditingImageGallery(true);
-      setImageGalleryDialogOpen(true);
-    };
-
-    window.addEventListener('edit-image-gallery', handleEditImageGallery);
-
-    return () => {
-      window.removeEventListener('edit-image-gallery', handleEditImageGallery);
-    };
-  }, []);
-
-  // カスタム画像のダブルクリック編集イベントをリスン
-  useEffect(() => {
-    const handleEditCustomImage = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: { src: string; alt?: string; caption?: string } }>;
-      // 既存の画像データを初期データとして設定
-      setImageInitialData({
-        src: customEvent.detail.attrs.src,
-        alt: customEvent.detail.attrs.alt,
-        caption: customEvent.detail.attrs.caption,
-      });
-      setImageDialogOpen(true);
-    };
-
-    window.addEventListener('edit-custom-image', handleEditCustomImage);
-
-    return () => {
-      window.removeEventListener('edit-custom-image', handleEditCustomImage);
-    };
-  }, []);
-
-  // 埋め込み広告のダブルクリック編集イベントをリスン
-  useEffect(() => {
-    const handleEditEmbedAdBox = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: { embedCode?: string; pcEmbedCode?: string; mobileEmbedCode?: string } }>;
-      setEmbedAdBoxInitialData({
-        embedCode: customEvent.detail.attrs.embedCode,
-        pcEmbedCode: customEvent.detail.attrs.pcEmbedCode,
-        mobileEmbedCode: customEvent.detail.attrs.mobileEmbedCode,
-      });
-      setIsEditingEmbedAdBox(true);
-      setEmbedAdBoxDialogOpen(true);
-    };
-
-    window.addEventListener('edit-embed-ad-box', handleEditEmbedAdBox);
-
-    return () => {
-      window.removeEventListener('edit-embed-ad-box', handleEditEmbedAdBox);
-    };
-  }, []);
-
-  // ポイントボックスのダブルクリック編集イベントをリスン
-  useEffect(() => {
-    const handleEditPointBox = (event: Event) => {
-      const customEvent = event as CustomEvent<{ pos: number; attrs: { type?: 'point' | 'warning' | 'danger' | 'success' | 'info'; title?: string; content?: string } }>;
-      setPointBoxInitialData({
-        type: customEvent.detail.attrs.type,
-        title: customEvent.detail.attrs.title,
-        content: customEvent.detail.attrs.content,
-      });
-      setIsEditingPointBox(true);
-      setPointBoxDialogOpen(true);
-    };
-
-    window.addEventListener('edit-point-box', handleEditPointBox);
-
-    return () => {
-      window.removeEventListener('edit-point-box', handleEditPointBox);
-    };
-  }, []);
-
-  // CTAボタンの編集イベントをリスン
-  useEffect(() => {
-    const handleEditCtaButton = (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        pos: number;
-        attrs: {
-          href: string;
-          text: string;
-          variant: "primary" | "secondary" | "outline";
-          bgColor?: string;
-          textColor?: string;
-          animation?: "none" | "pulse" | "bounce" | "shine" | "glow";
-        };
-      }>;
-      setCtaButtonInitialData(customEvent.detail.attrs);
-      setIsEditingCtaButton(true);
-      setCtaButtonDialogOpen(true);
-    };
-
-    window.addEventListener('edit-cta-button', handleEditCtaButton);
-
-    return () => {
-      window.removeEventListener('edit-cta-button', handleEditCtaButton);
-    };
-  }, []);
+  useEditorEvents({
+    onProductLinkBoxEdit: (attrs) => {
+      dialogs.setProductLinkBoxDialog({ open: true, initialData: attrs, isEditing: true });
+    },
+    onImageGalleryEdit: (attrs) => {
+      dialogs.setImageGalleryDialog({ open: true, initialData: attrs, isEditing: true });
+    },
+    onCustomImageEdit: (attrs) => {
+      dialogs.setImageDialog({ open: true, initialData: attrs });
+    },
+    onEmbedAdBoxEdit: (attrs) => {
+      dialogs.setEmbedAdBoxDialog({ open: true, initialData: attrs, isEditing: true });
+    },
+    onPointBoxEdit: (attrs) => {
+      dialogs.setPointBoxDialog({ open: true, initialData: attrs, isEditing: true });
+    },
+    onCtaButtonEdit: (attrs) => {
+      dialogs.setCtaButtonDialog({ open: true, initialData: attrs, isEditing: true });
+    },
+  });
 
 
-  // テーブルを横スクロール可能なラッパーで囲む
   useEffect(() => {
     if (!editor) return;
 
-    const checkScrollable = (wrapper: HTMLElement) => {
+    interface HTMLElementWithTimeout extends HTMLElement {
+      _scrollTimeout?: ReturnType<typeof setTimeout>;
+    }
+
+    const checkScrollable = (wrapper: HTMLElementWithTimeout) => {
       const isScrollable = wrapper.scrollWidth > wrapper.clientWidth;
-      
-      if (isScrollable) {
-        wrapper.classList.add('has-scroll');
-      } else {
-        wrapper.classList.remove('has-scroll');
-      }
+      wrapper.classList.toggle('has-scroll', isScrollable);
 
       const handleScroll = () => {
         wrapper.classList.add('is-scrolling');
-        clearTimeout((wrapper as any)._scrollTimeout);
-        (wrapper as any)._scrollTimeout = setTimeout(() => {
-          wrapper.classList.remove('is-scrolling');
-        }, 1000);
+        if (wrapper._scrollTimeout) clearTimeout(wrapper._scrollTimeout);
+        wrapper._scrollTimeout = setTimeout(() => wrapper.classList.remove('is-scrolling'), 1000);
       };
 
       wrapper.removeEventListener('scroll', handleScroll);
@@ -567,44 +365,31 @@ export function TiptapEditor({
     };
 
     const wrapTables = () => {
-      const editorElement = editor.view.dom;
-      const tables = editorElement.querySelectorAll('table');
-
+      const tables = editor.view.dom.querySelectorAll('table');
       tables.forEach((table) => {
         const parent = table.parentElement;
-        if (parent && (parent.classList.contains('table-scroll-wrapper') || parent.classList.contains('tableWrapper'))) {
+        if (parent?.classList.contains('table-scroll-wrapper') || parent?.classList.contains('tableWrapper')) {
           checkScrollable(parent);
           return;
         }
 
         const wrapper = document.createElement('div');
         wrapper.className = 'table-scroll-wrapper';
-
         table.parentNode?.insertBefore(wrapper, table);
         wrapper.appendChild(table);
-
         setTimeout(() => checkScrollable(wrapper), 0);
       });
     };
 
     wrapTables();
-
-    const handleUpdate = () => {
-      setTimeout(wrapTables, 0);
-    };
-
+    const handleUpdate = () => setTimeout(wrapTables, 0);
     editor.on('update', handleUpdate);
 
-    // ResizeObserverでウィンドウサイズの変更を監視
-    const editorElement = editor.view.dom;
     const resizeObserver = new ResizeObserver(() => {
-      const wrappers = editorElement.querySelectorAll('.table-scroll-wrapper, .tableWrapper');
-      wrappers.forEach((wrapper) => {
-        checkScrollable(wrapper as HTMLElement);
-      });
+      const wrappers = editor.view.dom.querySelectorAll('.table-scroll-wrapper, .tableWrapper');
+      wrappers.forEach((wrapper) => checkScrollable(wrapper as HTMLElement));
     });
-
-    resizeObserver.observe(editorElement);
+    resizeObserver.observe(editor.view.dom);
 
     return () => {
       editor.off('update', handleUpdate);
@@ -616,55 +401,17 @@ export function TiptapEditor({
     return null;
   }
 
-  const addLink = () => {
-    setLinkInitialData(undefined);
-    setLinkDialogOpen(true);
-  };
 
-  const addImage = () => {
-    setImageInitialData(undefined);
-    setImageDialogOpen(true);
-  };
-
-  const addSpeechBubble = () => {
-    setSpeechBubbleDialogOpen(true);
-  };
-
-  const addCtaButton = () => {
-    setCtaButtonInitialData(undefined);
-    setCtaButtonDialogOpen(true);
-  };
-
-  const addProductLinkBox = () => {
-    setProductLinkBoxInitialData(undefined);
-    setIsEditingProductLinkBox(false);
-    setProductLinkBoxDialogOpen(true);
-  };
-
-  const addEmbedAdBox = () => {
-    setEmbedAdBoxDialogOpen(true);
-  };
-
-  const handleYoutubeInsert = (url: string) => {
-    editor.chain().focus().setYoutubeVideo({ src: url }).run();
-  };
-
-  const handleInstagramInsert = (url: string) => {
-    editor.chain().focus().setInstagram({ url }).run();
-  };
 
   const handleImageSelect = (data: { src: string; alt?: string; caption?: string }) => {
-    if (imageInitialData) {
-      // 編集モード: 既存の画像を更新
-      editor.chain().focus().updateAttributes('image', data).run();
-      setImageInitialData(undefined);
+    if (dialogs.imageDialog.initialData) {
+      editor?.chain().focus().updateAttributes('image', data).run();
     } else {
-      // 新規作成モード
-      editor.chain().focus().setImage(data).run();
+      editor?.chain().focus().setImage(data).run();
     }
   };
 
-  const handleCtaButtonSelect = (options: {
+  const handleCtaButtonSelect = (data: {
     href: string;
     text: string;
     variant: 'primary' | 'secondary' | 'outline';
@@ -672,40 +419,19 @@ export function TiptapEditor({
     textColor?: string;
     animation?: 'none' | 'pulse' | 'bounce' | 'shine' | 'glow';
   }) => {
-    if (ctaButtonInitialData) {
-      // 編集モード: 既存のCTAボタンを更新
-      editor.chain().focus().updateAttributes('ctaButton', options).run();
+    if (dialogs.ctaButtonDialog.isEditing) {
+      editor?.chain().focus().updateAttributes('ctaButton', data).run();
     } else {
-      // 新規作成モード
-      editor.chain().focus().setCtaButton(options).run();
-    }
-    setCtaButtonInitialData(undefined);
-  };
-
-  const handleSpeechBubbleSelect = (position: "left" | "right") => {
-    editor.chain().focus().toggleSpeechBubble(position).run();
-  };
-
-  const handlePointBoxInsert = (data: {
-    type: 'point' | 'warning' | 'danger' | 'success' | 'info';
-    title: string;
-    content: string;
-  }) => {
-    if (isEditingPointBox) {
-      // 編集モード: 既存のポイントボックスを更新
-      editor.chain().focus().updateAttributes('pointBox', data).run();
-    } else {
-      // 新規挿入
-      editor.chain().focus().setPointBox(data).run();
+      editor?.chain().focus().setCtaButton(data).run();
     }
   };
 
-  const handleLeftHeaderTableInsert = (data: {
-    rows: number;
-    cols: number;
-    data: string[][];
-  }) => {
-    editor.chain().focus().setLeftHeaderTable(data).run();
+  const handlePointBoxInsert = (data: { type: 'point' | 'warning' | 'danger' | 'success' | 'info'; title: string; content: string }) => {
+    if (dialogs.pointBoxDialog.isEditing) {
+      editor?.chain().focus().updateAttributes('pointBox', data).run();
+    } else {
+      editor?.chain().focus().setPointBox(data).run();
+    }
   };
 
   const handleProductLinkBoxInsert = (data: {
@@ -718,787 +444,139 @@ export function TiptapEditor({
     yahooUrl?: string;
     yahooPrice?: string;
   }) => {
-    if (isEditingProductLinkBox) {
-      // 編集モード: 既存の商品リンクボックスを更新
-      editor.chain().focus().updateProductLinkBox(data).run();
-      setIsEditingProductLinkBox(false);
-      setProductLinkBoxInitialData(undefined);
+    if (dialogs.productLinkBoxDialog.isEditing) {
+      editor?.chain().focus().updateProductLinkBox(data).run();
     } else {
-      // 新規作成モード
-      editor.chain().focus().setProductLinkBox(data).run();
+      editor?.chain().focus().setProductLinkBox(data).run();
     }
   };
 
   const handleEmbedAdBoxInsert = (embedCode?: string, pcEmbedCode?: string, mobileEmbedCode?: string) => {
-    if (isEditingEmbedAdBox) {
-      // 編集モード: 既存の埋め込み広告を更新
-      editor.chain().focus().updateAttributes('embedAdBox', { embedCode, pcEmbedCode, mobileEmbedCode }).run();
-      setIsEditingEmbedAdBox(false);
-      setEmbedAdBoxInitialData(undefined);
+    const data = { embedCode, pcEmbedCode, mobileEmbedCode };
+    if (dialogs.embedAdBoxDialog.isEditing) {
+      editor?.chain().focus().updateAttributes('embedAdBox', data).run();
     } else {
-      // 新規作成モード
-      editor.chain().focus().setEmbedAdBox({ embedCode, pcEmbedCode, mobileEmbedCode }).run();
+      editor?.chain().focus().setEmbedAdBox(data).run();
     }
   };
 
-  const handleImageGalleryInsert = (data: {
-    images: { src: string; alt?: string; caption?: string }[];
-    columns: number;
-    gap: number;
-  }) => {
-    if (isEditingImageGallery) {
-      // 編集モード: 既存のギャラリーを更新
-      editor.chain().focus().updateImageGallery(data).run();
-      setIsEditingImageGallery(false);
-      setImageGalleryInitialData(undefined);
+  const handleImageGalleryInsert = (data: { images: { src: string; alt?: string; caption?: string }[]; columns: number; gap: number }) => {
+    if (dialogs.imageGalleryDialog.isEditing) {
+      editor?.chain().focus().updateImageGallery(data).run();
     } else {
-      // 新規作成モード
-      editor.chain().focus().setImageGallery(data).run();
-    }
-  };
-
-  const handleLinkInsert = async (data: {
-    href: string;
-    text?: string;
-    linkTarget: "internal" | "external";
-  }) => {
-    if (data.linkTarget === "external") {
-      // 外部リンク（通常のリンク）
-      if (linkInitialData) {
-        // 編集モード: 既存のリンクを更新
-        if (data.text && data.text !== linkInitialData.text) {
-          // テキストも変更された場合は、リンクを削除して新しいリンクを挿入
-          editor
-            .chain()
-            .focus()
-            .extendMarkRange('link')
-            .unsetLink()
-            .insertContent(`<a href="${data.href}">${data.text}</a>`)
-            .run();
-        } else {
-          // URLのみ変更の場合
-          editor.chain().focus().extendMarkRange('link').setLink({ href: data.href }).run();
-        }
-        setLinkInitialData(undefined);
-      } else {
-        // 新規作成モード
-        if (data.text) {
-          editor
-            .chain()
-            .focus()
-            .insertContent(`<a href="${data.href}">${data.text}</a>`)
-            .run();
-        } else {
-          editor.chain().focus().setLink({ href: data.href }).run();
-        }
-      }
-    } else {
-      // 内部リンク（自動的にリンクカード形式）
-      // APIからデータを取得して保存
-      const fetchAndInsertLinkCard = async () => {
-        try {
-          const slug = data.href.startsWith("/") ? data.href.slice(1) : data.href;
-          const response = await fetch(`/api/posts/by-slug?slug=${slug}`);
-
-          if (response.ok) {
-            const postData = await response.json();
-            editor
-              .chain()
-              .focus()
-              .setLinkCard({
-                href: data.href,
-                title: postData.title,
-                description: postData.description,
-                thumbnail: postData.og_image_url || postData.thumbnail_url,
-              })
-              .run();
-          } else {
-            // データ取得失敗時はhrefのみで挿入
-            editor
-              .chain()
-              .focus()
-              .setLinkCard({
-                href: data.href,
-              })
-              .run();
-          }
-        } catch (error) {
-          console.error("Failed to fetch link card data:", error);
-          // エラー時もhrefのみで挿入
-          editor
-            .chain()
-            .focus()
-            .setLinkCard({
-              href: data.href,
-            })
-            .run();
-        }
-      };
-
-      fetchAndInsertLinkCard();
+      editor?.chain().focus().setImageGallery(data).run();
     }
   };
 
   return (
     <>
       <div className="rounded-md border">
-        {/* ツールバー */}
-        <TooltipProvider delayDuration={300}>
-          <div className="sticky top-0 z-40 flex flex-wrap gap-1 rounded-t-[calc(0.375rem-1px)] border-b bg-muted p-2 shadow-sm">
-            {/* 見出しグループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      editor.chain().focus().toggleHeading({ level: 2 }).run()
-                    }
-                    className={
-                      editor.isActive("heading", { level: 2 })
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="見出し2"
-                  >
-                    <Heading2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      editor.chain().focus().toggleHeading({ level: 3 }).run()
-                    }
-                    className={
-                      editor.isActive("heading", { level: 3 })
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="見出し3"
-                  >
-                    <Heading3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      editor.chain().focus().toggleHeading({ level: 4 }).run()
-                    }
-                    className={
-                      editor.isActive("heading", { level: 4 })
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="見出し4"
-                  >
-                    <Heading4 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>見出し関連</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* 文字装飾グループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={
-                      editor.isActive("bold") ? "bg-accent border-2 border-primary" : ""
-                    }
-                    disabled={disabled}
-                    title="太字"
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={
-                      editor.isActive("italic")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="斜体"
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={
-                      editor.isActive("underline")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="下線"
-                  >
-                    <UnderlineIcon className="h-4 w-4" />
-                  </Button>
-                  <ColorPickerPopover
-                    currentColor={editor.getAttributes("textStyle").color}
-                    onColorChange={(color) => editor.chain().focus().setColor(color).run()}
-                    disabled={disabled}
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>文字装飾関連</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* ブロックグループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={
-                      editor.isActive("bulletList")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="箇条書きリスト"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={
-                      editor.isActive("orderedList")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="番号付きリスト"
-                  >
-                    <ListOrdered className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                    className={
-                      editor.isActive("blockquote")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="引用"
-                  >
-                    <Quote className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleCode().run()}
-                    className={
-                      editor.isActive("code")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="インラインコード"
-                  >
-                    <Code2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                    className={
-                      editor.isActive("codeBlock")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="コードブロック"
-                  >
-                    <Code className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>ブロック関連</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* リンク関連グループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addCtaButton}
-                    className={
-                      editor.isActive("ctaButton")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="CTAボタン"
-                  >
-                    <MousePointerClick className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addLink}
-                    className={
-                      editor.isActive("link") ? "bg-accent border-2 border-primary" : ""
-                    }
-                    disabled={disabled}
-                    title="リンク"
-                  >
-                    <Link2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>リンク関連</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* 画像・動画グループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addImage}
-                    disabled={disabled}
-                    title="画像"
-                  >
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setImageGalleryInitialData(undefined);
-                      setIsEditingImageGallery(false);
-                      setImageGalleryDialogOpen(true);
-                    }}
-                    className={
-                      editor.isActive("imageGallery")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="画像ギャラリー"
-                  >
-                    <Images className="h-4 w-4" />
-                  </Button>
-                  <YoutubePopover
-                    open={youtubePopoverOpen}
-                    onOpenChange={setYoutubePopoverOpen}
-                    onInsert={handleYoutubeInsert}
-                  >
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={
-                        editor.isActive("youtube")
-                          ? "bg-accent border-2 border-primary"
-                          : ""
-                      }
-                      disabled={disabled}
-                      title="YouTube動画"
-                    >
-                      <YoutubeIcon className="h-4 w-4" />
-                    </Button>
-                  </YoutubePopover>
-                  <InstagramPopover
-                    open={instagramPopoverOpen}
-                    onOpenChange={setInstagramPopoverOpen}
-                    onInsert={handleInstagramInsert}
-                  >
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={
-                        editor.isActive("instagram")
-                          ? "bg-accent border-2 border-primary"
-                          : ""
-                      }
-                      disabled={disabled}
-                      title="Instagram投稿"
-                    >
-                      <InstagramIcon className="h-4 w-4" />
-                    </Button>
-                  </InstagramPopover>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>画像・動画関連</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* テーブルグループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      editor
-                        .chain()
-                        .focus()
-                        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-                        .run()
-                    }
-                    disabled={disabled}
-                    title="テーブル挿入"
-                  >
-                    <TableIcon className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setLeftHeaderTableDialogOpen(true)}
-                    disabled={disabled}
-                    title="左端列見出しテーブル"
-                  >
-                    <LayoutList className="h-4 w-4" />
-                  </Button>
-                  {editor.isActive("table") && (
-                    <>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          editor.chain().focus().addColumnBefore().run()
-                        }
-                        disabled={disabled}
-                        title="列を前に追加"
-                      >
-                        <Columns className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          editor.chain().focus().addRowBefore().run()
-                        }
-                        disabled={disabled}
-                        title="行を前に追加"
-                      >
-                        <Rows className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().deleteTable().run()}
-                        disabled={disabled}
-                        title="テーブル削除"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>テーブル関連</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* 吹き出しグループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addSpeechBubble}
-                    className={
-                      editor.isActive("speechBubble")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="吹き出し"
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPointBoxDialogOpen(true)}
-                    className={
-                      editor.isActive("pointBox")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="ポイントボックス"
-                  >
-                    <Lightbulb className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>吹き出し・ポイントボックス</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* アフィリエイトグループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addProductLinkBox}
-                    className={
-                      editor.isActive("productLinkBox")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="商品リンクボックス"
-                  >
-                    <Package className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={addEmbedAdBox}
-                    className={
-                      editor.isActive("embedAdBox")
-                        ? "bg-accent border-2 border-primary"
-                        : ""
-                    }
-                    disabled={disabled}
-                    title="埋め込み広告"
-                  >
-                    <MonitorPlay className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>アフィリエイトリンク</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* 装飾解除グループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const { from, to } = editor.state.selection;
-                      if (from === to) {
-                        // 選択範囲がない場合は、現在のブロック全体を選択してクリア
-                        editor
-                          .chain()
-                          .focus()
-                          .selectParentNode()
-                          .clearNodes()
-                          .unsetAllMarks()
-                          .unsetColor()
-                          .run();
-                      } else {
-                        // 選択範囲がある場合は、その範囲をクリア
-                        editor
-                          .chain()
-                          .focus()
-                          .clearNodes()
-                          .unsetAllMarks()
-                          .unsetColor()
-                          .run();
-                      }
-                    }}
-                    disabled={disabled}
-                    title="装飾解除"
-                  >
-                    <RemoveFormatting className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>装飾解除</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="mx-1 w-px bg-border" />
-
-            {/* 操作グループ */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().undo().run()}
-                    disabled={!editor.can().undo() || disabled}
-                    title="元に戻す"
-                  >
-                    <Undo className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => editor.chain().focus().redo().run()}
-                    disabled={!editor.can().redo() || disabled}
-                    title="やり直す"
-                  >
-                    <Redo className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>操作</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
-
-        {/* エディタエリア */}
+        <EditorToolbar
+          editor={editor}
+          disabled={disabled}
+          onAddLink={() => dialogs.setLinkDialog({ open: true })}
+          onAddImage={() => dialogs.setImageDialog({ open: true })}
+          onAddSpeechBubble={() => dialogs.setSpeechBubbleDialogOpen(true)}
+          onAddCtaButton={() => dialogs.setCtaButtonDialog({ open: true, isEditing: false })}
+          onAddProductLinkBox={() => dialogs.setProductLinkBoxDialog({ open: true, isEditing: false })}
+          onAddEmbedAdBox={() => dialogs.setEmbedAdBoxDialog({ open: true, isEditing: false })}
+          onAddImageGallery={() => dialogs.setImageGalleryDialog({ open: true, isEditing: false })}
+          onAddLeftHeaderTable={() => dialogs.setLeftHeaderTableDialogOpen(true)}
+          onAddPointBox={() => dialogs.setPointBoxDialog({ open: true, isEditing: false })}
+          youtubePopoverOpen={dialogs.youtubePopoverOpen}
+          onYoutubePopoverChange={dialogs.setYoutubePopoverOpen}
+          onYoutubeInsert={(url) => editor?.chain().focus().setYoutubeVideo({ src: url }).run()}
+          instagramPopoverOpen={dialogs.instagramPopoverOpen}
+          onInstagramPopoverChange={dialogs.setInstagramPopoverOpen}
+          onInstagramInsert={(url) => editor?.chain().focus().setInstagram({ url }).run()}
+        />
         <EditorContent editor={editor} />
       </div>
 
       <ImagePickerDialog
-        open={imageDialogOpen}
-        onOpenChange={setImageDialogOpen}
+        open={dialogs.imageDialog.open}
+        onOpenChange={(open) => dialogs.setImageDialog({ ...dialogs.imageDialog, open })}
         onSelect={handleImageSelect}
-        initialData={imageInitialData}
+        initialData={dialogs.imageDialog.initialData}
       />
       <LinkDialog
-        open={linkDialogOpen}
-        onOpenChange={setLinkDialogOpen}
-        onInsert={handleLinkInsert}
-        initialData={linkInitialData}
+        open={dialogs.linkDialog.open}
+        onOpenChange={(open) => dialogs.setLinkDialog({ ...dialogs.linkDialog, open })}
+        onInsert={async (data) => {
+          if (!editor) return;
+          if (data.linkTarget === "external") {
+            const isEditing = dialogs.linkDialog.initialData;
+            if (isEditing && data.text && data.text !== dialogs.linkDialog.initialData?.text) {
+              editor.chain().focus().extendMarkRange('link').unsetLink().insertContent(`<a href="${data.href}">${data.text}</a>`).run();
+            } else if (isEditing) {
+              editor.chain().focus().extendMarkRange('link').setLink({ href: data.href }).run();
+            } else if (data.text) {
+              editor.chain().focus().insertContent(`<a href="${data.href}">${data.text}</a>`).run();
+            } else {
+              editor.chain().focus().setLink({ href: data.href }).run();
+            }
+          } else {
+            try {
+              const slug = data.href.startsWith("/") ? data.href.slice(1) : data.href;
+              const response = await fetch(`/api/posts/by-slug?slug=${slug}`);
+              const cardData = response.ok ? await response.json() : null;
+              editor.chain().focus().setLinkCard({
+                href: data.href,
+                ...(cardData && { title: cardData.title, description: cardData.description, thumbnail: cardData.og_image_url || cardData.thumbnail_url }),
+              }).run();
+            } catch (error) {
+              console.error("Failed to fetch link card data:", error);
+              editor.chain().focus().setLinkCard({ href: data.href }).run();
+            }
+          }
+        }}
+        initialData={dialogs.linkDialog.initialData}
       />
       <SpeechBubbleDialog
-        open={speechBubbleDialogOpen}
-        onOpenChange={setSpeechBubbleDialogOpen}
-        onSelect={handleSpeechBubbleSelect}
+        open={dialogs.speechBubbleDialogOpen}
+        onOpenChange={dialogs.setSpeechBubbleDialogOpen}
+        onSelect={(position) => editor?.chain().focus().toggleSpeechBubble(position).run()}
       />
       <CtaButtonDialog
-        open={ctaButtonDialogOpen}
-        onOpenChange={(open) => {
-          setCtaButtonDialogOpen(open);
-          if (!open) {
-            setIsEditingCtaButton(false);
-            setCtaButtonInitialData(undefined);
-          }
-        }}
+        open={dialogs.ctaButtonDialog.open}
+        onOpenChange={(open) => dialogs.setCtaButtonDialog({ ...dialogs.ctaButtonDialog, open, ...(!open && { isEditing: false, initialData: undefined }) })}
         onSelect={handleCtaButtonSelect}
-        initialData={ctaButtonInitialData}
-        isEditMode={isEditingCtaButton}
+        initialData={dialogs.ctaButtonDialog.initialData}
+        isEditMode={dialogs.ctaButtonDialog.isEditing}
       />
       <PointBoxDialog
-        key={pointBoxInitialData ? JSON.stringify(pointBoxInitialData) : 'new'}
-        open={pointBoxDialogOpen}
-        onOpenChange={(open) => {
-          setPointBoxDialogOpen(open);
-          if (!open) {
-            // ダイアログが閉じたときにリセット
-            setIsEditingPointBox(false);
-            setPointBoxInitialData(undefined);
-          }
-        }}
+        key={dialogs.pointBoxDialog.initialData ? JSON.stringify(dialogs.pointBoxDialog.initialData) : 'new'}
+        open={dialogs.pointBoxDialog.open}
+        onOpenChange={(open) => dialogs.setPointBoxDialog({ ...dialogs.pointBoxDialog, open, ...(!open && { isEditing: false, initialData: undefined }) })}
         onInsert={handlePointBoxInsert}
-        initialData={pointBoxInitialData}
-        isEditMode={isEditingPointBox}
+        initialData={dialogs.pointBoxDialog.initialData}
+        isEditMode={dialogs.pointBoxDialog.isEditing}
       />
       <ProductLinkBoxDialog
-        open={productLinkBoxDialogOpen}
-        onOpenChange={setProductLinkBoxDialogOpen}
+        open={dialogs.productLinkBoxDialog.open}
+        onOpenChange={(open) => dialogs.setProductLinkBoxDialog({ ...dialogs.productLinkBoxDialog, open, ...(!open && { isEditing: false, initialData: undefined }) })}
         onInsert={handleProductLinkBoxInsert}
-        initialData={productLinkBoxInitialData}
-        isEditMode={isEditingProductLinkBox}
+        initialData={dialogs.productLinkBoxDialog.initialData}
+        isEditMode={dialogs.productLinkBoxDialog.isEditing}
       />
       <EmbedAdBoxDialog
-        open={embedAdBoxDialogOpen}
-        onOpenChange={(open) => {
-          setEmbedAdBoxDialogOpen(open);
-          if (!open) {
-            setIsEditingEmbedAdBox(false);
-            setEmbedAdBoxInitialData(undefined);
-          }
-        }}
+        open={dialogs.embedAdBoxDialog.open}
+        onOpenChange={(open) => dialogs.setEmbedAdBoxDialog({ ...dialogs.embedAdBoxDialog, open, ...(!open && { isEditing: false, initialData: undefined }) })}
         onInsert={handleEmbedAdBoxInsert}
-        initialData={embedAdBoxInitialData}
-        isEditMode={isEditingEmbedAdBox}
+        initialData={dialogs.embedAdBoxDialog.initialData}
+        isEditMode={dialogs.embedAdBoxDialog.isEditing}
       />
       <ImageGalleryDialog
-        open={imageGalleryDialogOpen}
-        onOpenChange={(open) => {
-          setImageGalleryDialogOpen(open);
-          if (!open) {
-            setIsEditingImageGallery(false);
-            setImageGalleryInitialData(undefined);
-          }
-        }}
+        open={dialogs.imageGalleryDialog.open}
+        onOpenChange={(open) => dialogs.setImageGalleryDialog({ ...dialogs.imageGalleryDialog, open, ...(!open && { isEditing: false, initialData: undefined }) })}
         onSubmit={handleImageGalleryInsert}
-        initialData={imageGalleryInitialData}
-        isEditMode={isEditingImageGallery}
+        initialData={dialogs.imageGalleryDialog.initialData}
+        isEditMode={dialogs.imageGalleryDialog.isEditing}
       />
       <LeftHeaderTableDialog
-        open={leftHeaderTableDialogOpen}
-        onOpenChange={setLeftHeaderTableDialogOpen}
-        onInsert={handleLeftHeaderTableInsert}
+        open={dialogs.leftHeaderTableDialogOpen}
+        onOpenChange={dialogs.setLeftHeaderTableDialogOpen}
+        onInsert={(data) => editor?.chain().focus().setLeftHeaderTable(data).run()}
       />
     </>
   );
