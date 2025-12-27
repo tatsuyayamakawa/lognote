@@ -518,11 +518,19 @@ function PostsPagination({
             <PaginationItem key={`ellipsis-${index}`}>
               <PaginationEllipsis />
             </PaginationItem>
+          ) : page === currentPage ? (
+            <PaginationItem key={page}>
+              <span
+                aria-current="page"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium cursor-not-allowed"
+              >
+                {page}
+              </span>
+            </PaginationItem>
           ) : (
             <PaginationItem key={page}>
               <PaginationLink
                 href={createPageUrl(page)}
-                isActive={page === currentPage}
                 size="icon"
               >
                 {page}

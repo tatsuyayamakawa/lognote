@@ -83,6 +83,57 @@ export async function getPublishedPosts(
 }
 
 /**
+ * 公開済み記事をページネーション付きで取得
+ */
+export async function getPublishedPostsWithPagination(
+  page: number = 1,
+  perPage: number = 12
+): Promise<{ posts: PostWithCategories[]; totalPages: number }> {
+  const supabase = await createClient();
+
+  // 総記事数を取得
+  const { count } = await supabase
+    .from("posts")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "published");
+
+  const totalPages = Math.ceil((count || 0) / perPage);
+
+  // ページネーション付きで記事を取得
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select(
+      `
+      *,
+      post_categories!inner (
+        category:categories (*)
+      )
+    `
+    )
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error("Error fetching posts with pagination:", error);
+    return { posts: [], totalPages: 0 };
+  }
+
+  const posts = (data || []).map(
+    (post: PostWithPostCategories): PostWithCategories => ({
+      ...post,
+      categories:
+        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+    })
+  );
+
+  return { posts, totalPages };
+}
+
+/**
  * 特集記事を取得（is_featured = true）
  */
 export async function getFeaturedPosts(
@@ -194,6 +245,60 @@ export async function getPostsByCategory(
         post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
     })
   );
+}
+
+/**
+ * カテゴリ別の記事をページネーション付きで取得
+ */
+export async function getPostsByCategoryWithPagination(
+  categorySlug: string,
+  page: number = 1,
+  perPage: number = 12
+): Promise<{ posts: PostWithCategories[]; totalPages: number }> {
+  const supabase = await createClient();
+
+  // 総記事数を取得
+  const { count } = await supabase
+    .from("posts")
+    .select("*, post_categories!inner(category:categories!inner(*))", { count: "exact", head: true })
+    .eq("status", "published")
+    .eq("post_categories.category.slug", categorySlug);
+
+  const totalPages = Math.ceil((count || 0) / perPage);
+
+  // ページネーション付きで記事を取得
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select(
+      `
+      *,
+      post_categories!inner (
+        category:categories!inner (*)
+      )
+    `
+    )
+    .eq("status", "published")
+    .eq("post_categories.category.slug", categorySlug)
+    .order("published_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error("Error fetching posts by category with pagination:", error);
+    return { posts: [], totalPages: 0 };
+  }
+
+  const posts = (data || []).map(
+    (post: PostWithPostCategories): PostWithCategories => ({
+      ...post,
+      categories:
+        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+    })
+  );
+
+  return { posts, totalPages };
 }
 
 /**
