@@ -28,13 +28,6 @@ interface AdSenseProps {
    * レイアウト種別（記事内広告用）
    */
   layout?: "in-article";
-  /**
-   * 広告の配置場所による背景色の変更
-   * - "in-article": 記事内（md:bg-card）
-   * - "outside-article": 記事外（md:bg-zinc-50）
-   * デフォルトは "in-article"
-   */
-  variant?: "in-article" | "outside-article";
 }
 
 export function AdSense({
@@ -47,7 +40,6 @@ export function AdSense({
   placeholderHeight,
   showSkeleton = true,
   layout,
-  variant = "in-article",
 }: AdSenseProps) {
   const insRef = useRef<HTMLModElement>(null);
   const pathname = usePathname(); // ページ遷移検知
@@ -84,19 +76,13 @@ export function AdSense({
         return;
       }
 
-      // 要素のサイズと表示状態をチェック（親要素も含めて）
+      // 要素のサイズと表示状態をチェック
       const computedStyle = window.getComputedStyle(container);
       const isDisplayNone = computedStyle.display === "none";
       const isVisibilityHidden = computedStyle.visibility === "hidden";
 
-      // 親要素のdisplayもチェック（Tailwindのhidden md:blockなど）
-      const parentComputedStyle = container.parentElement
-        ? window.getComputedStyle(container.parentElement)
-        : null;
-      const isParentDisplayNone = parentComputedStyle?.display === "none";
-
       // display:noneやvisibility:hiddenの場合はスキップ
-      if (isDisplayNone || isVisibilityHidden || isParentDisplayNone) {
+      if (isDisplayNone || isVisibilityHidden) {
         return;
       }
 
@@ -105,18 +91,8 @@ export function AdSense({
       const isFluid = layout === "in-article" || adFormat === "fluid";
 
       // fluid広告の場合、親要素の幅が250px未満ならスキップ
-      // また、幅が0の場合もスキップ（まだレイアウトされていない）
       if (isFluid && parentWidth < 250) {
         return;
-      }
-
-      // さらに外側の祖先要素の幅もチェック（data-ad-positionを持つ要素）
-      let ancestorElement = container.parentElement;
-      while (ancestorElement && !ancestorElement.hasAttribute('data-ad-position')) {
-        ancestorElement = ancestorElement.parentElement;
-      }
-      if (ancestorElement && ancestorElement.clientWidth === 0) {
-        return; // 祖先要素の幅が0の場合はスキップ
       }
 
       // 初期化実行
@@ -155,50 +131,25 @@ export function AdSense({
     resizeObserver.observe(container);
 
     // 初回チェック（ファーストビュー用）- 少し遅延してCSSが適用されるのを待つ
-    // data-ad-positionを持つ祖先要素を探して初期化の遅延時間を変える（複数広告の同時初期化を避ける）
-    let adPosition = 0;
-    let element = container.parentElement;
-    while (element && !element.hasAttribute('data-ad-position')) {
-      element = element.parentElement;
-    }
-    if (element) {
-      adPosition = parseInt(element.getAttribute('data-ad-position') || '0', 10);
-    }
-    const initialDelay = 300 + (adPosition * 400); // 各広告を400msずつずらす（初期遅延を増加）
-
     const initialCheck = setTimeout(() => {
-      // requestAnimationFrameでレイアウト完了を待つ
-      requestAnimationFrame(() => {
-        checkVisibility();
-      });
-    }, initialDelay);
-
-    // 追加の遅延チェック（初期化に失敗した場合の保険）
-    const retryCheck = setTimeout(() => {
-      if (!container.getAttribute("data-adsbygoogle-status")) {
-        requestAnimationFrame(() => {
-          checkVisibility();
-        });
-      }
-    }, initialDelay + 2000);
+      checkVisibility();
+    }, 100);
 
     return () => {
       observer.disconnect();
       resizeObserver.disconnect();
       clearTimeout(initialCheck);
-      clearTimeout(retryCheck);
     };
-  }, [pathname, isProduction, adSlot, adFormat, fullWidthResponsive, className, width, height, placeholderHeight, showSkeleton, layout, variant]); // pathnameが変わるたびに再初期化
+  }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
 
   // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
     // 記事内広告用のスケルトン
-    const isInArticle = layout === "in-article";
+    const isInArticle = layout === "in-article" || adFormat === "fluid";
     const skeletonLabel = isInArticle ? "記事内広告" :
                           adFormat === "horizontal" ? "横長バナー広告" :
                           adFormat === "rectangle" ? "スクエア広告" :
-                          adFormat === "vertical" ? "縦長広告" :
-                          adFormat === "fluid" ? "レスポンシブ広告" : "広告";
+                          adFormat === "vertical" ? "縦長広告" : "広告";
 
     // 固定サイズかどうかの判定
     const isFixedForSkeleton = !!(width && height);
@@ -217,10 +168,10 @@ export function AdSense({
           style={{ height: actualPlaceholderHeight, width: width || "100%" }}
         >
           <div className="text-center">
-            <p className="text-xs! text-gray-500! dark:text-gray-400! font-semibold! my-0!">
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">
               {skeletonLabel}
             </p>
-            <p className="text-[10px]! text-gray-400! dark:text-gray-500! mt-1! mb-0! font-mono!">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono">
               {adSlot}
             </p>
           </div>
@@ -252,17 +203,8 @@ export function AdSense({
     overflow: "hidden", // はみ出し防止
   };
 
-  // 背景色: variantに応じて記事内/記事外で切り替え
-  const bgClassName = variant === "in-article"
-    ? "bg-zinc-50 dark:bg-black md:bg-card"
-    : "bg-zinc-50 dark:bg-black";
-
   return (
-    <div
-      className={`${className} ${bgClassName}`}
-      style={containerStyle}
-      suppressHydrationWarning
-    >
+    <div className={className} style={containerStyle} suppressHydrationWarning>
       <ins
         ref={insRef}
         className="adsbygoogle"

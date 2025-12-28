@@ -80,43 +80,40 @@ export function useInArticleAds({
           if (!pcSlot && !mobileSlot) return null;
 
           return createPortal(
-            <div
-              style={{ pointerEvents: "auto", isolation: "isolate" }}
-              data-ad-position={index}
-            >
+            <>
               {pcSlot && (
                 <div className="hidden md:block w-full" style={{ minWidth: "300px", maxWidth: "100%" }}>
                   <span className="text-xs text-muted-foreground block text-center mb-2">
                     スポンサーリンク
                   </span>
                   <AdSense
-                    key={`pc-${pcSlot}-${index}`}
                     adSlot={pcSlot}
                     adFormat="fluid"
-                    layout="in-article"
                     fullWidthResponsive={true}
-                    showSkeleton={false}
+                    layout="in-article"
+                    showSkeleton={true}
                     placeholderHeight="300px"
                   />
                 </div>
               )}
               {mobileSlot && (
                 <div className="block md:hidden">
-                  <span className="text-xs text-muted-foreground block text-center mb-2">
+                  <span className="text-xs text-muted-foreground block text-center mb-1">
                     スポンサーリンク
                   </span>
-                  <AdSense
-                    key={`mobile-${mobileSlot}-${index}`}
-                    adSlot={mobileSlot}
-                    adFormat="fluid"
-                    layout="in-article"
-                    fullWidthResponsive={true}
-                    showSkeleton={false}
-                    placeholderHeight="300px"
-                  />
+                  <div className="flex justify-center">
+                    <AdSense
+                      adSlot={mobileSlot}
+                      width="300px"
+                      height="250px"
+                      adFormat="rectangle"
+                      fullWidthResponsive={false}
+                      showSkeleton={true}
+                    />
+                  </div>
                 </div>
               )}
-            </div>,
+            </>,
             container,
             `in-article-ad-${index}`
           );
