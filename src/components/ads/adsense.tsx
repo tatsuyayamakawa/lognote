@@ -32,66 +32,14 @@ export function AdSense({
   const actualPlaceholderHeight = placeholderHeight || height || "300px";
 
   useEffect(() => {
-    if (!isProduction || !insRef.current) return;
+    if (!isProduction) return;
 
-    const container = insRef.current;
-    if (container.getAttribute("data-adsbygoogle-status")) return;
-
-    let isInitialized = false;
-
-    const initAd = () => {
-      if (isInitialized || container.getAttribute("data-adsbygoogle-status")) {
-        return;
-      }
-
-      const computedStyle = window.getComputedStyle(container);
-      if (computedStyle.display === "none" || computedStyle.visibility === "hidden") {
-        return;
-      }
-
-      // Fluid広告の場合のみ親要素の幅をチェック
-      const isFluid = layout === "in-article" || adFormat === "fluid";
-      if (isFluid && (container.parentElement?.clientWidth || 0) < 250) {
-        return;
-      }
-
-      isInitialized = true;
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (error) {
-        console.error("AdSense initialization error:", error);
-        isInitialized = false;
-      }
-    };
-
-    // 要素がDOMに完全に追加されるのを待つ
-    const initTimer = setTimeout(() => {
-      // DOMに追加されているか確認
-      if (document.body.contains(container)) {
-        initAd();
-      }
-    }, 0);
-
-    // MutationObserverで親要素の変更を監視
-    const observer = new MutationObserver(() => {
-      if (!isInitialized && document.body.contains(container)) {
-        initAd();
-      }
-    });
-
-    // 親要素を監視
-    if (container.parentElement) {
-      observer.observe(container.parentElement, {
-        childList: true,
-        subtree: true,
-      });
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (error) {
+      console.error("AdSense initialization error:", error);
     }
-
-    return () => {
-      clearTimeout(initTimer);
-      observer.disconnect();
-    };
-  }, [pathname, isProduction, adSlot, layout, adFormat]);
+  }, [pathname, isProduction]);
 
   if (!isProduction && showSkeleton) {
     const isInArticle = layout === "in-article" || adFormat === "fluid";
