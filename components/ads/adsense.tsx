@@ -84,13 +84,19 @@ export function AdSense({
         return;
       }
 
-      // 要素のサイズと表示状態をチェック
+      // 要素のサイズと表示状態をチェック（親要素も含めて）
       const computedStyle = window.getComputedStyle(container);
       const isDisplayNone = computedStyle.display === "none";
       const isVisibilityHidden = computedStyle.visibility === "hidden";
 
+      // 親要素のdisplayもチェック（Tailwindのhidden md:blockなど）
+      const parentComputedStyle = container.parentElement
+        ? window.getComputedStyle(container.parentElement)
+        : null;
+      const isParentDisplayNone = parentComputedStyle?.display === "none";
+
       // display:noneやvisibility:hiddenの場合はスキップ
-      if (isDisplayNone || isVisibilityHidden) {
+      if (isDisplayNone || isVisibilityHidden || isParentDisplayNone) {
         return;
       }
 
