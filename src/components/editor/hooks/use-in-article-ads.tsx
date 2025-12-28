@@ -101,14 +101,17 @@ export function useInArticleAds({
                   <span className="text-xs text-muted-foreground block text-center mb-2">
                     スポンサーリンク
                   </span>
-                  <AdSense
-                    adSlot={mobileSlot}
-                    adFormat="fluid"
-                    fullWidthResponsive={true}
-                    layout="in-article"
-                    showSkeleton={true}
-                    placeholderHeight="300px"
-                  />
+                  <div className="flex justify-center">
+                    <AdSense
+                      adSlot={mobileSlot}
+                      adFormat="rectangle"
+                      width="300px"
+                      height="250px"
+                      fullWidthResponsive={false}
+                      showSkeleton={true}
+                      placeholderHeight="250px"
+                    />
+                  </div>
                 </div>
               )}
             </>,

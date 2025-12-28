@@ -27,12 +27,6 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
     in_article_mobile_slot_1: initialSettings?.in_article_mobile_slot_1 || "",
     in_article_pc_slot_2: initialSettings?.in_article_pc_slot_2 || "",
     in_article_mobile_slot_2: initialSettings?.in_article_mobile_slot_2 || "",
-    in_article_pc_slot_3: initialSettings?.in_article_pc_slot_3 || "",
-    in_article_mobile_slot_3: initialSettings?.in_article_mobile_slot_3 || "",
-    in_article_pc_slot_4: initialSettings?.in_article_pc_slot_4 || "",
-    in_article_mobile_slot_4: initialSettings?.in_article_mobile_slot_4 || "",
-    in_article_pc_slot_5: initialSettings?.in_article_pc_slot_5 || "",
-    in_article_mobile_slot_5: initialSettings?.in_article_mobile_slot_5 || "",
     article_bottom_pc_slot: initialSettings?.article_bottom_pc_slot || "",
     article_bottom_mobile_slot: initialSettings?.article_bottom_mobile_slot || "",
     sidebar_pc_slot: initialSettings?.sidebar_pc_slot || "",
@@ -231,10 +225,10 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                   key={`in_article_mobile_slot_${position}`}
                   id={`in_article_mobile_slot_${position}`}
                   label={`記事内広告 ${position}（${h2Position}つ目のH2前）`}
-                  description="記事内広告（fluid）"
+                  description="300×250 (スクエア)"
                   value={adSlots[`in_article_mobile_slot_${position}`]}
                   onChange={handleSlotChange}
-                  height="280px"
+                  height="250px"
                 />
               ))}
 
@@ -253,10 +247,10 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                 <AdSlotZone
                   id="article_bottom_mobile_slot"
                   label="コンテンツ後広告"
-                  description="記事内広告（fluid）"
+                  description="300×250 (スクエア)"
                   value={adSlots.article_bottom_mobile_slot}
                   onChange={handleSlotChange}
-                  height="280px"
+                  height="250px"
                 />
               </div>
             </Card>

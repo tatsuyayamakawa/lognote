@@ -236,10 +236,10 @@ export default async function PostPage({ params }: PostPageProps) {
                 placeholderHeight: "300px",
               }}
               mobileConfig={{
-                adFormat: "fluid",
-                layout: "in-article",
-                fullWidthResponsive: true,
-                placeholderHeight: "300px",
+                width: "300px",
+                height: "250px",
+                adFormat: "rectangle",
+                fullWidthResponsive: false,
               }}
             />
           </div>
