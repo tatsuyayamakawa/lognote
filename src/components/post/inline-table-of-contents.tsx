@@ -98,6 +98,32 @@ export function InlineTableOfContents({ className }: InlineTableOfContentsProps)
     }
   };
 
+  // 階層番号を計算
+  const getHierarchicalNumber = (index: number): string => {
+    const h2Counter = { count: 0 };
+    const h3Counters: { [key: number]: number } = {};
+
+    for (let i = 0; i <= index; i++) {
+      const h = headings[i];
+      if (h.level === 2) {
+        h2Counter.count++;
+        h3Counters[h2Counter.count] = 0;
+      } else if (h.level === 3) {
+        if (h2Counter.count > 0) {
+          h3Counters[h2Counter.count] = (h3Counters[h2Counter.count] || 0) + 1;
+        }
+      }
+    }
+
+    const currentHeading = headings[index];
+    if (currentHeading.level === 2) {
+      return `${h2Counter.count}.`;
+    } else if (currentHeading.level === 3) {
+      return `${h2Counter.count}.${h3Counters[h2Counter.count]}`;
+    }
+    return "";
+  };
+
   if (headings.length === 0) {
     return null;
   }
@@ -116,11 +142,11 @@ export function InlineTableOfContents({ className }: InlineTableOfContentsProps)
               maxHeight: shouldShowButton && !isExpanded ? "200px" : maxHeight,
             }}
           >
-            {headings.map((heading) => (
+            {headings.map((heading, index) => (
               <li
                 key={heading.id}
                 className={cn(
-                  "border-l-2 border-border transition-all duration-200 hover:border-primary/50",
+                  "transition-all duration-200",
                   heading.level === 3 && "pl-4",
                   heading.level === 4 && "pl-8"
                 )}
@@ -130,7 +156,16 @@ export function InlineTableOfContents({ className }: InlineTableOfContentsProps)
                   onClick={(e) => handleClick(e, heading.id)}
                   className="block py-1.5 px-3 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {heading.text}
+                  <span className="flex items-start gap-2">
+                    <span className="font-semibold shrink-0 min-w-4">
+                      {heading.level === 4 ? (
+                        <span className="mt-0.5">•</span>
+                      ) : (
+                        getHierarchicalNumber(index)
+                      )}
+                    </span>
+                    <span className="flex-1">{heading.text}</span>
+                  </span>
                 </a>
               </li>
             ))}
