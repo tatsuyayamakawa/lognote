@@ -46,13 +46,11 @@ interface AdSenseSummary {
 interface AdSenseRevenueProps {
   revenueData: AdSenseRevenueData[];
   summary: AdSenseSummary | null;
-  period: string;
 }
 
 export function AdSenseRevenue({
   revenueData,
   summary,
-  period,
 }: AdSenseRevenueProps) {
   const router = useRouter();
   const searchParams = useSearchParams();

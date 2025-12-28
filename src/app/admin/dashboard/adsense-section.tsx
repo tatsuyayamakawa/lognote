@@ -46,7 +46,6 @@ async function AdSenseData({ period }: AdSenseSectionProps) {
     <AdSenseRevenue
       revenueData={adsenseRevenue}
       summary={adsenseSummary}
-      period={period}
     />
   );
 }
