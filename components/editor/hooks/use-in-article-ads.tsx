@@ -98,19 +98,17 @@ export function useInArticleAds({
               )}
               {mobileSlot && (
                 <div className="block md:hidden">
-                  <span className="text-xs text-muted-foreground block text-center mb-1">
+                  <span className="text-xs text-muted-foreground block text-center mb-2">
                     スポンサーリンク
                   </span>
-                  <div className="flex justify-center">
-                    <AdSense
-                      adSlot={mobileSlot}
-                      width="300px"
-                      height="250px"
-                      adFormat="rectangle"
-                      fullWidthResponsive={false}
-                      showSkeleton={true}
-                    />
-                  </div>
+                  <AdSense
+                    adSlot={mobileSlot}
+                    adFormat="fluid"
+                    fullWidthResponsive={true}
+                    layout="in-article"
+                    showSkeleton={true}
+                    placeholderHeight="300px"
+                  />
                 </div>
               )}
             </>,
