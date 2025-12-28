@@ -18,45 +18,55 @@ export function useInArticleAds({
 }: UseInArticleAdsProps) {
   const [adContainers, setAdContainers] = useState<Element[]>([]);
 
+  // Create ad containers before h2 elements
   useEffect(() => {
-    if (!editor || !showInArticleAd) {
-      setAdContainers([]);
-      return;
-    }
+    if (!editor || !showInArticleAd) return;
 
     const editorElement = editor.view.dom;
     const h2Elements = editorElement.querySelectorAll("h2");
 
-    if (h2Elements.length < 2) {
-      setAdContainers([]);
-      return;
-    }
+    if (h2Elements.length < 2) return;
 
-    const containers: Element[] = [];
+    const maxAds = Math.min(h2Elements.length - 1, 5);
 
-    for (let i = 1; i < Math.min(h2Elements.length, 6); i++) {
+    for (let i = 1; i <= maxAds; i++) {
       const h2 = h2Elements[i];
-      const adIndex = i - 1; // Adjust index to start from 0 for slots array
-      let adContainer = h2.parentNode?.querySelector(
-        `[data-in-article-ad][data-ad-index="${adIndex}"]`
-      ) as Element;
+      const existingAd = h2.previousElementSibling?.querySelector("[data-in-article-ad]");
+      if (existingAd) continue;
 
-      if (!adContainer) {
-        adContainer = document.createElement("div");
-        adContainer.setAttribute("data-in-article-ad", "true");
-        adContainer.setAttribute("data-ad-index", adIndex.toString());
-        adContainer.className = "my-10 not-prose";
-        adContainer.setAttribute("contenteditable", "false");
-        adContainer.setAttribute("data-tiptap-ignore", "true");
+      const adContainer = document.createElement("div");
+      adContainer.setAttribute("data-in-article-ad", "true");
+      adContainer.setAttribute("data-ad-index", i.toString());
+      adContainer.className = "my-10 not-prose";
 
-        h2.parentNode?.insertBefore(adContainer, h2);
-      }
-
-      containers.push(adContainer);
+      h2.parentNode?.insertBefore(adContainer, h2);
     }
+  }, [editor, showInArticleAd]);
 
-    setAdContainers(containers);
-  }, [editor, showInArticleAd, pcSlots, mobileSlots]);
+  // Find ad containers for portal rendering
+  useEffect(() => {
+    const findContainers = () => {
+      const found = Array.from(document.querySelectorAll(`[data-in-article-ad="true"]`));
+      if (found.length > 0) {
+        setAdContainers(found);
+        return true;
+      }
+      return false;
+    };
+
+    if (findContainers()) return;
+
+    const interval = setInterval(() => {
+      if (findContainers()) clearInterval(interval);
+    }, 100);
+
+    const timeout = setTimeout(() => clearInterval(interval), 5000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const renderAds = () => {
     if (!showInArticleAd || adContainers.length === 0) return null;

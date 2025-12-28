@@ -139,14 +139,26 @@ export function AdSense({
     resizeObserver.observe(container);
 
     // 初回チェック（ファーストビュー用）- 少し遅延してCSSが適用されるのを待つ
+    // adSlotに基づいて初期化の遅延時間を変える（複数広告の同時初期化を避ける）
+    const adSlotNumber = parseInt(adSlot.split('_').pop() || '0', 10);
+    const initialDelay = 100 + (adSlotNumber * 200); // 各広告を200msずつずらす
+
     const initialCheck = setTimeout(() => {
       checkVisibility();
-    }, 100);
+    }, initialDelay);
+
+    // 追加の遅延チェック（初期化に失敗した場合の保険）
+    const retryCheck = setTimeout(() => {
+      if (!container.getAttribute("data-adsbygoogle-status")) {
+        checkVisibility();
+      }
+    }, initialDelay + 1000);
 
     return () => {
       observer.disconnect();
       resizeObserver.disconnect();
       clearTimeout(initialCheck);
+      clearTimeout(retryCheck);
     };
   }, [pathname, isProduction, adSlot, adFormat, fullWidthResponsive, className, width, height, placeholderHeight, showSkeleton, layout, variant]); // pathnameが変わるたびに再初期化
 
