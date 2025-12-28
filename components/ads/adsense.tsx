@@ -139,9 +139,12 @@ export function AdSense({
     resizeObserver.observe(container);
 
     // 初回チェック（ファーストビュー用）- 少し遅延してCSSが適用されるのを待つ
-    // adSlotに基づいて初期化の遅延時間を変える（複数広告の同時初期化を避ける）
-    const adSlotNumber = parseInt(adSlot.split('_').pop() || '0', 10);
-    const initialDelay = 100 + (adSlotNumber * 200); // 各広告を200msずつずらす
+    // 親要素のdata-ad-positionに基づいて初期化の遅延時間を変える（複数広告の同時初期化を避ける）
+    const adPosition = parseInt(
+      container.parentElement?.getAttribute('data-ad-position') || '0',
+      10
+    );
+    const initialDelay = 100 + (adPosition * 300); // 各広告を300msずつずらす
 
     const initialCheck = setTimeout(() => {
       checkVisibility();
@@ -152,7 +155,7 @@ export function AdSense({
       if (!container.getAttribute("data-adsbygoogle-status")) {
         checkVisibility();
       }
-    }, initialDelay + 1000);
+    }, initialDelay + 1500);
 
     return () => {
       observer.disconnect();

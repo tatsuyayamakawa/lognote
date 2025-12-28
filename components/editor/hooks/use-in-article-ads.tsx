@@ -80,13 +80,17 @@ export function useInArticleAds({
           if (!pcSlot && !mobileSlot) return null;
 
           return createPortal(
-            <div style={{ pointerEvents: "auto", isolation: "isolate" }}>
+            <div
+              style={{ pointerEvents: "auto", isolation: "isolate" }}
+              data-ad-position={index}
+            >
               {pcSlot && (
                 <div className="hidden md:block w-full" style={{ minWidth: "300px", maxWidth: "100%" }}>
                   <span className="text-xs text-muted-foreground block text-center mb-2">
                     スポンサーリンク
                   </span>
                   <AdSense
+                    key={`pc-${pcSlot}-${index}`}
                     adSlot={pcSlot}
                     adFormat="fluid"
                     layout="in-article"
@@ -102,6 +106,7 @@ export function useInArticleAds({
                     スポンサーリンク
                   </span>
                   <AdSense
+                    key={`mobile-${mobileSlot}-${index}`}
                     adSlot={mobileSlot}
                     adFormat="fluid"
                     layout="in-article"
