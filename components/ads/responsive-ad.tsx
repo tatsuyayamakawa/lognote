@@ -105,7 +105,6 @@ export function ResponsiveAd({
               height={pcConfig.height}
               layout={pcConfig.layout}
               placeholderHeight={pcConfig.placeholderHeight}
-              variant={variant}
             />
           </div>
         </div>
@@ -130,7 +129,6 @@ export function ResponsiveAd({
               height={mobileConfig.height}
               layout={mobileConfig.layout}
               placeholderHeight={mobileConfig.placeholderHeight}
-              variant={variant}
             />
           </div>
         </div>
