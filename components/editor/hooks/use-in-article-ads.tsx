@@ -18,7 +18,6 @@ export function useInArticleAds({
 }: UseInArticleAdsProps) {
   const [adContainers, setAdContainers] = useState<Element[]>([]);
 
-  // Create ad containers before h2 elements
   useEffect(() => {
     if (!editor || !showInArticleAd) return;
 
@@ -27,23 +26,24 @@ export function useInArticleAds({
 
     if (h2Elements.length < 2) return;
 
-    const maxAds = Math.min(h2Elements.length - 1, 5);
+    const adPositions = [1, 3];
 
-    for (let i = 1; i <= maxAds; i++) {
-      const h2 = h2Elements[i];
+    adPositions.forEach((position, adIndex) => {
+      if (position >= h2Elements.length) return;
+
+      const h2 = h2Elements[position];
       const existingAd = h2.previousElementSibling?.querySelector("[data-in-article-ad]");
-      if (existingAd) continue;
+      if (existingAd) return;
 
       const adContainer = document.createElement("div");
       adContainer.setAttribute("data-in-article-ad", "true");
-      adContainer.setAttribute("data-ad-index", i.toString());
+      adContainer.setAttribute("data-ad-index", adIndex.toString());
       adContainer.className = "my-10 not-prose";
 
       h2.parentNode?.insertBefore(adContainer, h2);
-    }
+    });
   }, [editor, showInArticleAd]);
 
-  // Find ad containers for portal rendering
   useEffect(() => {
     const findContainers = () => {
       const found = Array.from(document.querySelectorAll(`[data-in-article-ad="true"]`));

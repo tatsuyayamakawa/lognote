@@ -215,16 +215,10 @@ export default async function PostPage({ params }: PostPageProps) {
             inArticlePcSlots={[
               adSettings?.in_article_pc_slot_1,
               adSettings?.in_article_pc_slot_2,
-              adSettings?.in_article_pc_slot_3,
-              adSettings?.in_article_pc_slot_4,
-              adSettings?.in_article_pc_slot_5,
             ]}
             inArticleMobileSlots={[
               adSettings?.in_article_mobile_slot_1,
               adSettings?.in_article_mobile_slot_2,
-              adSettings?.in_article_mobile_slot_3,
-              adSettings?.in_article_mobile_slot_4,
-              adSettings?.in_article_mobile_slot_5,
             ]}
           />
         )}

@@ -127,12 +127,15 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                     </div>
                   </div>
 
-                  {/* 記事内広告 1〜5 */}
-                  {[1, 2, 3, 4, 5].map((position) => (
+                  {/* 記事内広告 1〜2 */}
+                  {[
+                    { position: 1, h2Position: 2 },
+                    { position: 2, h2Position: 4 },
+                  ].map(({ position, h2Position }) => (
                     <AdSlotZone
                       key={`in_article_pc_slot_${position}`}
                       id={`in_article_pc_slot_${position}`}
-                      label={`記事内広告 ${position}（${position + 1}つ目のH2前）`}
+                      label={`記事内広告 ${position}（${h2Position}つ目のH2前）`}
                       description="記事内広告（fluid）"
                       value={adSlots[`in_article_pc_slot_${position}`]}
                       onChange={handleSlotChange}
@@ -219,12 +222,15 @@ export function AdSettingsForm({ initialSettings }: AdSettingsFormProps) {
                 </div>
               </div>
 
-              {/* 記事内広告 1〜5 */}
-              {[1, 2, 3, 4, 5].map((position) => (
+              {/* 記事内広告 1〜2 */}
+              {[
+                { position: 1, h2Position: 2 },
+                { position: 2, h2Position: 4 },
+              ].map(({ position, h2Position }) => (
                 <AdSlotZone
                   key={`in_article_mobile_slot_${position}`}
                   id={`in_article_mobile_slot_${position}`}
-                  label={`記事内広告 ${position}（${position + 1}つ目のH2前）`}
+                  label={`記事内広告 ${position}（${h2Position}つ目のH2前）`}
                   description="記事内広告（fluid）"
                   value={adSlots[`in_article_mobile_slot_${position}`]}
                   onChange={handleSlotChange}

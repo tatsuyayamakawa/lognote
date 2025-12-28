@@ -8,25 +8,10 @@ interface AdSenseProps {
   adFormat?: "rectangle" | "horizontal" | "vertical" | "auto" | "fluid";
   fullWidthResponsive?: boolean;
   className?: string;
-  /**
-   * 固定サイズの幅（例: "300px"）
-   */
   width?: string;
-  /**
-   * 固定サイズの高さ（例: "250px"）
-   */
   height?: string;
-  /**
-   * プレースホルダーの高さ（デフォルト: heightまたは300px）
-   */
   placeholderHeight?: string;
-  /**
-   * 開発環境でスケルトンを表示するか（デフォルト: true）
-   */
   showSkeleton?: boolean;
-  /**
-   * レイアウト種別（記事内広告用）
-   */
   layout?: "in-article";
 }
 
@@ -42,116 +27,67 @@ export function AdSense({
   layout,
 }: AdSenseProps) {
   const insRef = useRef<HTMLModElement>(null);
-  const pathname = usePathname(); // ページ遷移検知
-
-  // 本番環境かどうか
+  const pathname = usePathname();
   const isProduction = process.env.NODE_ENV === "production";
-
-  // 実際のプレースホルダー高さを計算
   const actualPlaceholderHeight = placeholderHeight || height || "300px";
 
   useEffect(() => {
-    // 開発環境では広告を初期化しない
-    if (!isProduction) return;
-
-    if (!insRef.current) return;
+    if (!isProduction || !insRef.current) return;
 
     const container = insRef.current;
+    if (container.getAttribute("data-adsbygoogle-status")) return;
 
-    // すでに処理済みの場合はスキップ
-    if (container.getAttribute("data-adsbygoogle-status")) {
-      return;
-    }
-
-    // 初期化済みフラグ
     let isInitialized = false;
 
-    // 要素が表示されているかチェックする関数
     const checkVisibility = () => {
-      if (isInitialized) return;
-
-      // すでに処理済みの場合はスキップ
-      if (container.getAttribute("data-adsbygoogle-status")) {
+      if (isInitialized || container.getAttribute("data-adsbygoogle-status")) {
         isInitialized = true;
         return;
       }
 
-      // 要素のサイズと表示状態をチェック
       const computedStyle = window.getComputedStyle(container);
-      const isDisplayNone = computedStyle.display === "none";
-      const isVisibilityHidden = computedStyle.visibility === "hidden";
-
-      // display:noneやvisibility:hiddenの場合はスキップ
-      if (isDisplayNone || isVisibilityHidden) {
+      if (computedStyle.display === "none" || computedStyle.visibility === "hidden") {
         return;
       }
 
-      // 固定サイズ広告でない場合（fluid広告）は、親要素の幅をチェック
-      const parentWidth = container.parentElement?.clientWidth || 0;
       const isFluid = layout === "in-article" || adFormat === "fluid";
-
-      // fluid広告の場合、親要素の幅が250px未満ならスキップ
-      if (isFluid && parentWidth < 250) {
+      if (isFluid && (container.parentElement?.clientWidth || 0) < 250) {
         return;
       }
 
-      // 初期化実行
       isInitialized = true;
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (error) {
         console.error("AdSense initialization error:", error);
-        isInitialized = false; // エラー時はフラグをリセット
+        isInitialized = false;
       }
     };
 
-    // IntersectionObserver: スクロールで表示されたタイミング
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            checkVisibility();
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: "50px",
-        threshold: 0.01,
-      }
+      (entries) => entries.forEach((entry) => entry.isIntersecting && checkVisibility()),
+      { rootMargin: "50px", threshold: 0.01 }
     );
 
+    const resizeObserver = new ResizeObserver(checkVisibility);
+    const initialCheck = setTimeout(checkVisibility, 100);
+
     observer.observe(container);
-
-    // ResizeObserver: レスポンシブで表示状態が変わったタイミング
-    const resizeObserver = new ResizeObserver(() => {
-      checkVisibility();
-    });
-
     resizeObserver.observe(container);
-
-    // 初回チェック（ファーストビュー用）- 少し遅延してCSSが適用されるのを待つ
-    const initialCheck = setTimeout(() => {
-      checkVisibility();
-    }, 100);
 
     return () => {
       observer.disconnect();
       resizeObserver.disconnect();
       clearTimeout(initialCheck);
     };
-  }, [pathname, isProduction, adSlot]); // pathnameが変わるたびに再初期化
+  }, [pathname, isProduction, adSlot, layout, adFormat]);
 
-  // 開発環境ではプレースホルダーを表示
   if (!isProduction && showSkeleton) {
-    // 記事内広告用のスケルトン
     const isInArticle = layout === "in-article" || adFormat === "fluid";
     const skeletonLabel = isInArticle ? "記事内広告" :
                           adFormat === "horizontal" ? "横長バナー広告" :
                           adFormat === "rectangle" ? "スクエア広告" :
                           adFormat === "vertical" ? "縦長広告" : "広告";
-
-    // 固定サイズかどうかの判定
     const isFixedForSkeleton = !!(width && height);
 
     return (
@@ -168,10 +104,10 @@ export function AdSense({
           style={{ height: actualPlaceholderHeight, width: width || "100%" }}
         >
           <div className="text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">
+            <p className="text-sm! text-gray-500 dark:text-gray-400 mb-0! font-semibold">
               {skeletonLabel}
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono">
+            <p className="text-xs! text-gray-400 dark:text-gray-500 mt-1! font-mono">
               {adSlot}
             </p>
           </div>
@@ -180,27 +116,20 @@ export function AdSense({
     );
   }
 
-  // adFormatが固定フォーマット（rectangle/horizontal/vertical）かどうか
   const isFixedFormat = adFormat === "rectangle" || adFormat === "horizontal" || adFormat === "vertical";
-
-  // 固定サイズ広告かどうかの判定
-  // width/heightが指定されているか、固定フォーマットが指定されている場合
   const isFixedSize = !!(width && height) || isFixedFormat;
-
-  // 広告のスタイル
+  
   const adStyle: React.CSSProperties = width && height
     ? { display: "inline-block", width, height }
-    : { display: "block", width: "100%" }; // fluid広告には幅100%を設定
+    : { display: "block", width: "100%" };
 
-  // コンテナスタイル: 固定高さでレイアウトシフトを防ぐ
-  // 固定サイズの場合は中央寄せ、fluid広告の場合は幅100%
   const containerStyle: React.CSSProperties = {
     minHeight: actualPlaceholderHeight,
-    width: "100%", // 常に100%にして中央寄せを有効にする
-    maxWidth: "100%", // 親要素からはみ出さないようにする
+    width: "100%",
+    maxWidth: "100%",
     display: isFixedSize ? "flex" : "block",
     ...(isFixedSize && { justifyContent: "center" }),
-    overflow: "hidden", // はみ出し防止
+    overflow: "hidden",
   };
 
   return (
