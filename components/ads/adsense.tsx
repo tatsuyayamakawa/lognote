@@ -164,18 +164,23 @@ export function AdSense({
     if (element) {
       adPosition = parseInt(element.getAttribute('data-ad-position') || '0', 10);
     }
-    const initialDelay = 100 + (adPosition * 300); // 各広告を300msずつずらす
+    const initialDelay = 300 + (adPosition * 400); // 各広告を400msずつずらす（初期遅延を増加）
 
     const initialCheck = setTimeout(() => {
-      checkVisibility();
+      // requestAnimationFrameでレイアウト完了を待つ
+      requestAnimationFrame(() => {
+        checkVisibility();
+      });
     }, initialDelay);
 
     // 追加の遅延チェック（初期化に失敗した場合の保険）
     const retryCheck = setTimeout(() => {
       if (!container.getAttribute("data-adsbygoogle-status")) {
-        checkVisibility();
+        requestAnimationFrame(() => {
+          checkVisibility();
+        });
       }
-    }, initialDelay + 1500);
+    }, initialDelay + 2000);
 
     return () => {
       observer.disconnect();
