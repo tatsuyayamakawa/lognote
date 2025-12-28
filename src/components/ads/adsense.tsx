@@ -39,9 +39,8 @@ export function AdSense({
 
     let isInitialized = false;
 
-    const checkVisibility = () => {
+    const initAd = () => {
       if (isInitialized || container.getAttribute("data-adsbygoogle-status")) {
-        isInitialized = true;
         return;
       }
 
@@ -50,6 +49,7 @@ export function AdSense({
         return;
       }
 
+      // Fluid広告の場合のみ親要素の幅をチェック
       const isFluid = layout === "in-article" || adFormat === "fluid";
       if (isFluid && (container.parentElement?.clientWidth || 0) < 250) {
         return;
@@ -64,21 +64,25 @@ export function AdSense({
       }
     };
 
+    // IntersectionObserverで広告がビューポートに入ったときに初期化
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((entry) => entry.isIntersecting && checkVisibility()),
-      { rootMargin: "50px", threshold: 0.01 }
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            initAd();
+          }
+        });
+      },
+      {
+        rootMargin: "200px", // 余裕を持って事前ロード
+        threshold: 0.01
+      }
     );
 
-    const resizeObserver = new ResizeObserver(checkVisibility);
-    const initialCheck = setTimeout(checkVisibility, 100);
-
     observer.observe(container);
-    resizeObserver.observe(container);
 
     return () => {
       observer.disconnect();
-      resizeObserver.disconnect();
-      clearTimeout(initialCheck);
     };
   }, [pathname, isProduction, adSlot, layout, adFormat]);
 
