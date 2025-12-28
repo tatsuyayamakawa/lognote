@@ -64,24 +64,31 @@ export function AdSense({
       }
     };
 
-    // IntersectionObserverで広告がビューポートに入ったときに初期化
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            initAd();
-          }
-        });
-      },
-      {
-        rootMargin: "200px", // 余裕を持って事前ロード
-        threshold: 0.01
+    // 要素がDOMに完全に追加されるのを待つ
+    const initTimer = setTimeout(() => {
+      // DOMに追加されているか確認
+      if (document.body.contains(container)) {
+        initAd();
       }
-    );
+    }, 0);
 
-    observer.observe(container);
+    // MutationObserverで親要素の変更を監視
+    const observer = new MutationObserver(() => {
+      if (!isInitialized && document.body.contains(container)) {
+        initAd();
+      }
+    });
+
+    // 親要素を監視
+    if (container.parentElement) {
+      observer.observe(container.parentElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
 
     return () => {
+      clearTimeout(initTimer);
       observer.disconnect();
     };
   }, [pathname, isProduction, adSlot, layout, adFormat]);
