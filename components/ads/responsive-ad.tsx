@@ -7,10 +7,6 @@ interface ResponsiveAdProps {
   mobileSlot?: string
   className?: string
   /**
-   * 広告の配置場所による背景色の変更
-   */
-  variant?: "in-article" | "outside-article"
-  /**
    * PC用の広告設定
    */
   pcConfig?: {
@@ -38,7 +34,6 @@ export function ResponsiveAd({
   pcSlot,
   mobileSlot,
   className = "",
-  variant = "in-article",
   pcConfig = {},
   mobileConfig = {},
 }: ResponsiveAdProps) {
@@ -66,7 +61,6 @@ export function ResponsiveAd({
                 height={pcConfig.height}
                 layout={pcConfig.layout}
                 placeholderHeight={pcConfig.placeholderHeight}
-                variant={variant}
               />
             </div>
           </div>
@@ -86,7 +80,6 @@ export function ResponsiveAd({
                 height={mobileConfig.height}
                 layout={mobileConfig.layout}
                 placeholderHeight={mobileConfig.placeholderHeight}
-                variant={variant}
               />
             </div>
           </div>
