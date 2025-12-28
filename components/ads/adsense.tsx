@@ -105,8 +105,18 @@ export function AdSense({
       const isFluid = layout === "in-article" || adFormat === "fluid";
 
       // fluid広告の場合、親要素の幅が250px未満ならスキップ
+      // また、幅が0の場合もスキップ（まだレイアウトされていない）
       if (isFluid && parentWidth < 250) {
         return;
+      }
+
+      // さらに外側の祖先要素の幅もチェック（data-ad-positionを持つ要素）
+      let ancestorElement = container.parentElement;
+      while (ancestorElement && !ancestorElement.hasAttribute('data-ad-position')) {
+        ancestorElement = ancestorElement.parentElement;
+      }
+      if (ancestorElement && ancestorElement.clientWidth === 0) {
+        return; // 祖先要素の幅が0の場合はスキップ
       }
 
       // 初期化実行
@@ -145,11 +155,15 @@ export function AdSense({
     resizeObserver.observe(container);
 
     // 初回チェック（ファーストビュー用）- 少し遅延してCSSが適用されるのを待つ
-    // 親要素のdata-ad-positionに基づいて初期化の遅延時間を変える（複数広告の同時初期化を避ける）
-    const adPosition = parseInt(
-      container.parentElement?.getAttribute('data-ad-position') || '0',
-      10
-    );
+    // data-ad-positionを持つ祖先要素を探して初期化の遅延時間を変える（複数広告の同時初期化を避ける）
+    let adPosition = 0;
+    let element = container.parentElement;
+    while (element && !element.hasAttribute('data-ad-position')) {
+      element = element.parentElement;
+    }
+    if (element) {
+      adPosition = parseInt(element.getAttribute('data-ad-position') || '0', 10);
+    }
     const initialDelay = 100 + (adPosition * 300); // 各広告を300msずつずらす
 
     const initialCheck = setTimeout(() => {
