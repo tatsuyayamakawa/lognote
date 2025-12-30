@@ -47,6 +47,9 @@ export function ImagePickerDialog({
 }: ImagePickerDialogProps) {
   const [images, setImages] = useState<StorageFile[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [offset, setOffset] = useState(0)
   // 初期値を直接セット（initialDataがあればそれを使用、なければnull/空文字）
   const [selectedImage, setSelectedImage] = useState<string | null>(initialData?.src || null)
   const [customUrl, setCustomUrl] = useState("")
@@ -58,31 +61,62 @@ export function ImagePickerDialog({
   const [alt, setAlt] = useState(initialData?.alt || "")
   const [caption, setCaption] = useState(initialData?.caption || "")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const IMAGES_PER_PAGE = 50
 
   useEffect(() => {
     if (open) {
-      loadImages()
+      // ダイアログが開かれたときは初期化してから読み込み
+      setImages([])
+      setOffset(0)
+      setHasMore(true)
+      loadImages(true)
     }
   }, [open])
 
-  const loadImages = async () => {
-    setLoading(true)
+  const loadImages = async (reset = false) => {
+    if (reset) {
+      setLoading(true)
+    } else {
+      setLoadingMore(true)
+    }
+
     try {
       const supabase = createClient()
+      const currentOffset = reset ? 0 : offset
+
       const { data, error } = await supabase.storage
         .from("blog-images")
         .list("content", {
-          limit: 50,
-          offset: 0,
+          limit: IMAGES_PER_PAGE,
+          offset: currentOffset,
           sortBy: { column: "created_at", order: "desc" },
         })
 
       if (error) throw error
-      setImages(data || [])
+
+      const newImages = data || []
+
+      if (reset) {
+        setImages(newImages)
+        setOffset(IMAGES_PER_PAGE)
+      } else {
+        setImages(prev => [...prev, ...newImages])
+        setOffset(prev => prev + IMAGES_PER_PAGE)
+      }
+
+      // 取得した画像数がlimitより少なければ、これ以上ない
+      setHasMore(newImages.length === IMAGES_PER_PAGE)
     } catch (err) {
       console.error("Failed to load images:", err)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
+    }
+  }
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadImages(false)
     }
   }
 
@@ -359,38 +393,58 @@ export function ImagePickerDialog({
                 </p>
               </div>
             ) : (
-              <div className="grid max-h-[400px] gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
-                {images.map((image) => {
-                  const url = getImageUrl(image.name)
-                  const isSelected = selectedImage === url
+              <div className="space-y-3">
+                <div className="grid max-h-[400px] gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
+                  {images.map((image) => {
+                    const url = getImageUrl(image.name)
+                    const isSelected = selectedImage === url
 
-                  return (
-                    <button
-                      key={image.id}
-                      type="button"
-                      onClick={() => setSelectedImage(url)}
-                      className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? "border-primary ring-2 ring-primary ring-offset-2"
-                          : "border-transparent hover:border-muted-foreground/50"
-                      }`}
-                    >
-                      <Image
-                        src={url}
-                        alt={image.name}
-                        fill
-                        className="object-cover"
-                      />
-                      {isSelected && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
-                          <div className="rounded-full bg-primary p-1">
-                            <Check className="h-4 w-4 text-primary-foreground" />
+                    return (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => setSelectedImage(url)}
+                        className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+                          isSelected
+                            ? "border-primary ring-2 ring-primary ring-offset-2"
+                            : "border-transparent hover:border-muted-foreground/50"
+                        }`}
+                      >
+                        <Image
+                          src={url}
+                          alt={image.name}
+                          fill
+                          className="object-cover"
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
+                            <div className="rounded-full bg-primary p-1">
+                              <Check className="h-4 w-4 text-primary-foreground" />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+                {hasMore && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="w-full"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        読み込み中...
+                      </>
+                    ) : (
+                      `もっと見る（${images.length}件表示中）`
+                    )}
+                  </Button>
+                )}
               </div>
             )}
           </TabsContent>
