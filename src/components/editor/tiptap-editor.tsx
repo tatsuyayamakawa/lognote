@@ -339,7 +339,17 @@ export function TiptapEditor({
       dialogs.setProductLinkBoxDialog({ open: true, initialData: attrs, isEditing: true });
     },
     onImageGalleryEdit: (attrs) => {
-      dialogs.setImageGalleryDialog({ open: true, initialData: attrs, isEditing: true });
+      // 存在するフィールドのみを保持
+      const cleanedAttrs = {
+        ...attrs,
+        images: attrs.images?.map((img: any) => {
+          const result: any = { src: img.src };
+          if (img.alt && img.alt.trim()) result.alt = img.alt;
+          if (img.caption && img.caption.trim()) result.caption = img.caption;
+          return result;
+        }) || [],
+      };
+      dialogs.setImageGalleryDialog({ open: true, initialData: cleanedAttrs, isEditing: true });
     },
     onCustomImageEdit: (attrs) => {
       dialogs.setImageDialog({ open: true, initialData: attrs });

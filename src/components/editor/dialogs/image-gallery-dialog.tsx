@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +58,17 @@ function ImageGalleryDialogContent({
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null);
 
+  // initialDataが変更されたときにstateを更新
+  useEffect(() => {
+    if (initialData) {
+      /* eslint-disable react-hooks/set-state-in-effect */
+      setImages(initialData.images || [{ src: "", alt: "", caption: "" }]);
+      setColumns(initialData.columns || 2);
+      setGap(initialData.gap || 16);
+      /* eslint-enable react-hooks/set-state-in-effect */
+    }
+  }, [initialData]);
+
   const handleAddImage = () => {
     setImages([...images, { src: "", alt: "", caption: "" }]);
   };
@@ -92,11 +103,17 @@ function ImageGalleryDialogContent({
   };
 
   const handleSubmit = () => {
-    const validImages = images.filter(img => img.src.trim() !== "");
+    const validImages = images.filter(img => img.src.trim() !== "").map(img => ({
+      src: img.src,
+      alt: img.alt?.trim() || undefined,
+      caption: img.caption?.trim() || undefined,
+    }));
+
     if (validImages.length === 0) {
       alert("最低1枚の画像を追加してください");
       return;
     }
+
     onSubmit({
       images: validImages,
       columns,
@@ -235,6 +252,7 @@ function ImageGalleryDialogContent({
         open={imagePickerOpen}
         onOpenChange={setImagePickerOpen}
         onSelect={handleImageSelected}
+        simpleMode={false}
       />
     </>
   );

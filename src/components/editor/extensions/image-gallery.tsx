@@ -55,7 +55,16 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
         default: [],
         parseHTML: element => {
           const imagesAttr = element.getAttribute('data-images')
-          return imagesAttr ? JSON.parse(imagesAttr) : []
+          if (!imagesAttr) return []
+
+          const parsedImages = JSON.parse(imagesAttr)
+          // 各画像オブジェクトから、存在するフィールドのみを保持
+          return parsedImages.map((img: ImageGalleryImage) => {
+            const result: Partial<ImageGalleryImage> = { src: img.src };
+            if (img.alt && img.alt.trim()) result.alt = img.alt;
+            if (img.caption && img.caption.trim()) result.caption = img.caption;
+            return result;
+          })
         },
         renderHTML: attributes => {
           if (!attributes.images) {
@@ -114,27 +123,31 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
           'data-columns': columns,
           style: `gap: ${gap}px; grid-template-columns: repeat(1, 1fr);`,
         },
-        ...images.map((image: ImageGalleryImage) => [
-          'div',
-          { class: 'overflow-hidden rounded image-gallery-item' },
-          [
-            'img',
-            {
-              src: image.src,
-              alt: image.alt || '',
-              class: 'w-full h-auto object-cover my-0!',
-            },
-          ],
-          ...(image.caption
-            ? [
-              [
-                'p',
-                { class: 'text-sm text-gray-600 dark:text-gray-400 mt-2 mb-0 text-center' },
-                image.caption,
-              ],
-            ]
-            : []),
-        ]),
+        ...images.map((image: ImageGalleryImage) => {
+          const elements: (string | Record<string, string> | unknown[])[] = [
+            'div',
+            { class: 'overflow-hidden rounded image-gallery-item' },
+            [
+              'img',
+              {
+                src: image.src,
+                alt: image.alt || '',
+                class: 'w-full h-auto object-cover my-0!',
+              },
+            ],
+          ];
+
+          // キャプションがあれば追加
+          if (image.caption && image.caption.trim()) {
+            elements.push([
+              'p',
+              { class: 'text-sm text-gray-600 dark:text-gray-400 mt-2 mb-0 text-center' },
+              image.caption,
+            ]);
+          }
+
+          return elements;
+        }),
       ],
     ]
   },
@@ -148,15 +161,66 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
       setImageGallery:
         options =>
           ({ commands }) => {
+            // undefinedのフィールドを除外してクリーンなデータを作成
+            const cleanedOptions = {
+              ...options,
+              images: options.images.map((img: ImageGalleryImage) => {
+                const cleanedImg: Partial<ImageGalleryImage> = { src: img.src };
+                if (img.alt !== undefined && img.alt.trim()) cleanedImg.alt = img.alt;
+                if (img.caption !== undefined && img.caption.trim()) cleanedImg.caption = img.caption;
+                return cleanedImg;
+              })
+            };
             return commands.insertContent({
               type: this.name,
-              attrs: options,
+              attrs: cleanedOptions,
             })
           },
       updateImageGallery:
         options =>
-          ({ commands }) => {
-            return commands.updateAttributes(this.name, options)
+          ({ state, dispatch }) => {
+            // undefinedのフィールドを除外してクリーンなデータを作成
+            const cleanedOptions = {
+              ...options,
+              images: options.images.map((img: ImageGalleryImage) => {
+                const cleanedImg: Partial<ImageGalleryImage> = { src: img.src };
+                if (img.alt !== undefined && img.alt.trim()) cleanedImg.alt = img.alt;
+                if (img.caption !== undefined && img.caption.trim()) cleanedImg.caption = img.caption;
+                return cleanedImg;
+              })
+            };
+
+            // JSON経由でシリアライズして、完全にクリーンなデータを作成
+            const serialized = JSON.stringify(cleanedOptions);
+            const deserialized = JSON.parse(serialized);
+
+            // 現在のimageGalleryノードを見つける
+            let nodePos: number | null = null;
+
+            state.doc.descendants((node, pos) => {
+              if (node.type.name === this.name) {
+                nodePos = pos;
+                return false;
+              }
+            });
+
+            if (nodePos === null) {
+              return false;
+            }
+
+            // 見つかった位置でノードを置き換える
+            const node = state.schema.nodes[this.name].create(deserialized);
+            const transaction = state.tr.replaceRangeWith(
+              nodePos,
+              nodePos + state.doc.nodeAt(nodePos)!.nodeSize,
+              node
+            );
+
+            if (dispatch) {
+              dispatch(transaction);
+            }
+
+            return true;
           },
     }
   },
