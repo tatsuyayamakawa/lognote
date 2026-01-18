@@ -1,15 +1,10 @@
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import type { CodeBlockLowlightOptions } from '@tiptap/extension-code-block-lowlight';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { common, createLowlight } from 'lowlight';
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
 import { mergeAttributes } from '@tiptap/core';
 
 const lowlight = createLowlight(common);
-
-export interface CustomCodeBlockOptions extends CodeBlockLowlightOptions {
-  enableNodeView?: boolean;
-}
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -45,12 +40,12 @@ function CodeBlockComponent(props: any) {
   );
 }
 
-export const CustomCodeBlock = CodeBlockLowlight.extend<CustomCodeBlockOptions>({
+export const CustomCodeBlock = CodeBlockLowlight.extend({
   addOptions() {
     return {
       ...this.parent?.(),
-      enableNodeView: true,
       lowlight,
+      enableNodeView: true,
     };
   },
 
