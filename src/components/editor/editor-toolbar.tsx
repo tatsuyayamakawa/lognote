@@ -53,6 +53,7 @@ interface EditorToolbarProps {
   onAddImageGallery: () => void;
   onAddLeftHeaderTable: () => void;
   onAddPointBox: () => void;
+  onAddCodeBlock: () => void;
   youtubePopoverOpen: boolean;
   onYoutubePopoverChange: (open: boolean) => void;
   onYoutubeInsert: (url: string) => void;
@@ -73,6 +74,7 @@ export function EditorToolbar({
   onAddImageGallery,
   onAddLeftHeaderTable,
   onAddPointBox,
+  onAddCodeBlock,
   youtubePopoverOpen,
   onYoutubePopoverChange,
   onYoutubeInsert,
@@ -82,7 +84,7 @@ export function EditorToolbar({
 }: EditorToolbarProps) {
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="sticky top-0 z-40 flex flex-wrap gap-1 rounded-t-[calc(0.375rem-1px)] border-b bg-muted p-2 shadow-sm">
+      <div className="sticky top-0 z-40 flex gap-1 rounded-t-[calc(0.375rem-1px)] border-b bg-muted p-2 shadow-sm overflow-x-auto">
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex gap-1">
@@ -223,7 +225,7 @@ export function EditorToolbar({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                onClick={onAddCodeBlock}
                 className={editor.isActive("codeBlock") ? "bg-accent border-2 border-primary" : ""}
                 disabled={disabled}
                 title="コードブロック"

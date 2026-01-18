@@ -688,6 +688,104 @@
 .tiptap pre,
 .prose pre {
   line-height: 1.7;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: "HackGen Console NF", "HackGen", monospace !important;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+  margin-bottom: 0.5rem !important;
+}
+
+.tiptap pre code,
+.prose pre code {
+  padding: 0;
+  background: transparent;
+  font-size: inherit;
+  color: inherit;
+  border-radius: 0;
+  font-family: "HackGen Console NF", "HackGen", monospace !important;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+}
+
+.tiptap code,
+.prose code {
+  font-family: "HackGen Console NF", "HackGen", monospace;
+  font-weight: 400;
+}
+
+/* インラインコードのバッククォートを非表示 */
+.tiptap code::before,
+.tiptap code::after,
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
+/* コードブロックのファイル名ラベル */
+.code-block-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+  overflow: visible;
+}
+
+.code-block-filename {
+  display: inline-block;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 0.375rem 0.375rem 0 0;
+  font-weight: 500;
+}
+
+/* ラベルがある場合のpreスタイル */
+.code-block-wrapper:has(.code-block-filename) pre {
+  margin-top: 0 !important;
+  border-top-left-radius: 0;
+  border-radius: 0 0.375rem 0.375rem 0.375rem;
+}
+
+/* ラベルがない場合のpreスタイル（通常の角丸） */
+.code-block-wrapper:not(:has(.code-block-filename)) pre {
+  border-radius: 0.375rem;
+}
+
+/* コードブロックの横スクロールヒント */
+.code-block-scroll-hint {
+  display: none;
+  text-align: right;
+  margin-right: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  /* JavaScriptで.show-scroll-hintクラスが追加された場合のみ表示 */
+  .code-block-scroll-hint.show-scroll-hint {
+    display: block;
+  }
+}
+
+/* Syntax highlighting colors */
+.tiptap .hljs,
+.prose .hljs {
+  display: block;
+  overflow-x: auto;
+  color: var(--foreground);
+}
+
+.dark .tiptap .hljs,
+.dark .prose .hljs {
+  color: #ffffff;
 }
 
 /* Bold要素の色調整 */

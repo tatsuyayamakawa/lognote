@@ -6,6 +6,7 @@ import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Code } from "@tiptap/extension-code";
 import { CustomYoutube } from "./extensions/custom-youtube";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
@@ -25,6 +26,7 @@ import { ImageGallery } from "./extensions/image-gallery";
 import { CustomImage } from "./extensions/custom-image";
 import { LeftHeaderTable } from "./extensions/left-header-table";
 import { Instagram } from "./extensions/instagram";
+import { CustomCodeBlock } from "./extensions/custom-code-block";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./dialogs/image-picker-dialog";
 import { LinkDialog } from "./dialogs/link-dialog";
@@ -35,6 +37,7 @@ import { ProductLinkBoxDialog } from "./dialogs/product-link-box-dialog";
 import { EmbedAdBoxDialog } from "./dialogs/embed-ad-box-dialog";
 import { ImageGalleryDialog } from "./dialogs/image-gallery-dialog";
 import { LeftHeaderTableDialog } from "./dialogs/left-header-table-dialog";
+import { CodeBlockDialog } from "./dialogs/code-block-dialog";
 import { EditorToolbar } from "./editor-toolbar";
 import { useEditorDialogs } from "./hooks/use-editor-dialogs";
 import { useEditorEvents } from "./hooks/use-editor-events";
@@ -63,6 +66,16 @@ export function TiptapEditor({
           levels: [2, 3, 4],
         },
         link: false, // Link拡張を無効化して、後で個別に設定
+        codeBlock: false, // CodeBlock拡張を無効化して、CustomCodeBlockを使用
+        code: false, // Code拡張を無効化して、カスタム設定を使用
+      }),
+      Code.configure({
+        HTMLAttributes: {
+          class: 'inline-code',
+        },
+      }),
+      CustomCodeBlock.configure({
+        enableNodeView: true,
       }),
       Link.extend({
         addAttributes() {
@@ -207,7 +220,9 @@ export function TiptapEditor({
           "!max-w-none focus:outline-none min-h-[400px] px-8 py-6",
           "prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-2",
           "prose-h3:text-xl prose-h3:font-bold prose-h3:mt-6 prose-h3:mb-3",
-          "prose-h4:text-lg prose-h4:font-semibold prose-h4:mt-4 prose-h4:mb-2"
+          "prose-h4:text-lg prose-h4:font-semibold prose-h4:mt-4 prose-h4:mb-2",
+          "prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded",
+          "prose-pre:bg-muted prose-pre:border prose-pre:text-foreground dark:prose-pre:text-white"
         ),
       },
       handlePaste(view, event) {
@@ -483,6 +498,7 @@ export function TiptapEditor({
           onAddImageGallery={() => dialogs.setImageGalleryDialog({ open: true, isEditing: false })}
           onAddLeftHeaderTable={() => dialogs.setLeftHeaderTableDialogOpen(true)}
           onAddPointBox={() => dialogs.setPointBoxDialog({ open: true, isEditing: false })}
+          onAddCodeBlock={() => dialogs.setCodeBlockDialog({ open: true })}
           youtubePopoverOpen={dialogs.youtubePopoverOpen}
           onYoutubePopoverChange={dialogs.setYoutubePopoverOpen}
           onYoutubeInsert={(url) => editor?.chain().focus().setYoutubeVideo({ src: url }).run()}
@@ -577,6 +593,17 @@ export function TiptapEditor({
         open={dialogs.leftHeaderTableDialogOpen}
         onOpenChange={dialogs.setLeftHeaderTableDialogOpen}
         onInsert={(data) => editor?.chain().focus().setLeftHeaderTable(data).run()}
+      />
+      <CodeBlockDialog
+        open={dialogs.codeBlockDialog.open}
+        onOpenChange={(open) => dialogs.setCodeBlockDialog({ ...dialogs.codeBlockDialog, open })}
+        onInsert={(filename, language) => {
+          editor?.chain().focus().toggleCodeBlock().run();
+          if (filename || language) {
+            editor?.chain().focus().updateAttributes('codeBlock', { filename, language }).run();
+          }
+        }}
+        initialData={dialogs.codeBlockDialog.initialData}
       />
     </>
   );

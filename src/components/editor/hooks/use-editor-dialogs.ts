@@ -49,6 +49,11 @@ export interface LinkData {
   text?: string;
 }
 
+export interface CodeBlockData {
+  filename?: string;
+  language?: string;
+}
+
 export function useEditorDialogs() {
   const [imageDialog, setImageDialog] = useState<{
     open: boolean;
@@ -96,6 +101,11 @@ export function useEditorDialogs() {
   const [instagramPopoverOpen, setInstagramPopoverOpen] = useState(false);
   const [leftHeaderTableDialogOpen, setLeftHeaderTableDialogOpen] = useState(false);
 
+  const [codeBlockDialog, setCodeBlockDialog] = useState<{
+    open: boolean;
+    initialData?: CodeBlockData;
+  }>({ open: false });
+
   return {
     imageDialog,
     setImageDialog,
@@ -119,5 +129,7 @@ export function useEditorDialogs() {
     setInstagramPopoverOpen,
     leftHeaderTableDialogOpen,
     setLeftHeaderTableDialogOpen,
+    codeBlockDialog,
+    setCodeBlockDialog,
   };
 }
