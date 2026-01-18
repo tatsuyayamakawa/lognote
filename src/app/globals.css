@@ -1172,12 +1172,15 @@
 }
 
 /* 画像スタイル */
-.prose img {
+.prose img,
+.tiptap img {
   transition: none;
+  cursor: zoom-in;
 }
 
-.prose img:hover {
-  opacity: 1;
+.prose img:hover,
+.tiptap img:hover {
+  opacity: 0.9;
 }
 
 /* 画像ギャラリースタイル - 記事コンテンツ内のみ適用 */

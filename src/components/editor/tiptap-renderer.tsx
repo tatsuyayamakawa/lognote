@@ -30,6 +30,7 @@ import { LeftHeaderTable } from "./extensions/left-header-table";
 import { InlineTableOfContents } from "../post/inline-table-of-contents";
 import { useInArticleAds } from "./hooks/use-in-article-ads";
 import { CustomCodeBlock } from "./extensions/custom-code-block";
+import { ImagePreviewDialog } from "@/components/ui/image-preview-dialog";
 
 class HeadingNumbering {
 	private counters: number[] = [0, 0, 0, 0];
@@ -109,6 +110,11 @@ export function TiptapRenderer({
 	}, [parsedContent]);
 
 	const [showInArticleAd, setShowInArticleAd] = useState(false);
+	const [imagePreview, setImagePreview] = useState<{ open: boolean; src: string; alt: string }>({
+		open: false,
+		src: "",
+		alt: "",
+	});
 
 	// 見出し番号管理インスタンス
 	const headingNumbering = new HeadingNumbering();
@@ -444,6 +450,34 @@ export function TiptapRenderer({
 		};
 	}, [editor]);
 
+	// 画像クリックでプレビューを開く
+	useEffect(() => {
+		if (!editor) return;
+
+		const handleImageClick = (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			if (target.tagName === 'IMG') {
+				const img = target as HTMLImageElement;
+				// カスタム画像要素のみを対象にする
+				if (img.closest('.prose img, .tiptap img')) {
+					e.preventDefault();
+					setImagePreview({
+						open: true,
+						src: img.src,
+						alt: img.alt || "",
+					});
+				}
+			}
+		};
+
+		const editorElement = editor.view.dom;
+		editorElement.addEventListener('click', handleImageClick);
+
+		return () => {
+			editorElement.removeEventListener('click', handleImageClick);
+		};
+	}, [editor]);
+
 	const { renderAds } = useInArticleAds({
 		editor,
 		showInArticleAd,
@@ -456,11 +490,19 @@ export function TiptapRenderer({
 	}
 
 	return (
-		<div className="relative">
-			<EditorContent editor={editor} />
-			<InlineTocPortal />
-			{renderAds()}
-		</div>
+		<>
+			<div className="relative">
+				<EditorContent editor={editor} />
+				<InlineTocPortal />
+				{renderAds()}
+			</div>
+			<ImagePreviewDialog
+				open={imagePreview.open}
+				onOpenChange={(open) => setImagePreview({ ...imagePreview, open })}
+				src={imagePreview.src}
+				alt={imagePreview.alt}
+			/>
+		</>
 	);
 }
 
