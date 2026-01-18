@@ -40,15 +40,7 @@ function CodeBlockComponent(props: any) {
   );
 }
 
-export const CustomCodeBlock = CodeBlockLowlight.extend({
-  addOptions() {
-    return {
-      ...this.parent?.(),
-      lowlight,
-      enableNodeView: true,
-    };
-  },
-
+const CustomCodeBlockBase = CodeBlockLowlight.configure({ lowlight }).extend({
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -109,11 +101,14 @@ export const CustomCodeBlock = CodeBlockLowlight.extend({
       ],
     ];
   },
+});
 
+// エディタ用（NodeView付き）
+export const CustomCodeBlockWithNodeView = CustomCodeBlockBase.extend({
   addNodeView() {
-    if (this.options.enableNodeView) {
-      return ReactNodeViewRenderer(CodeBlockComponent);
-    }
-    return null;
+    return ReactNodeViewRenderer(CodeBlockComponent);
   },
 });
+
+// レンダラー用（NodeViewなし）
+export const CustomCodeBlock = CustomCodeBlockBase;

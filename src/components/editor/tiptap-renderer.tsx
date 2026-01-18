@@ -127,9 +127,7 @@ export function TiptapRenderer({
 					class: 'inline-code',
 				},
 			}),
-			CustomCodeBlock.configure({
-				enableNodeView: false,
-			}),
+			CustomCodeBlock,
 			Heading.configure({
 				levels: [1, 2, 3, 4, 5, 6],
 			}).extend({

@@ -26,7 +26,7 @@ import { ImageGallery } from "./extensions/image-gallery";
 import { CustomImage } from "./extensions/custom-image";
 import { LeftHeaderTable } from "./extensions/left-header-table";
 import { Instagram } from "./extensions/instagram";
-import { CustomCodeBlock } from "./extensions/custom-code-block";
+import { CustomCodeBlockWithNodeView } from "./extensions/custom-code-block";
 import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "./dialogs/image-picker-dialog";
 import { LinkDialog } from "./dialogs/link-dialog";
@@ -74,9 +74,7 @@ export function TiptapEditor({
           class: 'inline-code',
         },
       }),
-      CustomCodeBlock.configure({
-        enableNodeView: true,
-      }),
+      CustomCodeBlockWithNodeView,
       Link.extend({
         addAttributes() {
           return {
