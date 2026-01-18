@@ -908,6 +908,43 @@
   font-weight: bold;
 }
 
+/* 左端列見出しテーブルのコンテナ */
+.left-header-table-container {
+  margin: 1rem 0;
+}
+
+/* 左端列見出しテーブルの横スクロール対応 */
+.left-header-table-scroll-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.left-header-table-scroll-wrapper table {
+  margin: 0;
+  width: auto;
+}
+
+/* 左端列見出しテーブルの横スクロールヒント */
+.left-header-table-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .left-header-table-scroll-hint.show-scroll-hint {
+    display: block;
+    text-align: right;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+    opacity: 0.7;
+  }
+}
+
 .tiptap table .selectedCell:after {
   z-index: 2;
   position: absolute;

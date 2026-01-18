@@ -71,12 +71,21 @@ export const LeftHeaderTable = Node.create<LeftHeaderTableOptions>({
       'div',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-left-header-table': '',
-        'class': 'left-header-table-wrapper',
+        'class': 'left-header-table-container',
       }),
       [
-        'table',
-        { class: 'left-header' },
-        ['tbody', {}, ...tableRows],
+        'div',
+        { class: 'left-header-table-scroll-wrapper' },
+        [
+          'table',
+          { class: 'left-header' },
+          ['tbody', {}, ...tableRows],
+        ],
+      ],
+      [
+        'div',
+        { class: 'left-header-table-scroll-hint' },
+        '←→ スクロール可能',
       ],
     ]
   },

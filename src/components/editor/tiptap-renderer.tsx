@@ -394,11 +394,12 @@ export function TiptapRenderer({
 		};
 	}, [editor]);
 
-	// コードブロックのスクロールヒント表示判定
+	// コードブロックと左端列見出しテーブルのスクロールヒント表示判定
 	useEffect(() => {
 		if (!editor) return;
 
-		const checkScrollableCodeBlocks = () => {
+		const checkScrollable = () => {
+			// コードブロックのチェック
 			const codeBlocks = editor.view.dom.querySelectorAll('.code-block-wrapper');
 			codeBlocks.forEach((wrapper) => {
 				const pre = wrapper.querySelector('pre');
@@ -412,19 +413,34 @@ export function TiptapRenderer({
 					}
 				}
 			});
+
+			// 左端列見出しテーブルのチェック
+			const leftHeaderTables = editor.view.dom.querySelectorAll('.left-header-table-container');
+			leftHeaderTables.forEach((container) => {
+				const wrapper = container.querySelector('.left-header-table-scroll-wrapper');
+				const hint = container.querySelector('.left-header-table-scroll-hint');
+				if (wrapper && hint) {
+					// スクロール可能かチェック
+					if (wrapper.scrollWidth > wrapper.clientWidth) {
+						hint.classList.add('show-scroll-hint');
+					} else {
+						hint.classList.remove('show-scroll-hint');
+					}
+				}
+			});
 		};
 
-		checkScrollableCodeBlocks();
-		const timer = setTimeout(checkScrollableCodeBlocks, 100);
-		const timer2 = setTimeout(checkScrollableCodeBlocks, 500);
+		checkScrollable();
+		const timer = setTimeout(checkScrollable, 100);
+		const timer2 = setTimeout(checkScrollable, 500);
 
 		// ウィンドウリサイズ時にも再チェック
-		window.addEventListener('resize', checkScrollableCodeBlocks);
+		window.addEventListener('resize', checkScrollable);
 
 		return () => {
 			clearTimeout(timer);
 			clearTimeout(timer2);
-			window.removeEventListener('resize', checkScrollableCodeBlocks);
+			window.removeEventListener('resize', checkScrollable);
 		};
 	}, [editor]);
 
