@@ -30,7 +30,7 @@ import { LeftHeaderTable } from "./extensions/left-header-table";
 import { InlineTableOfContents } from "../post/inline-table-of-contents";
 import { useInArticleAds } from "./hooks/use-in-article-ads";
 import { CustomCodeBlock } from "./extensions/custom-code-block";
-import { ImagePreviewDialog } from "@/components/ui/image-preview-dialog";
+import { ImagePreviewDialog } from "@/components/common/image-preview-dialog";
 
 class HeadingNumbering {
 	private counters: number[] = [0, 0, 0, 0];

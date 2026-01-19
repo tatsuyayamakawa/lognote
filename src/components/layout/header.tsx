@@ -11,10 +11,32 @@ export default function Header() {
           整えて、創る。
         </Link>
 
-        {/* 右側のボタンエリア */}
-        <div className="flex items-center gap-2">
-          <AdminLoginButton />
-          <ThemeToggle />
+        {/* ナビゲーションと右側のボタンエリア */}
+        <div className="flex items-center gap-6">
+          <nav className="hidden sm:block">
+            <ul className="flex items-center gap-6">
+              <li>
+                <Link
+                  href="/works"
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
+                  WORKS
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/posts"
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
+                  BLOG
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          <div className="flex items-center gap-2">
+            <AdminLoginButton />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </HeaderClient>
