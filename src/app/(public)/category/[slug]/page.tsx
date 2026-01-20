@@ -12,6 +12,14 @@ import {
   CollectionPageJsonLd,
   BreadcrumbListJsonLd,
 } from "@/components/seo/json-ld";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import type { Metadata } from "next";
 import {
   Pagination,
@@ -154,19 +162,25 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       <BreadcrumbListJsonLd items={breadcrumbItems} />
       <div className="flex-1 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* パンくずリスト */}
-        <nav className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground whitespace-nowrap">
-            ホーム
-          </Link>
-          <span className="select-none">/</span>
-          <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
-            記事一覧
-          </Link>
-          <span className="select-none">/</span>
-          <span className="text-foreground wrap-break-word min-w-0">
-            {category.name}
-          </span>
-        </nav>
+        <Breadcrumb className="mb-8">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/">ホーム</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/posts">記事一覧</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{category.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* カテゴリヘッダー */}
         <div className="mb-8">

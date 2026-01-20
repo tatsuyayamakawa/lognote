@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { getPublishedPosts, getCategories } from '@/lib/posts'
 import { getBaseURL } from '@/lib/utils'
+import { works } from '@/app/(public)/works/_data/works'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseURL()
@@ -17,6 +18,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/posts`,
       lastModified: new Date(),
       changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/works`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
@@ -45,5 +52,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  return [...staticPages, ...postPages, ...categoryPages]
+  // 制作実績ページ
+  const workPages: MetadataRoute.Sitemap = works.map((work) => ({
+    url: `${baseUrl}/works/${work.id}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }))
+
+  return [...staticPages, ...postPages, ...categoryPages, ...workPages]
 }

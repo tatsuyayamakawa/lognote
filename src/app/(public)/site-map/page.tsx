@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getPublishedPosts, getCategories } from "@/lib/posts";
 import { getBaseURL } from "@/lib/utils";
+import { works } from "@/app/(public)/works/_data/works";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -58,6 +59,14 @@ export default async function SitemapPage() {
             </li>
             <li>
               <Link
+                href="/works"
+                className="text-primary hover:underline"
+              >
+                制作実績
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/site-map"
                 className="text-primary hover:underline"
               >
@@ -86,6 +95,28 @@ export default async function SitemapPage() {
                       - {category.description}
                     </span>
                   )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* 制作実績 */}
+        <section className="rounded-lg border p-6">
+          <h2 className="mb-4 text-xl font-bold">
+            制作実績 ({works.length})
+          </h2>
+          <ul className="space-y-2">
+            {works.map((work) => (
+              <li key={work.id}>
+                <Link
+                  href={`/works/${work.id}`}
+                  className="text-primary hover:underline"
+                >
+                  {work.title}
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    - {work.category}
+                  </span>
                 </Link>
               </li>
             ))}

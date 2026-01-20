@@ -13,6 +13,14 @@ import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
 import { ResponsiveAd } from "@/components/ads/responsive-ad";
 import { getAdSettings } from "@/lib/ad-settings";
 import { TableOfContents } from "@/components/post/table-of-contents";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Profile } from "@/components/home/profile";
 import type { Metadata } from "next";
 
@@ -114,20 +122,26 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <div className="flex-1">
         {/* パンくずリスト（max-w-7xl） */}
-        <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-          <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground whitespace-nowrap">
-              ホーム
-            </Link>
-            <span className="select-none">/</span>
-            <Link href="/posts" className="hover:text-foreground whitespace-nowrap">
-              記事一覧
-            </Link>
-            <span className="select-none">/</span>
-            <span className="text-foreground wrap-break-word min-w-0">
-              {post.title}
-            </span>
-          </nav>
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <Breadcrumb className="mb-6">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/">ホーム</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/posts">記事一覧</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{post.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
 
         {/* ヘッダーセクション（タイトル・メタ情報 - max-w-4xl） */}

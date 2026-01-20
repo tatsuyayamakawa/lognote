@@ -2,15 +2,15 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
 export default function PublicLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
-      <Header />
-      <main className="flex-1 flex flex-col">{children}</main>
-      <Footer />
-    </div>
-  );
+	return (
+		<div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
+			<Header />
+			<main className="flex-1 flex flex-col">{children}</main>
+			<Footer />
+		</div>
+	);
 }

@@ -1,5 +1,6 @@
 import { getPublishedPosts } from '@/lib/posts'
 import { getBaseURL } from '@/lib/utils'
+import { works } from '@/app/(public)/works/_data/works'
 
 export async function GET() {
   const baseUrl = getBaseURL()
@@ -16,6 +17,19 @@ export async function GET() {
     <language>ja</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
+    ${works
+      .map(
+        (work) => `
+    <item>
+      <title><![CDATA[【制作実績】${work.title}]]></title>
+      <link>${baseUrl}/works/${work.id}</link>
+      <guid isPermaLink="true">${baseUrl}/works/${work.id}</guid>
+      <description><![CDATA[${work.description}]]></description>
+      <pubDate>${new Date().toUTCString()}</pubDate>
+      <category>制作実績</category>
+    </item>`
+      )
+      .join('')}
     ${posts
       .map(
         (post) => `
