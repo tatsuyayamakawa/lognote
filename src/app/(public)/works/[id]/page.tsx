@@ -100,7 +100,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
 
         {/* メインビジュアル */}
         <figure className="mb-8">
-          <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: '1912/922' }}>
+          <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: '1200/675' }}>
             <Image
               src={getWorkImagePath(work.id, work.thumbnail)}
               alt={work.title}

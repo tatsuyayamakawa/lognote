@@ -57,6 +57,7 @@ export const works: Work[] = [
 			"screenshot-5.jpg",
 			"screenshot-6.jpg",
 			"screenshot-7.jpg",
+			"screenshot-8.jpg",
 		],
 	},
 ];
