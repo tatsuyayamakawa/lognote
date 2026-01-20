@@ -79,10 +79,12 @@ export default function WorksPage() {
                 {/* カード内容 */}
                 <div className="p-6">
                   {/* カテゴリー */}
-                  <div className="mb-2">
-                    <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      {work.category}
-                    </span>
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {work.category.map((cat) => (
+                      <span key={cat} className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                        {cat}
+                      </span>
+                    ))}
                   </div>
 
                   {/* タイトル */}

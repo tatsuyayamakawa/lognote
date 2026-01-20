@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const url = `${getBaseURL()}/works/${id}`;
 
   return {
-    title: `${work.title} - WORKS`,
+    title: `${work.title} - 制作実績`,
     description: work.description,
     alternates: {
       canonical: url,
@@ -114,10 +114,12 @@ export default async function WorkDetailPage({ params }: PageProps) {
 
         {/* ヘッダー情報 */}
         <header className="mb-12">
-          <div className="mb-4">
-            <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-              {work.category}
-            </span>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {work.category.map((cat) => (
+              <span key={cat} className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+                {cat}
+              </span>
+            ))}
           </div>
           <h1 className="mb-4 text-3xl font-bold sm:text-4xl">{work.title}</h1>
           <p className="text-lg text-muted-foreground">{work.description}</p>

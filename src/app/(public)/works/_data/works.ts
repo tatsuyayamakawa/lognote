@@ -7,7 +7,7 @@ export interface Work {
 	url?: string;
 	releaseDate: string;
 	status: string;
-	category: string;
+	category: string[];
 	features: string[];
 	challenges: string[];
 	images?: string[];
@@ -16,9 +16,9 @@ export interface Work {
 export const works: Work[] = [
 	{
 		id: "lognote",
-		title: "整えて、創る。 - ブログCMS",
+		title: "整えて、創る。",
 		description:
-			"Next.js 16とTypeScriptで構築した高機能なブログシステム。リッチエディタ、SEO対策、広告管理機能を実装。",
+			"WordPressから移行し、Next.js 16 App RouterとTypeScriptで構築した高機能なフルスタックなブログシステム。リッチエディタ、SEO対策、広告管理機能を実装。",
 		thumbnail: "thumbnail.jpg",
 		technologies: [
 			"Next.js 16",
@@ -31,11 +31,11 @@ export const works: Work[] = [
 		],
 		releaseDate: "2025年12月",
 		status: "運用中・継続的アップデート",
-		category: "Webアプリケーション",
+		category: ["Webアプリケーション","ブログCMS"],
 		features: [
 			"TipTapエディタによるリッチテキスト編集",
 			"SEO最適化（構造化データ、OGP、サイトマップ）",
-			"Google AdSense統合と広告管理",
+			"Google Cloudを活用したGoogle Analytics、Search Console、AdSense連携によるデータ表示",
 			"Supabaseによる認証・データベース管理",
 			"カテゴリー・タグ管理",
 			"画像アップロード・ギャラリー機能",

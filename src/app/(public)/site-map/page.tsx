@@ -115,7 +115,7 @@ export default async function SitemapPage() {
                 >
                   {work.title}
                   <span className="ml-2 text-sm text-muted-foreground">
-                    - {work.category}
+                    - {work.category.join(", ")}
                   </span>
                 </Link>
               </li>
