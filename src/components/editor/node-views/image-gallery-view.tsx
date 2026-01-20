@@ -74,16 +74,18 @@ export function ImageGalleryView(props: NodeViewProps) {
           {images.map((image: ImageGalleryImage, index: number) => (
             <div
               key={index}
-              className="overflow-hidden rounded image-gallery-item"
+              className="image-gallery-item"
             >
-              <Image
-                src={image.src}
-                alt={image.alt || ""}
-                width={800}
-                height={600}
-                className="w-full h-auto object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              />
+              <div className="relative overflow-hidden rounded image-gallery-image-wrapper">
+                <Image
+                  src={image.src}
+                  alt={image.alt || ""}
+                  width={800}
+                  height={600}
+                  className="w-full h-auto object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                />
+              </div>
               {image.caption && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center mb-0">
                   {image.caption}

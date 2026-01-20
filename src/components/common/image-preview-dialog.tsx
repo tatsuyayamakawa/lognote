@@ -20,8 +20,14 @@ export function ImagePreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[98vw]! w-auto! h-auto! max-h-[98vh]! p-0 border-0! bg-transparent! shadow-none! sm:max-w-[98vw]!"
+        className="p-0 border-0 bg-transparent shadow-none"
         showCloseButton={false}
+        style={{
+          maxWidth: '98vw',
+          maxHeight: '98vh',
+          width: 'auto',
+          height: 'auto',
+        }}
       >
         <VisuallyHidden>
           <DialogTitle>画像プレビュー</DialogTitle>
@@ -34,15 +40,13 @@ export function ImagePreviewDialog({
         >
           <X className="h-6 w-6" />
         </button>
-        <div className="relative w-full h-full flex items-center justify-center">
-          <img
-            src={src}
-            alt={alt}
-            className="max-w-[98vw] max-h-[98vh] w-auto h-auto object-contain rounded-lg"
-            style={{ cursor: 'zoom-out' }}
-            onClick={() => onOpenChange(false)}
-          />
-        </div>
+        <img
+          src={src}
+          alt={alt}
+          className="max-w-[98vw] max-h-[98vh] w-auto h-auto object-contain rounded-lg block"
+          style={{ cursor: 'zoom-out' }}
+          onClick={() => onOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
   );
