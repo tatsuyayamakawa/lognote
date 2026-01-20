@@ -104,6 +104,11 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <>
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7839828582645189"
+        crossOrigin="anonymous"
+      />
       <ArticleJsonLd post={post} url={postUrl} />
       <BreadcrumbListJsonLd items={breadcrumbItems} />
 

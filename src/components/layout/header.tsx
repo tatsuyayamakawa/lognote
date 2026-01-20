@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { HeaderClient } from "./header-client"
+import { HeaderClient, MobileMenu } from "./header-client"
 
 export default function Header() {
   return (
@@ -36,6 +36,7 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <AdminLoginButton />
             <ThemeToggle />
+            <MobileMenu />
           </div>
         </div>
       </div>

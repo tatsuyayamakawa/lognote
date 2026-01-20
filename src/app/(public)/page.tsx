@@ -45,6 +45,11 @@ export default async function Home() {
 
   return (
     <>
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7839828582645189"
+        crossOrigin="anonymous"
+      />
       <WebsiteJsonLd url={siteUrl} />
       {/* ヒーローセクション */}
       <section className="relative h-[50vh] w-full xl:h-[70vh]">
