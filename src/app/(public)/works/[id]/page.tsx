@@ -67,7 +67,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
 	}
 
 	return (
-		<div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+		<div className="flex-1 mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
 			{/* 戻るボタン */}
 			<Link
 				href="/works"

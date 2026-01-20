@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function WorksPage() {
 	return (
-		<div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+		<div className="flex-1 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
 			{/* ページヘッダー */}
 			<div className="mb-12 text-center">
 				<h1 className="mb-4 text-4xl font-bold">WORKS</h1>
