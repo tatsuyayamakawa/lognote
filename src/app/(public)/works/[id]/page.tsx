@@ -128,26 +128,37 @@ export default async function WorkDetailPage({ params }: PageProps) {
         {/* 基本情報 */}
         <section className="mb-12" aria-labelledby="basic-info-heading">
           <h2 id="basic-info-heading" className="sr-only">基本情報</h2>
-          <div className="grid gap-6 rounded-lg border bg-card p-6 sm:grid-cols-2">
-            <div>
-              <h3 className="mb-2 text-sm font-medium text-muted-foreground">リリース日</h3>
-              <p className="font-medium">{work.releaseDate}</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {/* リリース日 */}
+            <div className="rounded-xl border bg-linear-to-br from-card to-card/50 p-6">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                リリース日
+              </h3>
+              <p className="text-lg font-bold text-foreground">{work.releaseDate}</p>
             </div>
-            <div>
-              <h3 className="mb-2 text-sm font-medium text-muted-foreground">ステータス</h3>
-              <p className="font-medium">{work.status}</p>
+
+            {/* ステータス */}
+            <div className="rounded-xl border bg-linear-to-br from-card to-card/50 p-6">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                ステータス
+              </h3>
+              <p className="text-lg font-bold text-foreground">{work.status}</p>
             </div>
+
+            {/* URL */}
             {work.url && (
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-muted-foreground">URL</h3>
+              <div className="rounded-xl border bg-linear-to-br from-card to-card/50 p-6">
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  リンク
+                </h3>
                 <a
                   href={work.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center font-medium text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 text-lg font-bold text-primary transition-colors hover:text-primary/80"
                 >
                   サイトを見る
-                  <ExternalLink className="ml-1 h-4 w-4" />
+                  <ExternalLink className="h-4 w-4" />
                 </a>
               </div>
             )}
@@ -161,7 +172,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
             {work.technologies.map((tech) => (
               <span
                 key={tech}
-                className="rounded-lg border bg-card px-4 py-2 text-sm font-medium"
+                className="rounded-lg border bg-linear-to-br from-card to-card/50 px-4 py-2 text-sm font-medium"
               >
                 {tech}
               </span>
@@ -198,6 +209,47 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {/* 紹介記事 */}
+        {work.relatedPosts && work.relatedPosts.length > 0 && (
+          <section className="mb-12" aria-labelledby="related-posts-heading">
+            <h2 id="related-posts-heading" className="mb-4 text-2xl font-bold">紹介記事</h2>
+            <div className="space-y-3">
+              {work.relatedPosts.map((post, index) => (
+                <a
+                  key={index}
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border bg-linear-to-br from-card to-card/50 p-6 transition-colors hover:border-primary/50"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-medium text-foreground">{post.title}</span>
+                    <ExternalLink className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* サイトデザイン（全画面スクリーンショット） */}
+        {work.fullPageScreenshot && (
+          <section className="mb-12" aria-labelledby="design-heading">
+            <h2 id="design-heading" className="mb-4 text-2xl font-bold">サイトデザイン</h2>
+            <div className="overflow-hidden rounded-lg border bg-muted">
+              <Image
+                src={getWorkImagePath(work.id, work.fullPageScreenshot)}
+                alt={`${work.title}の全画面デザイン`}
+                width={1200}
+                height={0}
+                style={{ height: 'auto', width: '100%' }}
+                sizes="(max-width: 1024px) 100vw, 1024px"
+                className="w-full"
+              />
+            </div>
           </section>
         )}
 
