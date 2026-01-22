@@ -52,7 +52,19 @@ export async function getPublishedPosts(
     .from("posts")
     .select(
       `
-      *,
+      id,
+      title,
+      slug,
+      excerpt,
+      thumbnail_url,
+      og_image_url,
+      published_at,
+      created_at,
+      updated_at,
+      view_count,
+      helpful_count,
+      is_featured,
+      status,
       post_categories!inner (
         category:categories (*)
       )
@@ -74,10 +86,10 @@ export async function getPublishedPosts(
 
   // データを整形
   return (data || []).map(
-    (post: PostWithPostCategories): PostWithCategories => ({
+    (post: any): PostWithCategories => ({
       ...post,
       categories:
-        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+        post.post_categories?.map((pc: any) => pc.category).filter(Boolean) || [],
     })
   );
 }
@@ -145,7 +157,19 @@ export async function getFeaturedPosts(
     .from("posts")
     .select(
       `
-      *,
+      id,
+      title,
+      slug,
+      excerpt,
+      thumbnail_url,
+      og_image_url,
+      published_at,
+      created_at,
+      updated_at,
+      view_count,
+      helpful_count,
+      is_featured,
+      status,
       post_categories!inner (
         category:categories (*)
       )
@@ -168,10 +192,10 @@ export async function getFeaturedPosts(
 
   // データを整形
   return (data || []).map(
-    (post: PostWithPostCategories): PostWithCategories => ({
+    (post: any): PostWithCategories => ({
       ...post,
       categories:
-        post.post_categories?.map((pc) => pc.category).filter(Boolean) || [],
+        post.post_categories?.map((pc: any) => pc.category).filter(Boolean) || [],
     })
   );
 }
@@ -411,7 +435,19 @@ export async function getRelatedPosts(
     .from("posts")
     .select(
       `
-      *,
+      id,
+      title,
+      slug,
+      excerpt,
+      thumbnail_url,
+      og_image_url,
+      published_at,
+      created_at,
+      updated_at,
+      view_count,
+      helpful_count,
+      is_featured,
+      status,
       categories:post_categories(category:categories(*))
     `
     )
@@ -426,7 +462,7 @@ export async function getRelatedPosts(
 
   // カテゴリデータを整形
   return posts.map(
-    (post: PostWithRelatedCategories): PostWithCategories => ({
+    (post: any): PostWithCategories => ({
       ...post,
       categories:
         post.categories

@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // 応急処置: Vercelの画像最適化上限に達したため、最適化を無効化
-    unoptimized: true,
-
     remotePatterns: [
       {
         protocol: "https",
