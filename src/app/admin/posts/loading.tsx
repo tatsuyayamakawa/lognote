@@ -62,6 +62,9 @@ export default function PostsLoadingPage() {
                   <th className="w-24 px-4 py-3 text-left text-sm font-medium">
                     閲覧数
                   </th>
+                  <th className="w-24 px-4 py-3 text-left text-sm font-medium">
+                    いいね数
+                  </th>
                   <th className="w-36 px-4 py-3 text-left text-sm font-medium">
                     公開日
                   </th>
@@ -92,6 +95,9 @@ export default function PostsLoadingPage() {
                       <div className="flex justify-center">
                         <Skeleton className="h-4 w-4" />
                       </div>
+                    </td>
+                    <td className="px-4 py-3 h-16">
+                      <Skeleton className="h-4 w-12" />
                     </td>
                     <td className="px-4 py-3 h-16">
                       <Skeleton className="h-4 w-12" />

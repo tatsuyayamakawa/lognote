@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/pagination";
 import { formatDate } from "@/lib/utils";
 import type { PostWithCategories } from "@/types";
-import { Eye, Edit, Trash2, Star } from "lucide-react";
+import { Eye, Edit, Trash2, Star, ThumbsUp } from "lucide-react";
 
 interface PostsTableProps {
   posts: PostWithCategories[];
@@ -176,6 +176,9 @@ export function PostsTable({
                   <th className="w-24 px-4 py-3 text-left text-sm font-medium">
                     閲覧数
                   </th>
+                  <th className="w-24 px-4 py-3 text-left text-sm font-medium">
+                    いいね数
+                  </th>
                   <th className="w-36 px-4 py-3 text-left text-sm font-medium">
                     公開日
                   </th>
@@ -251,6 +254,12 @@ export function PostsTable({
                       <div className="flex items-center gap-1 line-clamp-2">
                         <Eye className="h-3 w-3 text-muted-foreground" />
                         {post.view_count?.toLocaleString() || 0}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm h-16">
+                      <div className="flex items-center gap-1 line-clamp-2">
+                        <ThumbsUp className="h-3 w-3 text-muted-foreground" />
+                        {post.helpful_count?.toLocaleString() || 0}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground h-16">
@@ -356,9 +365,15 @@ export function PostsTable({
 
               {/* メタ情報 */}
               <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
-                  {post.view_count?.toLocaleString() || 0}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    {post.view_count?.toLocaleString() || 0}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ThumbsUp className="h-3 w-3" />
+                    {post.helpful_count?.toLocaleString() || 0}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs">
