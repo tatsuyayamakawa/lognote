@@ -9,6 +9,7 @@ import { formatDate, getBaseURL } from "@/lib/utils";
 import { TiptapRenderer } from "@/components/editor/tiptap-renderer";
 import { ShareButtons } from "@/components/post/share-buttons";
 import { RelatedPosts } from "@/components/post/related-posts";
+import { HelpfulButton } from "@/components/post/helpful-button";
 import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
 import { ResponsiveAd } from "@/components/ads/responsive-ad";
 import { getAdSettings } from "@/lib/ad-settings";
@@ -263,6 +264,9 @@ export default async function PostPage({ params }: PostPageProps) {
             />
           </div>
         )}
+
+              {/* 参考になったボタン */}
+              <HelpfulButton postId={post.id} initialCount={post.helpful_count} />
 
               {/* シェアボタン */}
               <div className="mt-12 border-t pt-8">

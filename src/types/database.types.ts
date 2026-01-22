@@ -27,6 +27,7 @@ export interface Database {
           view_count: number;
           is_featured: boolean;
           og_image_url: string | null;
+          helpful_count: number;
         };
         Insert: {
           id?: string;
@@ -45,6 +46,7 @@ export interface Database {
           view_count?: number;
           is_featured?: boolean;
           og_image_url?: string | null;
+          helpful_count?: number;
         };
         Update: {
           id?: string;
@@ -63,6 +65,7 @@ export interface Database {
           view_count?: number;
           is_featured?: boolean;
           og_image_url?: string | null;
+          helpful_count?: number;
         };
       };
       categories: {
