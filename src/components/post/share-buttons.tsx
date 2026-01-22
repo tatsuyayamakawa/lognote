@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Share2 } from "lucide-react";
 import { FaXTwitter, FaFacebook, FaLine } from "react-icons/fa6";
 import { SiHatenabookmark } from "react-icons/si";
@@ -39,63 +40,87 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <span className="text-sm font-medium text-muted-foreground">シェア:</span>
+    <div className="inline-flex items-center gap-1">
+      <span className="text-sm text-muted-foreground">シェア：</span>
 
       {/* X (Twitter) */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleShare("twitter")}
-        className="gap-2"
-      >
-        <FaXTwitter className="h-4 w-4" />
-        X
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleShare("twitter")}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <FaXTwitter className="size-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>X (Twitter)</TooltipContent>
+      </Tooltip>
 
       {/* Facebook */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleShare("facebook")}
-        className="gap-2"
-      >
-        <FaFacebook className="h-4 w-4" />
-        Facebook
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleShare("facebook")}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <FaFacebook className="size-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Facebook</TooltipContent>
+      </Tooltip>
 
       {/* LINE */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleShare("line")}
-        className="gap-2"
-      >
-        <FaLine className="h-4 w-4" />
-        LINE
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleShare("line")}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <FaLine className="size-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>LINE</TooltipContent>
+      </Tooltip>
 
       {/* はてなブックマーク */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handleShare("hatena")}
-        className="gap-2"
-      >
-        <SiHatenabookmark className="h-4 w-4" />
-        はてブ
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleShare("hatena")}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <SiHatenabookmark className="size-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>はてなブックマーク</TooltipContent>
+      </Tooltip>
 
       {/* URLコピー */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={copyToClipboard}
-        className="gap-2"
-      >
-        <Share2 className="h-4 w-4" />
-        {copied ? "コピー済み" : "URLコピー"}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={copyToClipboard}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            {copied ? (
+              <span className="text-xs">✓</span>
+            ) : (
+              <Share2 className="size-5" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{copied ? "コピーしました" : "URLをコピー"}</TooltipContent>
+      </Tooltip>
     </div>
   );
 }

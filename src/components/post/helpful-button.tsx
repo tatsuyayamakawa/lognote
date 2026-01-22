@@ -143,15 +143,15 @@ export function HelpfulButton({ postId, initialCount = 0 }: HelpfulButtonProps) 
   return (
     <>
       {/* デスクトップ表示（通常配置） */}
-      <div ref={containerRef} className="my-12 hidden md:flex justify-center">
+      <div ref={containerRef} className="hidden md:flex justify-center">
         <div className="relative">
           <Button
             onClick={handleClick}
             disabled={isClicked || isLoading}
             size="lg"
-            className={`group relative min-w-[200px] overflow-visible text-base font-semibold transition-all ${isClicked
-              ? "bg-muted/80 border-2 border-muted-foreground/30 text-muted-foreground cursor-not-allowed"
-              : "bg-primary hover:bg-primary/90 text-primary-foreground"
+            className={`group relative min-w-[200px] overflow-visible text-base font-semibold transition-all border ${isClicked
+              ? "bg-muted/50 border-muted-foreground/30 text-muted-foreground cursor-not-allowed"
+              : "bg-transparent border-muted-foreground/30 text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
           >
             <span className={`relative flex items-center gap-2 ${isClicked ? "text-muted-foreground" : ""}`}>
@@ -210,9 +210,9 @@ export function HelpfulButton({ postId, initialCount = 0 }: HelpfulButtonProps) 
       </div>
 
       {/* スマホ表示用の目印要素 */}
-      <div ref={containerRef} className="my-12 md:hidden">
+      <div ref={containerRef} className="md:hidden">
         {/* Intersection Observer用の目印（この要素が見えたらボタンを表示） */}
-        <div className="h-1" />
+        <div className="h-px" />
       </div>
 
       {/* スマホ用フローティングボタン */}
@@ -227,9 +227,9 @@ export function HelpfulButton({ postId, initialCount = 0 }: HelpfulButtonProps) 
                 onClick={handleClick}
                 disabled={isClicked || isLoading}
                 size="lg"
-                className={`group relative w-full overflow-visible text-base font-semibold transition-all ${isClicked
-                  ? "bg-muted/80 border-2 border-muted-foreground/30 text-muted-foreground cursor-not-allowed"
-                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                className={`group relative w-full overflow-visible text-base font-semibold transition-all border ${isClicked
+                  ? "bg-muted/50 border-muted-foreground/30 text-muted-foreground cursor-not-allowed"
+                  : "bg-transparent border-muted-foreground/30 text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
                 <span className={`relative flex items-center gap-2 ${isClicked ? "text-muted-foreground" : ""}`}>

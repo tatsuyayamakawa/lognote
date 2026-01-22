@@ -147,46 +147,46 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* ヘッダーセクション（タイトル・メタ情報 - max-w-4xl） */}
         <div className="mx-auto max-w-4xl px-4 pb-8 sm:px-6 lg:px-8">
-            {/* カテゴリ */}
-            {post.categories && post.categories.length > 0 && (
-              <div className="mb-6 flex flex-wrap justify-center gap-2">
-                {post.categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/category/${category.slug}`}
-                    className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
-                    style={{
-                      backgroundColor: category.color
-                        ? `${category.color}20`
-                        : "#e5e7eb",
-                      color: category.color || "#374151",
-                    }}
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+          {/* カテゴリ */}
+          {post.categories && post.categories.length > 0 && (
+            <div className="mb-6 flex flex-wrap justify-center gap-2">
+              {post.categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/category/${category.slug}`}
+                  className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
+                  style={{
+                    backgroundColor: category.color
+                      ? `${category.color}20`
+                      : "#e5e7eb",
+                    color: category.color || "#374151",
+                  }}
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* タイトル（左揃え） */}
+          <h1 className="mb-6 text-left text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
+            {post.title}
+          </h1>
+
+          {/* メタ情報（中央揃え） */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <time dateTime={post.published_at || post.created_at}>
+                  公開: {formatDate(post.published_at || post.created_at)}
+                </time>
               </div>
-            )}
-
-            {/* タイトル（左揃え） */}
-            <h1 className="mb-6 text-left text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
-              {post.title}
-            </h1>
-
-            {/* メタ情報（中央揃え） */}
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <time dateTime={post.published_at || post.created_at}>
-                    公開: {formatDate(post.published_at || post.created_at)}
-                  </time>
-                </div>
-                {post.updated_at &&
-                 post.updated_at !== post.published_at &&
-                 formatDate(post.updated_at) !== formatDate(post.published_at || post.created_at) && (
+              {post.updated_at &&
+                post.updated_at !== post.published_at &&
+                formatDate(post.updated_at) !== formatDate(post.published_at || post.created_at) && (
                   <div className="hidden md:flex items-center gap-1">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -196,8 +196,8 @@ export default async function PostPage({ params }: PostPageProps) {
                     </time>
                   </div>
                 )}
-              </div>
             </div>
+          </div>
         </div>
 
         {/* 記事上広告（タイトル下・ファーストビュー） */}
@@ -228,48 +228,46 @@ export default async function PostPage({ params }: PostPageProps) {
             {/* メインコンテンツ */}
             <article className="flex-1 min-w-0 md:bg-card md:rounded-lg md:border px-4 py-6 md:p-8 lg:p-12">
 
-        {/* 記事本文（記事内広告対応） */}
-        {post.content && (
-          <TiptapRenderer
-            content={post.content as string}
-            inArticlePcSlots={[
-              adSettings?.in_article_pc_slot_1,
-              adSettings?.in_article_pc_slot_2,
-            ]}
-            inArticleMobileSlots={[
-              adSettings?.in_article_mobile_slot_1,
-              adSettings?.in_article_mobile_slot_2,
-            ]}
-          />
-        )}
+              {/* 記事本文（記事内広告対応） */}
+              {post.content && (
+                <TiptapRenderer
+                  content={post.content as string}
+                  inArticlePcSlots={[
+                    adSettings?.in_article_pc_slot_1,
+                    adSettings?.in_article_pc_slot_2,
+                  ]}
+                  inArticleMobileSlots={[
+                    adSettings?.in_article_mobile_slot_1,
+                    adSettings?.in_article_mobile_slot_2,
+                  ]}
+                />
+              )}
 
-        {/* 記事下広告（コンテンツ後） */}
-        {(adSettings?.article_bottom_pc_slot || adSettings?.article_bottom_mobile_slot) && (
-          <div className="my-10">
-            <ResponsiveAd
-              pcSlot={adSettings?.article_bottom_pc_slot}
-              mobileSlot={adSettings?.article_bottom_mobile_slot}
-              pcConfig={{
-                adFormat: "fluid",
-                layout: "in-article",
-                fullWidthResponsive: true,
-                placeholderHeight: "300px",
-              }}
-              mobileConfig={{
-                width: "300px",
-                height: "250px",
-                adFormat: "rectangle",
-                fullWidthResponsive: false,
-              }}
-            />
-          </div>
-        )}
+              {/* 記事下広告（コンテンツ後） */}
+              {(adSettings?.article_bottom_pc_slot || adSettings?.article_bottom_mobile_slot) && (
+                <div className="my-10">
+                  <ResponsiveAd
+                    pcSlot={adSettings?.article_bottom_pc_slot}
+                    mobileSlot={adSettings?.article_bottom_mobile_slot}
+                    pcConfig={{
+                      adFormat: "fluid",
+                      layout: "in-article",
+                      fullWidthResponsive: true,
+                      placeholderHeight: "300px",
+                    }}
+                    mobileConfig={{
+                      width: "300px",
+                      height: "250px",
+                      adFormat: "rectangle",
+                      fullWidthResponsive: false,
+                    }}
+                  />
+                </div>
+              )}
 
-              {/* 参考になったボタン */}
-              <HelpfulButton postId={post.id} initialCount={post.helpful_count} />
-
-              {/* シェアボタン */}
-              <div className="mt-12 border-t pt-8">
+              {/* シェアボタン・参考になったボタン */}
+              <div className="mt-12 pt-8 flex items-center justify-between">
+                <HelpfulButton postId={post.id} initialCount={post.helpful_count} />
                 <ShareButtons
                   url={postUrl}
                   title={post.title}
