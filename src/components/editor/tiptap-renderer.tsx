@@ -450,31 +450,81 @@ export function TiptapRenderer({
 		};
 	}, [editor]);
 
-	// 画像クリックでプレビューを開く
+	// 画像クリックでプレビューを開く＆ホバー時のzoom inアイコンを追加
 	useEffect(() => {
 		if (!editor) return;
 
-		const handleImageClick = (e: MouseEvent) => {
-			const target = e.target as HTMLElement;
-			if (target.tagName === 'IMG') {
-				const img = target as HTMLImageElement;
-				// カスタム画像要素のみを対象にする
-				if (img.closest('.prose img, .tiptap img')) {
-					e.preventDefault();
-					setImagePreview({
-						open: true,
-						src: img.src,
-						alt: img.alt || "",
-					});
+		const editorElement = editor.view.dom;
+
+		// 画像にzoom inオーバーレイを追加
+		const addZoomOverlay = (img: HTMLImageElement) => {
+			// リンクカードやプロダクトリンクボックス、アフィリエイトボックス、ギャラリー内の画像は除外
+			if (img.closest('.link-card, .product-link-box, .affiliate-box-wrapper, [data-affiliate-box], .image-gallery-wrapper')) return;
+			// すでにラッパーがある場合はスキップ
+			if (img.parentElement?.classList.contains('image-zoom-wrapper')) return;
+
+			const wrapper = document.createElement('div');
+			wrapper.className = 'image-zoom-wrapper group relative inline-block cursor-zoom-in';
+
+			// 画像の親要素がfigureの場合はfigure内で処理
+			const parent = img.parentElement;
+			if (parent?.tagName === 'FIGURE') {
+				parent.classList.add('group');
+				// figureにオーバーレイを追加
+				if (!parent.querySelector('.zoom-overlay')) {
+					const overlay = document.createElement('div');
+					overlay.className = 'zoom-overlay absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none';
+					overlay.innerHTML = `<div class="rounded-full bg-black/50 p-3"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>`;
+					parent.appendChild(overlay);
 				}
+			} else {
+				// figureでない場合はラッパーで囲む
+				img.parentNode?.insertBefore(wrapper, img);
+				wrapper.appendChild(img);
+
+				const overlay = document.createElement('div');
+				overlay.className = 'zoom-overlay absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none';
+				overlay.innerHTML = `<div class="rounded-full bg-black/50 p-3"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>`;
+				wrapper.appendChild(overlay);
 			}
 		};
 
-		const editorElement = editor.view.dom;
+		const setupImages = () => {
+			const images = editorElement.querySelectorAll('img');
+			images.forEach((img) => addZoomOverlay(img as HTMLImageElement));
+		};
+
+		// 初期セットアップ
+		setupImages();
+		const timer = setTimeout(setupImages, 100);
+		const timer2 = setTimeout(setupImages, 500);
+
+		const handleImageClick = (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			// 画像またはzoom-wrapperをクリックした場合
+			const img = target.tagName === 'IMG'
+				? target as HTMLImageElement
+				: target.closest('.image-zoom-wrapper')?.querySelector('img') as HTMLImageElement | null
+				|| target.closest('figure')?.querySelector('img') as HTMLImageElement | null;
+
+			if (img) {
+				// リンクカードやプロダクトリンクボックス、アフィリエイトボックス内の画像は除外
+				if (img.closest('.link-card, .product-link-box, .affiliate-box-wrapper, [data-affiliate-box]')) return;
+				e.preventDefault();
+				setImagePreview({
+					open: true,
+					src: img.src,
+					alt: img.alt || "",
+				});
+			}
+		};
+
 		editorElement.addEventListener('click', handleImageClick);
 
 		return () => {
 			editorElement.removeEventListener('click', handleImageClick);
+			clearTimeout(timer);
+			clearTimeout(timer2);
 		};
 	}, [editor]);
 

@@ -1217,7 +1217,11 @@
   box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
 }
 
-/* 画像スタイル */
+/* ========================================
+   画像スタイル
+   ======================================== */
+
+/* 基本スタイル */
 .prose figure,
 .tiptap figure {
   position: relative;
@@ -1236,8 +1240,23 @@
   opacity: 0.9;
 }
 
-/* 画像ホバー時のZoomInアイコン */
-.prose figure::after,
+/* 除外要素: リンクカード、プロダクトリンクボックス、アフィリエイトボックス内の画像 */
+.link-card img,
+.product-link-box img,
+[data-affiliate-box] img,
+.affiliate-box-wrapper img,
+.affiliate-box-node-view img {
+  cursor: default !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+/* ZoomInアイコン共通スタイル（CSS変数で定義） */
+:root {
+  --zoom-icon-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3Cline x1='11' y1='8' x2='11' y2='14'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3C/svg%3E");
+}
+
+/* エディタ用ZoomInアイコン（CSSで適用） */
 .tiptap figure::after {
   content: "";
   position: absolute;
@@ -1248,21 +1267,23 @@
   height: 56px;
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3Cline x1='11' y1='8' x2='11' y2='14'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3C/svg%3E");
+  background-image: var(--zoom-icon-svg);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 32px 32px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
-.prose figure:hover::after,
 .tiptap figure:hover::after {
   opacity: 1;
 }
 
-/* 画像ギャラリースタイル - 記事コンテンツ内のみ適用 */
+/* ========================================
+   画像ギャラリースタイル
+   ======================================== */
+
 .prose .image-gallery-wrapper {
   margin: 2rem 0;
 }
@@ -1273,7 +1294,6 @@
   height: auto;
 }
 
-/* 画像ギャラリーのアイテムにもZoomInアイコンを適用 */
 .prose .image-gallery-image-wrapper {
   cursor: zoom-in;
 }
@@ -1288,14 +1308,14 @@
   height: 56px;
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.5);
+  background-image: var(--zoom-icon-svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 32px 32px;
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
   z-index: 1;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3Cline x1='11' y1='8' x2='11' y2='14'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 32px 32px;
 }
 
 .prose .image-gallery-image-wrapper:hover::after {

@@ -15,6 +15,26 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/api/og",
       },
+      {
+        protocol: "https",
+        hostname: "thumbnail.image.rakuten.co.jp",
+      },
+      {
+        protocol: "https",
+        hostname: "*.rakuten.co.jp",
+      },
+      {
+        protocol: "https",
+        hostname: "m.media-amazon.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images-fe.ssl-images-amazon.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.ssl-images-amazon.com",
+      },
     ],
     localPatterns: [
       {
