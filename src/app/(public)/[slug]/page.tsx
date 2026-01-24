@@ -23,6 +23,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Profile } from "@/components/home/profile";
+import { createClient } from "@/lib/supabase/server";
+import { Edit } from "lucide-react";
 import type { Metadata } from "next";
 
 interface PostPageProps {
@@ -95,11 +97,13 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  // 関連記事と広告設定を取得
+  // 関連記事と広告設定を取得、ログイン状態を確認
   const categoryIds = post.categories?.map((c) => c.id) || [];
-  const [relatedPosts, adSettings] = await Promise.all([
+  const supabase = await createClient();
+  const [relatedPosts, adSettings, { data: { user } }] = await Promise.all([
     getRelatedPosts(post.id, categoryIds, 6),
     getAdSettings(),
+    supabase.auth.getUser(),
   ]);
 
   const postUrl = `${getBaseURL()}/${post.slug}`;
@@ -294,6 +298,17 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         </div>
       </div>
+
+      {/* 編集ボタン（フローティング・ログイン時のみ） */}
+      {user && (
+        <Link
+          href={`/admin/posts/${post.id}/edit`}
+          className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110"
+          title="記事を編集"
+        >
+          <Edit className="h-5 w-5" />
+        </Link>
+      )}
     </>
   );
 }
