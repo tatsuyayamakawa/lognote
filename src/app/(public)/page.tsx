@@ -12,9 +12,11 @@ import { Sidebar } from "@/components/home/sidebar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "整えて、創る。 - ネット集客に強い整体院サイトを制作",
+  title: {
+    absolute: "整えて、創る。 - ネット集客に強い整体院サイトを制作",
+  },
   description:
-    "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
+    "身体を整え、思考を整え、コードを書く。整体師×エンジニアの視点から、治療院・サロンの集客に役立つWeb制作ノウハウを発信。",
   alternates: {
     canonical: getBaseURL(),
   },
@@ -22,12 +24,12 @@ export const metadata: Metadata = {
     url: getBaseURL(),
     title: "整えて、創る。",
     description:
-      "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
+      "身体を整え、思考を整え、コードを書く。整体師×エンジニアの視点から、治療院・サロンの集客に役立つWeb制作ノウハウを発信。",
   },
   twitter: {
     title: "整えて、創る。",
     description:
-      "身体を整え、思考を整え、コードを書く。ネット集客に強い整体院サイトを制作。",
+      "身体を整え、思考を整え、コードを書く。整体師×エンジニアの視点から、治療院・サロンの集客に役立つWeb制作ノウハウを発信。",
   },
 };
 
