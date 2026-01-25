@@ -9,6 +9,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { AdminPageHeader } from "../../_components/admin-page-header";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -78,12 +79,10 @@ export default async function AdSenseReportsPage({
   if (!adsenseConfigured) {
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">AdSenseレポート</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            広告収益とパフォーマンス統計
-          </p>
-        </div>
+        <AdminPageHeader
+          title="AdSenseレポート"
+          description="広告収益とパフォーマンス統計"
+        />
 
         <Card>
           <CardHeader>
@@ -120,12 +119,10 @@ export default async function AdSenseReportsPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">AdSenseレポート</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          広告収益とパフォーマンス統計
-        </p>
-      </div>
+      <AdminPageHeader
+        title="AdSenseレポート"
+        description="広告収益とパフォーマンス統計"
+      />
 
       <Suspense fallback={<AdSenseRevenueSkeleton currentPeriod={period} />}>
         <AdSenseReportsData period={period} />

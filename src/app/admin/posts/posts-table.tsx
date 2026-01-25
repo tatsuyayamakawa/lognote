@@ -98,11 +98,12 @@ export function PostsTable({
   return (
     <>
       {/* フィルタリング */}
-      <div className="flex gap-2">
+      <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
         <Button
           variant={currentStatus === "all" ? "default" : "outline"}
           size="sm"
           asChild
+          className="w-full sm:w-auto"
         >
           <Link href={createStatusUrl("all")}>すべて</Link>
         </Button>
@@ -110,6 +111,7 @@ export function PostsTable({
           variant={currentStatus === "published" ? "default" : "outline"}
           size="sm"
           asChild
+          className="w-full sm:w-auto"
         >
           <Link href={createStatusUrl("published")}>公開</Link>
         </Button>
@@ -117,6 +119,7 @@ export function PostsTable({
           variant={currentStatus === "draft" ? "default" : "outline"}
           size="sm"
           asChild
+          className="w-full sm:w-auto"
         >
           <Link href={createStatusUrl("draft")}>下書き</Link>
         </Button>
@@ -124,6 +127,7 @@ export function PostsTable({
           variant={currentStatus === "private" ? "default" : "outline"}
           size="sm"
           asChild
+          className="w-full sm:w-auto"
         >
           <Link href={createStatusUrl("private")}>非公開</Link>
         </Button>
@@ -149,7 +153,7 @@ export function PostsTable({
       ) : (
         <>
           {/* デスクトップ: テーブル表示 */}
-          <Card className="hidden md:block pb-0">
+          <Card className="hidden xl:block pb-0">
         <CardHeader className="pb-3">
           <CardTitle>記事一覧</CardTitle>
         </CardHeader>
@@ -304,119 +308,146 @@ export function PostsTable({
         </CardContent>
       </Card>
 
-      {/* モバイル: カード表示 */}
-      <div className="space-y-4 md:hidden">
+      {/* モバイル・タブレット: カード表示 */}
+      <div className="space-y-2 xl:hidden">
         {posts.map((post) => (
-          <Card key={post.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-base line-clamp-2">
-                      {post.title}
-                    </CardTitle>
-                    {post.is_featured && (
-                      <Star className="h-4 w-4 shrink-0 fill-yellow-400 text-yellow-400" />
-                    )}
-                  </div>
-                  {post.excerpt && (
-                    <CardDescription className="mt-1 line-clamp-2">
-                      {post.excerpt}
-                    </CardDescription>
-                  )}
-                </div>
-                <span
-                  className={`shrink-0 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                    post.status === "published"
-                      ? "bg-green-100 text-green-800"
-                      : post.status === "draft"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {post.status === "published"
-                    ? "公開"
+          <Card key={post.id} className="overflow-hidden py-0">
+            <div className="flex">
+              {/* 左側: ステータスインジケーター */}
+              <div
+                className={`w-1 shrink-0 ${
+                  post.status === "published"
+                    ? "bg-green-500"
                     : post.status === "draft"
-                    ? "下書き"
-                    : "非公開"}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* カテゴリ */}
-              {post.categories && post.categories.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {post.categories.map((category) => (
+                    ? "bg-yellow-500"
+                    : "bg-gray-400"
+                }`}
+              />
+
+              {/* 右側: コンテンツ */}
+              <div className="flex-1 px-3 py-2.5">
+                {/* ヘッダー: タイトル + バッジ */}
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium line-clamp-1 text-sm">
+                        {post.title}
+                      </h3>
+                      {post.is_featured && (
+                        <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span
-                      key={category.id}
-                      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                      style={{
-                        backgroundColor: category.color
-                          ? `${category.color}20`
-                          : "#e5e7eb",
-                        color: category.color || "#374151",
-                      }}
+                      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                        post.status === "published"
+                          ? "bg-green-100 text-green-700"
+                          : post.status === "draft"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
                     >
-                      {category.name}
+                      {post.status === "published"
+                        ? "公開"
+                        : post.status === "draft"
+                        ? "下書き"
+                        : "非公開"}
                     </span>
-                  ))}
-                </div>
-              )}
-
-              {/* メタ情報 */}
-              <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    {post.view_count?.toLocaleString() || 0}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ThumbsUp className="h-3 w-3" />
-                    {post.helpful_count?.toLocaleString() || 0}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">
-                    公開: {post.published_at ? formatDate(post.published_at) : "-"}
-                  </span>
-                  <span className="text-xs">
-                    更新: {formatDate(post.updated_at)}
+
+                {/* 中段: カテゴリ + メタ情報 */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mb-2">
+                  {/* カテゴリ */}
+                  {post.categories && post.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {post.categories.slice(0, 2).map((category) => (
+                        <span
+                          key={category.id}
+                          className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+                          style={{
+                            backgroundColor: category.color
+                              ? `${category.color}15`
+                              : "#f3f4f6",
+                            color: category.color || "#6b7280",
+                          }}
+                        >
+                          {category.name}
+                        </span>
+                      ))}
+                      {post.categories.length > 2 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{post.categories.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 区切り */}
+                  {post.categories && post.categories.length > 0 && (
+                    <span className="text-muted-foreground/30">|</span>
+                  )}
+
+                  {/* 統計 */}
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-0.5">
+                      <Eye className="h-3 w-3" />
+                      {post.view_count?.toLocaleString() || 0}
+                    </span>
+                    <span className="flex items-center gap-0.5">
+                      <ThumbsUp className="h-3 w-3" />
+                      {post.helpful_count?.toLocaleString() || 0}
+                    </span>
+                  </div>
+
+                  {/* 区切り */}
+                  <span className="text-muted-foreground/30">|</span>
+
+                  {/* 日付 */}
+                  <span>
+                    {post.published_at ? formatDate(post.published_at) : "未公開"}
                   </span>
                 </div>
-              </div>
 
-              {/* 操作ボタン */}
-              <div className="flex gap-2 pt-2">
-                {post.status === "published" && (
+                {/* フッター: 操作ボタン */}
+                <div className="flex items-center gap-0.5 -ml-1.5">
+                  {post.status === "published" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      asChild
+                    >
+                      <Link href={`/${post.slug}`} target="_blank">
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        表示
+                      </Link>
+                    </Button>
+                  )}
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="flex-1"
+                    className="h-7 px-2 text-xs"
                     asChild
                   >
-                    <Link href={`/${post.slug}`} target="_blank">
-                      <Eye className="mr-2 h-4 w-4" />
-                      表示
+                    <Link href={`/admin/posts/${post.id}/edit`}>
+                      <Edit className="h-3.5 w-3.5 mr-1" />
+                      編集
                     </Link>
                   </Button>
-                )}
-                <Button variant="outline" size="sm" className="flex-1" asChild>
-                  <Link href={`/admin/posts/${post.id}/edit`}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    編集
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 text-destructive hover:text-destructive"
-                  onClick={() => handleDeleteClick(post)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  削除
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleDeleteClick(post)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    削除
+                  </Button>
+                </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>
@@ -514,27 +545,36 @@ function PostsPagination({
 
   return (
     <Pagination>
-      <PaginationContent>
+      <PaginationContent className="flex-wrap justify-center gap-1">
         <PaginationItem>
           {currentPage > 1 ? (
             <PaginationPrevious
               href={createPageUrl(currentPage - 1)}
               size="default"
+              className="h-9 px-3 sm:px-4"
             />
           ) : (
-            <span className="flex items-center gap-1 pl-2.5 h-10 px-4 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed">
+            <span className="flex items-center gap-1 pl-2.5 h-9 px-3 sm:px-4 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed">
               <span>前へ</span>
             </span>
           )}
         </PaginationItem>
 
+        {/* モバイル: 現在のページ番号のみ表示 */}
+        <PaginationItem className="sm:hidden">
+          <span className="inline-flex h-9 items-center justify-center px-3 text-sm font-medium">
+            {currentPage} / {totalPages}
+          </span>
+        </PaginationItem>
+
+        {/* デスクトップ: 全ページ番号表示 */}
         {getPageNumbers().map((page, index) =>
           page === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${index}`}>
+            <PaginationItem key={`ellipsis-${index}`} className="hidden sm:block">
               <PaginationEllipsis />
             </PaginationItem>
           ) : page === currentPage ? (
-            <PaginationItem key={page}>
+            <PaginationItem key={page} className="hidden sm:block">
               <span
                 aria-current="page"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium cursor-not-allowed"
@@ -543,7 +583,7 @@ function PostsPagination({
               </span>
             </PaginationItem>
           ) : (
-            <PaginationItem key={page}>
+            <PaginationItem key={page} className="hidden sm:block">
               <PaginationLink
                 href={createPageUrl(page)}
                 size="icon"
@@ -559,9 +599,10 @@ function PostsPagination({
             <PaginationNext
               href={createPageUrl(currentPage + 1)}
               size="default"
+              className="h-9 px-3 sm:px-4"
             />
           ) : (
-            <span className="flex items-center gap-1 pr-2.5 h-10 px-4 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed">
+            <span className="flex items-center gap-1 pr-2.5 h-9 px-3 sm:px-4 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed">
               <span>次へ</span>
             </span>
           )}

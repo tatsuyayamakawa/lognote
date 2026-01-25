@@ -25,6 +25,7 @@ import {
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { Plus, X, RefreshCw } from "lucide-react";
+import { MobileMenuButton } from "../_components/mobile-menu-button";
 import { format } from "date-fns";
 import { getBaseURL } from "@/lib/utils";
 import { toast } from "sonner";
@@ -386,7 +387,8 @@ export function PostForm({ categories, post }: PostFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <MobileMenuButton />
         <div>
           <h1 className="text-2xl font-bold sm:text-3xl">
             {post ? "記事編集" : "新規記事作成"}
@@ -809,49 +811,55 @@ export function PostForm({ categories, post }: PostFormProps) {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant={status === "draft" ? "default" : "outline"}
-          onClick={() => handleStatusSubmit("draft")}
-          disabled={loading}
-        >
-          {loading && status === "draft" ? "保存中..." : "下書き保存"}
-        </Button>
-        <Button
-          type="button"
-          variant={status === "published" ? "default" : "outline"}
-          onClick={() => handleStatusSubmit("published")}
-          disabled={loading}
-        >
-          {loading && status === "published" ? "保存中..." : "公開"}
-        </Button>
-        <Button
-          type="button"
-          variant={status === "private" ? "default" : "outline"}
-          onClick={() => handleStatusSubmit("private")}
-          disabled={loading}
-        >
-          {loading && status === "private" ? "保存中..." : "非公開"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            if (hasUnsavedChanges) {
-              if (
-                confirm("保存されていない変更があります。本当に移動しますか?")
-              ) {
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Button
+            type="button"
+            variant={status === "draft" ? "default" : "outline"}
+            onClick={() => handleStatusSubmit("draft")}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            {loading && status === "draft" ? "保存中..." : "下書き保存"}
+          </Button>
+          <Button
+            type="button"
+            variant={status === "published" ? "default" : "outline"}
+            onClick={() => handleStatusSubmit("published")}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            {loading && status === "published" ? "保存中..." : "公開"}
+          </Button>
+          <Button
+            type="button"
+            variant={status === "private" ? "default" : "outline"}
+            onClick={() => handleStatusSubmit("private")}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            {loading && status === "private" ? "保存中..." : "非公開"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              if (hasUnsavedChanges) {
+                if (
+                  confirm("保存されていない変更があります。本当に移動しますか?")
+                ) {
+                  router.back();
+                }
+              } else {
                 router.back();
               }
-            } else {
-              router.back();
-            }
-          }}
-          disabled={loading}
-        >
-          キャンセル
-        </Button>
+            }}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            キャンセル
+          </Button>
+        </div>
       </div>
     </form>
   );

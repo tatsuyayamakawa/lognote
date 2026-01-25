@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { AdminPageHeader } from "../_components/admin-page-header";
 import {
   getPageViews,
   getTopPages,
@@ -46,20 +47,17 @@ export default async function DashboardPage({
   return (
     <div className="space-y-8">
       {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold sm:text-3xl">ダッシュボード</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            ブログの統計情報と最近の活動
-          </p>
-        </div>
+      <AdminPageHeader
+        title="ダッシュボード"
+        description="ブログの統計情報と最近の活動"
+      >
         <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/posts/new">
             <Plus className="mr-2 h-4 w-4" />
             新規記事作成
           </Link>
         </Button>
-      </div>
+      </AdminPageHeader>
 
       {/* Analytics グラフセクション */}
       {gaConfigured ? (

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PostsTable } from "./posts-table";
+import { AdminPageHeader } from "../_components/admin-page-header";
 import { syncViewCountsFromAnalytics } from "@/lib/posts";
 import type { Post, Category } from "@/types";
 import type { Metadata } from "next";
@@ -91,20 +92,17 @@ export default async function AdminPostsPage({
   return (
     <div className="space-y-6">
       {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">記事管理</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            すべての記事を管理します（{total}件）
-          </p>
-        </div>
+      <AdminPageHeader
+        title="記事管理"
+        description={`すべての記事を管理します（${total}件）`}
+      >
         <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/posts/new">
             <Plus className="mr-2 h-4 w-4" />
             新規作成
           </Link>
         </Button>
-      </div>
+      </AdminPageHeader>
 
       {/* 記事テーブル */}
       <PostsTable

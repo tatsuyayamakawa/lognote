@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { AdminSidebar } from "./_components/admin-sidebar"
+import { MobileMenuProvider } from "./_components/mobile-menu-context"
 import { Toaster } from "@/components/ui/sonner"
 import type { Metadata } from "next"
 
@@ -30,15 +31,17 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* サイドバー - 固定 */}
-      <AdminSidebar user={user} />
+    <MobileMenuProvider>
+      <div className="flex h-screen overflow-hidden bg-background">
+        {/* サイドバー - 固定 */}
+        <AdminSidebar user={user} />
 
-      {/* メインコンテンツ - スクロール可能 */}
-      <div className="flex-1 overflow-y-auto">
-        <main className="p-4 sm:p-6 md:p-8">{children}</main>
+        {/* メインコンテンツ - スクロール可能 */}
+        <div className="flex-1 overflow-y-auto">
+          <main className="p-4 sm:p-6 md:p-8">{children}</main>
+        </div>
+        <Toaster />
       </div>
-      <Toaster />
-    </div>
+    </MobileMenuProvider>
   )
 }

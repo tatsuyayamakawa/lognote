@@ -1,16 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus } from "lucide-react";
+import { Plus, Menu } from "lucide-react";
 
 export default function PostsLoadingPage() {
   return (
     <div className="space-y-6">
       {/* ページヘッダー */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">記事管理</h1>
-          <Skeleton className="mt-1 h-4 w-48" />
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="shrink-0 xl:hidden" disabled>
+            <Menu className="h-6 w-6" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold sm:text-3xl">記事管理</h1>
+            <Skeleton className="mt-1 h-4 w-48" />
+          </div>
         </div>
         <Button disabled className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
@@ -19,23 +24,23 @@ export default function PostsLoadingPage() {
       </div>
 
       {/* フィルタリング */}
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm" disabled>
+      <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
+        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
           すべて
         </Button>
-        <Button variant="outline" size="sm" disabled>
+        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
           公開
         </Button>
-        <Button variant="outline" size="sm" disabled>
+        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
           下書き
         </Button>
-        <Button variant="outline" size="sm" disabled>
+        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
           非公開
         </Button>
       </div>
 
       {/* デスクトップ: テーブル表示 */}
-      <Card className="hidden md:block pb-0">
+      <Card className="hidden xl:block pb-0">
         <CardHeader className="pb-3">
           <Skeleton className="h-6 w-24" />
         </CardHeader>
@@ -123,39 +128,47 @@ export default function PostsLoadingPage() {
         </CardContent>
       </Card>
 
-      {/* モバイル: カード表示 */}
-      <div className="space-y-4 md:hidden">
+      {/* モバイル・タブレット: カード表示 */}
+      <div className="space-y-2 xl:hidden">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
+          <Card key={index} className="overflow-hidden py-0">
+            <div className="flex">
+              {/* 左側: ステータスインジケーター */}
+              <div className="w-1 shrink-0 bg-muted" />
+
+              {/* 右側: コンテンツ */}
+              <div className="flex-1 px-3 py-2.5">
+                {/* ヘッダー: タイトル + バッジ */}
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="flex-1 min-w-0">
+                    <Skeleton className="h-4 w-4/5" />
+                  </div>
+                  <Skeleton className="h-4 w-10 shrink-0 rounded" />
                 </div>
-                <Skeleton className="h-6 w-12 shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* カテゴリ */}
-              <div className="flex gap-1">
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-5 w-16" />
-              </div>
 
-              {/* メタ情報 */}
-              <div className="flex flex-col gap-1">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-full" />
-              </div>
+                {/* 中段: カテゴリ + メタ情報 */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs mb-2">
+                  <div className="flex gap-1">
+                    <Skeleton className="h-4 w-12 rounded" />
+                    <Skeleton className="h-4 w-14 rounded" />
+                  </div>
+                  <span className="text-muted-foreground/30">|</span>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-10" />
+                    <Skeleton className="h-3 w-8" />
+                  </div>
+                  <span className="text-muted-foreground/30">|</span>
+                  <Skeleton className="h-3 w-20" />
+                </div>
 
-              {/* 操作ボタン */}
-              <div className="flex gap-2 pt-2">
-                <Skeleton className="h-9 flex-1" />
-                <Skeleton className="h-9 flex-1" />
-                <Skeleton className="h-9 flex-1" />
+                {/* フッター: 操作ボタン */}
+                <div className="flex items-center gap-0.5 -ml-1.5">
+                  <Skeleton className="h-7 w-12 rounded" />
+                  <Skeleton className="h-7 w-12 rounded" />
+                  <Skeleton className="h-7 w-12 rounded" />
+                </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>

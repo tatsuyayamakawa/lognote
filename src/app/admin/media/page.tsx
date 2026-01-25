@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, Copy, Trash2, Check, Search, X } from "lucide-react";
+import { MobileMenuButton } from "../_components/mobile-menu-button";
 import Image from "next/image";
 import { ImageUploadDialog } from "./_components/image-upload-dialog";
 import { ImageReuploadDialog } from "./_components/image-reupload-dialog";
@@ -196,11 +197,14 @@ export default function MediaPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">画像管理</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            記事で使用する画像を管理できます
-          </p>
+        <div className="flex items-center gap-3">
+          <MobileMenuButton />
+          <div>
+            <h1 className="text-2xl font-bold sm:text-3xl">画像管理</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">
+              記事で使用する画像を管理できます
+            </p>
+          </div>
         </div>
         <Button
           onClick={() => setUploadDialogOpen(true)}

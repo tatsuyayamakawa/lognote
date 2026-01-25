@@ -2,19 +2,18 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
   FileText,
   Image as ImageIcon,
-  Menu,
   X,
   LogOut,
   DollarSign,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
+import { useMobileMenu } from "./mobile-menu-context"
 import type { User } from "@supabase/supabase-js"
 
 const menuItems = [
@@ -47,7 +46,7 @@ interface AdminSidebarProps {
 export function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isOpen, close } = useMobileMenu()
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -58,40 +57,28 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   return (
     <>
-      {/* モバイル: メニューを開くボタン */}
-      {!mobileMenuOpen && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed right-4 top-4 z-50 md:hidden"
-          onClick={() => setMobileMenuOpen(true)}
-        >
-          <Menu className="h-6 w-6" />
-        </Button>
-      )}
-
       {/* オーバーレイ */}
-      {mobileMenuOpen && (
+      {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 z-40 bg-black/50 xl:hidden"
+          onClick={close}
         />
       )}
 
       {/* サイドバー */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-background transition-transform md:static md:translate-x-0",
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-background transition-transform xl:static xl:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
       {/* モバイル: メニューを閉じるボタン */}
-      {mobileMenuOpen && (
+      {isOpen && (
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-4 top-4 md:hidden"
-          onClick={() => setMobileMenuOpen(false)}
+          className="absolute right-4 top-4 xl:hidden"
+          onClick={close}
         >
           <X className="h-6 w-6" />
         </Button>
@@ -114,7 +101,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => close()}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -143,7 +130,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             href="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             target="_blank"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => close()}
           >
             <svg
               className="h-4 w-4"
