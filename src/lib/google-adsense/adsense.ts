@@ -1,37 +1,72 @@
 import { google } from "googleapis";
-import { getAuthenticatedClient } from "./oauth";
+import { unstable_cache } from "next/cache";
+import { getStoredTokens, createOAuth2Client, saveTokens, deleteTokens } from "./oauth";
+
+const CACHE_DURATION = 60 * 60; // 1時間
+
+type AdSenseTokens = {
+  access_token: string;
+  refresh_token?: string;
+  expiry_date?: number;
+};
 
 /**
- * AdSense Management API クライアントを取得（OAuth 2.0対応）
+ * トークンからAdSenseクライアントを作成
  */
-export async function getAdSenseClient() {
-  try {
-    // OAuth 2.0認証クライアントを取得
-    const auth = await getAuthenticatedClient();
-
-    if (!auth) {
-      return null;
-    }
-
-    return google.adsense({
-      version: "v2",
-      auth,
-    });
-  } catch (error) {
-    return null;
-  }
+function createAdSenseClientFromTokens(tokens: AdSenseTokens) {
+  const oauth2Client = createOAuth2Client();
+  oauth2Client.setCredentials(tokens);
+  return google.adsense({
+    version: "v2",
+    auth: oauth2Client,
+  });
 }
 
 /**
- * AdSenseアカウントIDを取得
+ * トークンを取得（キャッシュの外で呼び出す）
  */
-export async function getAdSenseAccountId(): Promise<string | null> {
-  const client = await getAdSenseClient();
-  if (!client) {
+export async function getAdSenseTokens(): Promise<AdSenseTokens | null> {
+  const tokens = await getStoredTokens();
+
+  if (!tokens) {
     return null;
   }
 
+  // トークンの有効期限をチェックし、必要に応じて更新
+  if (tokens.expiry_date && tokens.expiry_date < Date.now()) {
+    try {
+      const oauth2Client = createOAuth2Client();
+      oauth2Client.setCredentials(tokens);
+      const { credentials } = await oauth2Client.refreshAccessToken();
+
+      // 新しいトークンを保存
+      await saveTokens({
+        access_token: credentials.access_token!,
+        refresh_token: credentials.refresh_token,
+        expiry_date: credentials.expiry_date,
+      });
+
+      return {
+        access_token: credentials.access_token!,
+        refresh_token: credentials.refresh_token || undefined,
+        expiry_date: credentials.expiry_date || undefined,
+      };
+    } catch (error) {
+      console.error("[AdSense] Error refreshing token:", error);
+      await deleteTokens();
+      return null;
+    }
+  }
+
+  return tokens;
+}
+
+/**
+ * AdSenseアカウントIDを取得（トークンを受け取る）
+ */
+async function getAdSenseAccountIdWithTokens(tokens: AdSenseTokens): Promise<string | null> {
   try {
+    const client = createAdSenseClientFromTokens(tokens);
     const response = await client.accounts.list();
     const accounts = response.data.accounts;
 
@@ -39,9 +74,9 @@ export async function getAdSenseAccountId(): Promise<string | null> {
       return null;
     }
 
-    // 最初のアカウントを使用
     return accounts[0].name || null;
   } catch (error) {
+    console.error("[AdSense] Error fetching accounts:", error);
     return null;
   }
 }
@@ -51,76 +86,8 @@ export interface AdSenseRevenueData {
   earnings: number;
   clicks: number;
   impressions: number;
-  ctr: number; // Click-through rate
-  rpm: number; // Revenue per thousand impressions
-}
-
-/**
- * AdSense収益データを取得
- * @param days 取得する日数（デフォルト: 30日）
- */
-export async function getAdSenseRevenue(
-  days: number = 30
-): Promise<AdSenseRevenueData[]> {
-  const client = await getAdSenseClient();
-  if (!client) {
-    return [];
-  }
-
-  const accountId = await getAdSenseAccountId();
-  if (!accountId) {
-    return [];
-  }
-
-  try {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const response = await client.accounts.reports.generate({
-      account: accountId,
-      dateRange: "CUSTOM",
-      "startDate.year": startDate.getFullYear(),
-      "startDate.month": startDate.getMonth() + 1,
-      "startDate.day": startDate.getDate(),
-      "endDate.year": endDate.getFullYear(),
-      "endDate.month": endDate.getMonth() + 1,
-      "endDate.day": endDate.getDate(),
-      dimensions: ["DATE"],
-      metrics: ["ESTIMATED_EARNINGS", "CLICKS", "IMPRESSIONS"],
-    } as any); // Type workaround for googleapis typing issue
-
-    const rows = response.data.rows || [];
-
-    const result: AdSenseRevenueData[] = rows.map((row) => {
-      const date = row.cells?.[0]?.value || "";
-      const earnings = parseFloat(row.cells?.[1]?.value || "0");
-      const clicks = parseInt(row.cells?.[2]?.value || "0");
-      const impressions = parseInt(row.cells?.[3]?.value || "0");
-
-      // CTR (Click-through rate) を計算
-      const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-
-      // RPM (Revenue per thousand impressions) を計算
-      const rpm = impressions > 0 ? (earnings / impressions) * 1000 : 0;
-
-      return {
-        date,
-        earnings,
-        clicks,
-        impressions,
-        ctr,
-        rpm,
-      };
-    });
-
-    // Sort by date in ascending order
-    result.sort((a, b) => a.date.localeCompare(b.date));
-
-    return result;
-  } catch (error) {
-    return [];
-  }
+  ctr: number;
+  rpm: number;
 }
 
 export interface AdSenseSummary {
@@ -142,23 +109,90 @@ export interface AdUnitRevenueData {
 }
 
 /**
- * AdSense収益サマリーを取得
+ * AdSense収益データを取得（内部関数・キャッシュ対象）
+ */
+async function fetchAdSenseRevenue(
+  tokens: AdSenseTokens,
+  accountId: string,
+  days: number
+): Promise<AdSenseRevenueData[]> {
+  try {
+    const client = createAdSenseClientFromTokens(tokens);
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const response = await client.accounts.reports.generate({
+      account: accountId,
+      dateRange: "CUSTOM",
+      "startDate.year": startDate.getFullYear(),
+      "startDate.month": startDate.getMonth() + 1,
+      "startDate.day": startDate.getDate(),
+      "endDate.year": endDate.getFullYear(),
+      "endDate.month": endDate.getMonth() + 1,
+      "endDate.day": endDate.getDate(),
+      dimensions: ["DATE"],
+      metrics: ["ESTIMATED_EARNINGS", "CLICKS", "IMPRESSIONS"],
+    } as any);
+
+    const rows = response.data.rows || [];
+
+    const result: AdSenseRevenueData[] = rows.map((row) => {
+      const date = row.cells?.[0]?.value || "";
+      const earnings = parseFloat(row.cells?.[1]?.value || "0");
+      const clicks = parseInt(row.cells?.[2]?.value || "0");
+      const impressions = parseInt(row.cells?.[3]?.value || "0");
+
+      const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+      const rpm = impressions > 0 ? (earnings / impressions) * 1000 : 0;
+
+      return { date, earnings, clicks, impressions, ctr, rpm };
+    });
+
+    result.sort((a, b) => a.date.localeCompare(b.date));
+    return result;
+  } catch (error) {
+    console.error("[AdSense] Error fetching revenue:", error);
+    return [];
+  }
+}
+
+/**
+ * AdSense収益データを取得（キャッシュ付き）
  * @param days 取得する日数（デフォルト: 30日）
  */
-export async function getAdSenseSummary(
-  days: number = 30
-): Promise<AdSenseSummary | null> {
-  const client = await getAdSenseClient();
-  if (!client) {
-    return null;
+export async function getAdSenseRevenue(days: number = 30): Promise<AdSenseRevenueData[]> {
+  // トークン取得はキャッシュの外で行う（cookies()を使用するため）
+  const tokens = await getAdSenseTokens();
+  if (!tokens) {
+    return [];
   }
 
-  const accountId = await getAdSenseAccountId();
+  const accountId = await getAdSenseAccountIdWithTokens(tokens);
   if (!accountId) {
-    return null;
+    return [];
   }
 
+  // トークンとアカウントIDを引数として渡し、キャッシュ関数を呼び出す
+  const getCachedRevenue = unstable_cache(
+    async () => fetchAdSenseRevenue(tokens, accountId, days),
+    [`adsense-revenue-${accountId}-${days}`],
+    { revalidate: CACHE_DURATION }
+  );
+
+  return getCachedRevenue();
+}
+
+/**
+ * AdSense収益サマリーを取得（内部関数・キャッシュ対象）
+ */
+async function fetchAdSenseSummary(
+  tokens: AdSenseTokens,
+  accountId: string,
+  days: number
+): Promise<AdSenseSummary | null> {
   try {
+    const client = createAdSenseClientFromTokens(tokens);
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -173,7 +207,7 @@ export async function getAdSenseSummary(
       "endDate.month": endDate.getMonth() + 1,
       "endDate.day": endDate.getDate(),
       metrics: ["ESTIMATED_EARNINGS", "CLICKS", "IMPRESSIONS"],
-    } as any); // Type workaround for googleapis typing issue
+    } as any);
 
     const row = response.data.rows?.[0];
     if (!row) {
@@ -190,45 +224,50 @@ export async function getAdSenseSummary(
     const totalClicks = parseInt(row.cells?.[1]?.value || "0");
     const totalImpressions = parseInt(row.cells?.[2]?.value || "0");
 
-    const averageCtr =
-      totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-    const averageRpm =
-      totalImpressions > 0 ? (totalEarnings / totalImpressions) * 1000 : 0;
+    const averageCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+    const averageRpm = totalImpressions > 0 ? (totalEarnings / totalImpressions) * 1000 : 0;
 
-    return {
-      totalEarnings,
-      totalClicks,
-      totalImpressions,
-      averageCtr,
-      averageRpm,
-    };
+    return { totalEarnings, totalClicks, totalImpressions, averageCtr, averageRpm };
   } catch (error) {
     console.error("[AdSense] Error fetching summary:", error);
-    if (error instanceof Error) {
-      console.error("[AdSense] Error details:", error.message);
-    }
     return null;
   }
 }
 
 /**
- * 広告ユニット別の収益データを取得
+ * AdSense収益サマリーを取得（キャッシュ付き）
  * @param days 取得する日数（デフォルト: 30日）
  */
-export async function getAdUnitRevenue(
-  days: number = 30
-): Promise<AdUnitRevenueData[]> {
-  const client = await getAdSenseClient();
-  if (!client) {
-    return [];
+export async function getAdSenseSummary(days: number = 30): Promise<AdSenseSummary | null> {
+  const tokens = await getAdSenseTokens();
+  if (!tokens) {
+    return null;
   }
 
-  const accountId = await getAdSenseAccountId();
+  const accountId = await getAdSenseAccountIdWithTokens(tokens);
   if (!accountId) {
-    return [];
+    return null;
   }
 
+  const getCachedSummary = unstable_cache(
+    async () => fetchAdSenseSummary(tokens, accountId, days),
+    [`adsense-summary-${accountId}-${days}`],
+    { revalidate: CACHE_DURATION }
+  );
+
+  return getCachedSummary();
+}
+
+/**
+ * 広告ユニット別の収益データを取得（内部関数・キャッシュ対象）
+ */
+async function fetchAdUnitRevenue(
+  tokens: AdSenseTokens,
+  accountId: string,
+  days: number
+): Promise<AdUnitRevenueData[]> {
   try {
+    const client = createAdSenseClientFromTokens(tokens);
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -244,7 +283,7 @@ export async function getAdUnitRevenue(
       "endDate.day": endDate.getDate(),
       dimensions: ["AD_UNIT_ID", "AD_UNIT_NAME"],
       metrics: ["ESTIMATED_EARNINGS", "CLICKS", "IMPRESSIONS"],
-    } as any); // Type workaround for googleapis typing issue
+    } as any);
 
     const rows = response.data.rows || [];
 
@@ -258,26 +297,37 @@ export async function getAdUnitRevenue(
       const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
       const rpm = impressions > 0 ? (earnings / impressions) * 1000 : 0;
 
-      return {
-        adUnitId,
-        adUnitName,
-        earnings,
-        clicks,
-        impressions,
-        ctr,
-        rpm,
-      };
+      return { adUnitId, adUnitName, earnings, clicks, impressions, ctr, rpm };
     });
 
-    // Sort by earnings in descending order
     result.sort((a, b) => b.earnings - a.earnings);
-
     return result;
   } catch (error) {
     console.error("[AdSense] Error fetching ad unit revenue:", error);
-    if (error instanceof Error) {
-      console.error("[AdSense] Error details:", error.message);
-    }
     return [];
   }
+}
+
+/**
+ * 広告ユニット別の収益データを取得（キャッシュ付き）
+ * @param days 取得する日数（デフォルト: 30日）
+ */
+export async function getAdUnitRevenue(days: number = 30): Promise<AdUnitRevenueData[]> {
+  const tokens = await getAdSenseTokens();
+  if (!tokens) {
+    return [];
+  }
+
+  const accountId = await getAdSenseAccountIdWithTokens(tokens);
+  if (!accountId) {
+    return [];
+  }
+
+  const getCachedAdUnitRevenue = unstable_cache(
+    async () => fetchAdUnitRevenue(tokens, accountId, days),
+    [`adsense-adunit-${accountId}-${days}`],
+    { revalidate: CACHE_DURATION }
+  );
+
+  return getCachedAdUnitRevenue();
 }

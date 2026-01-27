@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PostsTable } from "./posts-table";
+import { PostsFilter } from "./posts-filter";
+import { PostsTableSkeleton } from "./posts-table-skeleton";
 import { AdminPageHeader } from "../_components/admin-page-header";
-import { syncViewCountsFromAnalytics } from "@/lib/posts";
 import type { Post, Category } from "@/types";
 import type { Metadata } from "next";
 
@@ -17,17 +19,9 @@ const POSTS_PER_PAGE = 10;
 async function getPosts(page: number = 1, status?: string) {
   const supabase = await createClient();
 
-  // Google Analyticsから閲覧数を同期（キャッシュ処理は後で追加予定）
-  try {
-    await syncViewCountsFromAnalytics();
-  } catch (error) {
-    console.error("Failed to sync view counts:", error);
-    // 同期に失敗してもページは表示する
-  }
-
   // ステータスでフィルタリングするクエリを構築
   let query = supabase.from("posts").select("*", { count: "exact", head: true });
-  
+
   if (status && status !== "all") {
     query = query.eq("status", status);
   }
@@ -79,6 +73,26 @@ async function getPosts(page: number = 1, status?: string) {
   return { posts: postsWithCategories, total: count || 0 };
 }
 
+async function PostsTableWrapper({
+  page,
+  status,
+}: {
+  page: number;
+  status: string;
+}) {
+  const { posts, total } = await getPosts(page, status);
+  const totalPages = Math.ceil(total / POSTS_PER_PAGE);
+
+  return (
+    <PostsTable
+      posts={posts}
+      currentPage={page}
+      totalPages={totalPages}
+      currentStatus={status}
+    />
+  );
+}
+
 export default async function AdminPostsPage({
   searchParams,
 }: {
@@ -86,15 +100,13 @@ export default async function AdminPostsPage({
 }) {
   const { page = "1", status = "all" } = await searchParams;
   const currentPage = parseInt(page, 10);
-  const { posts, total } = await getPosts(currentPage, status);
-  const totalPages = Math.ceil(total / POSTS_PER_PAGE);
 
   return (
     <div className="space-y-6">
       {/* ページヘッダー */}
       <AdminPageHeader
         title="記事管理"
-        description={`すべての記事を管理します（${total}件）`}
+        description="すべての記事を管理します"
       >
         <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/posts/new">
@@ -104,13 +116,13 @@ export default async function AdminPostsPage({
         </Button>
       </AdminPageHeader>
 
+      {/* フィルター */}
+      <PostsFilter currentStatus={status} />
+
       {/* 記事テーブル */}
-      <PostsTable
-        posts={posts}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        currentStatus={status}
-      />
+      <Suspense key={`${currentPage}-${status}`} fallback={<PostsTableSkeleton />}>
+        <PostsTableWrapper page={currentPage} status={status} />
+      </Suspense>
     </div>
   );
 }

@@ -68,10 +68,12 @@ export async function POST(request: NextRequest) {
       metadata.postId = postId;
     }
 
+    const storagePath = `content/${fileName}`;
+
     // Supabase Storageにアップロード
     const { data, error } = await supabase.storage
       .from("blog-images")
-      .upload(`content/${fileName}`, file, {
+      .upload(storagePath, file, {
         cacheControl: "3600",
         upsert: !!overwriteFileName, // 上書きモードの場合はupsert
         contentType: file.type,
@@ -90,6 +92,43 @@ export async function POST(request: NextRequest) {
     const {
       data: { publicUrl },
     } = supabase.storage.from("blog-images").getPublicUrl(data.path);
+
+    // imagesテーブルにレコードを登録/更新
+    const imageRecord = {
+      file_name: fileName,
+      storage_path: storagePath,
+      url: publicUrl,
+      size: file.size,
+      mimetype: file.type,
+      post_id: postId || null,
+    };
+
+    if (overwriteFileName) {
+      // 上書きモード: 既存レコードを更新
+      const { error: dbError } = await supabase
+        .from("images")
+        .update({
+          size: file.size,
+          mimetype: file.type,
+          post_id: postId || null,
+        })
+        .eq("file_name", fileName);
+
+      if (dbError) {
+        console.error("[Upload] Error updating image record:", dbError);
+        // ストレージには成功しているので、DBエラーは警告のみ
+      }
+    } else {
+      // 新規作成: 新しいレコードを挿入
+      const { error: dbError } = await supabase
+        .from("images")
+        .insert(imageRecord);
+
+      if (dbError) {
+        console.error("[Upload] Error inserting image record:", dbError);
+        // ストレージには成功しているので、DBエラーは警告のみ
+      }
+    }
 
     return NextResponse.json({ url: publicUrl });
   } catch (error) {

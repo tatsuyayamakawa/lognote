@@ -481,7 +481,7 @@ export async function syncViewCountsFromAnalytics(
 ) {
   const supabase = await createClient();
   const CACHE_KEY = "view_counts_sync";
-  const CACHE_DURATION_HOURS = 1; // 1時間キャッシュ
+  const CACHE_DURATION_HOURS = 24; // 24時間キャッシュ
 
   // キャッシュをチェック（強制更新でない場合）
   if (!forceRefresh) {

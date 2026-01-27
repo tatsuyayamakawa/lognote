@@ -32,8 +32,8 @@ export default async function EditCategoryPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">カテゴリ編集</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-bold sm:text-3xl">カテゴリ編集</h1>
+        <p className="text-sm text-muted-foreground sm:text-base">
           カテゴリ「{category.name}」を編集します
         </p>
       </div>

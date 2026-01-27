@@ -116,6 +116,7 @@ export function ImageUploadDialog({
                 src={previewUrl}
                 alt="Preview"
                 fill
+                sizes="(max-width: 768px) 100vw, 500px"
                 className="object-cover"
               />
               <button

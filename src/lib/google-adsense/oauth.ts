@@ -130,38 +130,3 @@ export async function deleteTokens() {
   await supabase.from("google_adsense_tokens").delete().eq("user_id", user.id);
 }
 
-/**
- * 認証済みのOAuth2クライアントを取得
- */
-export async function getAuthenticatedClient() {
-  const tokens = await getStoredTokens();
-
-  if (!tokens) {
-    return null;
-  }
-
-  const oauth2Client = createOAuth2Client();
-  oauth2Client.setCredentials(tokens);
-
-  // トークンの有効期限をチェックし、必要に応じて更新
-  if (tokens.expiry_date && tokens.expiry_date < Date.now()) {
-    try {
-      const { credentials } = await oauth2Client.refreshAccessToken();
-      oauth2Client.setCredentials(credentials);
-
-      // 新しいトークンを保存
-      await saveTokens({
-        access_token: credentials.access_token!,
-        refresh_token: credentials.refresh_token,
-        expiry_date: credentials.expiry_date,
-      });
-    } catch (error) {
-      console.error("[AdSense OAuth] Error refreshing token:", error);
-      // トークンの更新に失敗した場合は削除
-      await deleteTokens();
-      return null;
-    }
-  }
-
-  return oauth2Client;
-}

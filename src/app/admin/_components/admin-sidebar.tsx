@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
   FileText,
+  FolderOpen,
   Image as ImageIcon,
   X,
   LogOut,
   DollarSign,
+  BarChart3,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -28,9 +30,19 @@ const menuItems = [
     icon: FileText,
   },
   {
+    title: "カテゴリ",
+    href: "/admin/categories",
+    icon: FolderOpen,
+  },
+  {
     title: "画像管理",
     href: "/admin/media",
     icon: ImageIcon,
+  },
+  {
+    title: "アナリティクス",
+    href: "/admin/analytics",
+    icon: BarChart3,
   },
   {
     title: "広告管理",

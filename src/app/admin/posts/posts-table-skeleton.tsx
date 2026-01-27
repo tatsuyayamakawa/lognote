@@ -1,48 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Menu } from "lucide-react";
 
-export default function PostsLoadingPage() {
+export function PostsTableSkeleton() {
   return (
-    <div className="space-y-6">
-      {/* ページヘッダー */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="shrink-0 xl:hidden" disabled>
-            <Menu className="h-6 w-6" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold sm:text-3xl">記事管理</h1>
-            <Skeleton className="mt-1 h-4 w-48" />
-          </div>
-        </div>
-        <Button disabled className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          新規作成
-        </Button>
-      </div>
-
-      {/* フィルタリング */}
-      <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
-        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
-          すべて
-        </Button>
-        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
-          公開
-        </Button>
-        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
-          下書き
-        </Button>
-        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
-          非公開
-        </Button>
-      </div>
-
+    <>
       {/* デスクトップ: テーブル表示 */}
       <Card className="hidden xl:block pb-0">
         <CardHeader className="pb-3">
-          <Skeleton className="h-6 w-24" />
+          <CardTitle>記事一覧</CardTitle>
         </CardHeader>
         <CardContent className="px-0">
           <div className="overflow-x-auto">
@@ -172,6 +137,6 @@ export default function PostsLoadingPage() {
           </Card>
         ))}
       </div>
-    </div>
+    </>
   );
 }

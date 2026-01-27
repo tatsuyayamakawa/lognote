@@ -123,6 +123,7 @@ export function ImageReuploadDialog({
                 src={imageUrl}
                 alt={imageFileName}
                 fill
+                sizes="(max-width: 768px) 100vw, 500px"
                 className="object-cover"
               />
             </div>
@@ -140,6 +141,7 @@ export function ImageReuploadDialog({
                   src={previewUrl}
                   alt="Preview"
                   fill
+                  sizes="(max-width: 768px) 100vw, 500px"
                   className="object-cover"
                 />
                 <button

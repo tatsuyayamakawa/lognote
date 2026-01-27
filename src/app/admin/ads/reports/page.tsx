@@ -1,5 +1,4 @@
-import { Suspense } from "react";
-import { AdSenseRevenue, AdSenseRevenueSkeleton } from "@/app/admin/dashboard/adsense-revenue";
+import { AdSenseRevenue } from "@/app/admin/dashboard/adsense-revenue";
 import { AdUnitRevenue } from "./ad-unit-revenue";
 import {
   getAdSenseRevenue,
@@ -124,9 +123,7 @@ export default async function AdSenseReportsPage({
         description="広告収益とパフォーマンス統計"
       />
 
-      <Suspense fallback={<AdSenseRevenueSkeleton currentPeriod={period} />}>
-        <AdSenseReportsData period={period} />
-      </Suspense>
+      <AdSenseReportsData period={period} />
     </div>
   );
 }

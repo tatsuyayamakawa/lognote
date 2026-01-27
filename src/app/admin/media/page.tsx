@@ -1,375 +1,279 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Copy, Trash2, Check, Search, X } from "lucide-react";
-import { MobileMenuButton } from "../_components/mobile-menu-button";
-import Image from "next/image";
-import { ImageUploadDialog } from "./_components/image-upload-dialog";
-import { ImageReuploadDialog } from "./_components/image-reupload-dialog";
-import { Input } from "@/components/ui/input";
+import { AdminPageHeader } from "../_components/admin-page-header";
+import { MediaGallery } from "./_components/media-gallery";
+import { MediaUploadButton } from "./_components/media-upload-button";
+import { MediaFilterStatic } from "./_components/media-filter";
+import { MediaPagination } from "./_components/media-pagination";
+import type { Metadata } from "next";
 
-// クライアントコンポーネントなので、メタデータは別ファイルで設定する必要があります
+export const metadata: Metadata = {
+  title: "画像管理",
+};
 
-interface StorageFile {
-  name: string;
+const IMAGES_PER_PAGE = 20;
+
+interface ImageRecord {
   id: string;
-  updated_at: string;
+  file_name: string;
+  storage_path: string;
+  url: string;
+  size: number;
+  mimetype: string | null;
+  post_id: string | null;
   created_at: string;
-  metadata: {
-    size: number;
-    mimetype: string;
-    postId?: string;
-  };
+  updated_at: string;
 }
 
 interface Post {
   id: string;
   title: string;
   slug: string;
-  content: any; // JSON content
+  content: unknown;
 }
 
-export default function MediaPage() {
-  const [images, setImages] = useState<StorageFile[]>([]);
-  const [filteredImages, setFilteredImages] = useState<StorageFile[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [reuploadDialogOpen, setReuploadDialogOpen] = useState(false);
-  const [selectedImageForReupload, setSelectedImageForReupload] = useState<{
-    fileName: string;
-    url: string;
-  } | null>(null);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-  const [filterMode, setFilterMode] = useState<"all" | "unassigned">("all");
-  const [searchQuery, setSearchQuery] = useState("");
+interface GetImagesParams {
+  page: number;
+  filter: "all" | "unassigned";
+  search: string;
+  posts: Post[];
+}
 
-  const loadPosts = async () => {
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("posts")
-        .select("id, title, slug, content")
+async function getImages({ page, filter, search, posts }: GetImagesParams): Promise<{ images: ImageRecord[]; total: number }> {
+  const supabase = await createClient();
+
+  // 未割当フィルタ用: 使用中の画像URLを特定
+  let usedImageUrls: Set<string> | null = null;
+  if (filter === "unassigned") {
+    usedImageUrls = new Set<string>();
+    for (const post of posts) {
+      if (post.content) {
+        const contentStr = JSON.stringify(post.content);
+        // URLを抽出（blog-imagesを含むURL）
+        const urlMatches = contentStr.match(/https:\/\/[^"]+blog-images[^"]+/g);
+        if (urlMatches) {
+          urlMatches.forEach((url) => usedImageUrls!.add(url));
+        }
+      }
+    }
+  }
+
+  // 検索用: 記事タイトル/スラッグに一致する画像URLを特定
+  let searchMatchUrls: Set<string> | null = null;
+  if (search) {
+    const query = search.toLowerCase();
+    searchMatchUrls = new Set<string>();
+    for (const post of posts) {
+      const titleMatch = post.title.toLowerCase().includes(query);
+      const slugMatch = post.slug.toLowerCase().includes(query);
+      if (titleMatch || slugMatch) {
+        if (post.content) {
+          const contentStr = JSON.stringify(post.content);
+          const urlMatches = contentStr.match(/https:\/\/[^"]+blog-images[^"]+/g);
+          if (urlMatches) {
+            urlMatches.forEach((url) => searchMatchUrls!.add(url));
+          }
+        }
+      }
+    }
+  }
+
+  // 検索フィルタ: ファイル名で検索
+  if (search) {
+    // 記事タイトル/スラッグでの一致も含める場合はURLリストも使用
+    if (searchMatchUrls && searchMatchUrls.size > 0) {
+      const urlArray = Array.from(searchMatchUrls);
+      // 全画像を取得してフィルタ（Supabaseのor+inは複雑なのでシンプルに）
+      const { data: allImages, error: allError } = await supabase
+        .from("images")
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setPosts(data || []);
-    } catch (err) {
-      console.error("Failed to load posts:", err);
-    }
-  };
+      if (allError) {
+        console.error("Failed to load images:", allError);
+        return { images: [], total: 0 };
+      }
 
-  const loadImages = async () => {
-    setLoading(true);
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase.storage
-        .from("blog-images")
-        .list("content", {
-          limit: 100,
-          offset: 0,
-          sortBy: { column: "created_at", order: "desc" },
-        });
-
-      if (error) throw error;
-      setImages(
-        (data || []).map((file) => ({
-          name: file.name,
-          id: file.id,
-          updated_at: file.updated_at,
-          created_at: file.created_at,
-          metadata: {
-            size: (file.metadata?.size as number) || 0,
-            mimetype: (file.metadata?.mimetype as string) || "",
-            postId: (file.metadata?.postId as string) || undefined,
-          },
-        }))
-      );
-    } catch (err) {
-      console.error("Failed to load images:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadPosts();
-    loadImages();
-  }, []);
-
-  // 画像URLから記事を検索するヘルパー関数
-  const findPostsUsingImage = (imageUrl: string) => {
-    return posts.filter((post) => {
-      if (!post.content) return false;
-      const contentStr = JSON.stringify(post.content);
-      return contentStr.includes(imageUrl);
-    });
-  };
-
-  // フィルタリング処理
-  useEffect(() => {
-    let filtered = images;
-
-    // モードフィルター
-    if (filterMode === "unassigned") {
-      filtered = filtered.filter((img) => {
-        // メタデータに記事IDがあるか
-        if (img.metadata.postId) return false;
-
-        // コンテンツ内で使用されているか確認
-        const imageUrl = getImageUrl(img.name);
-        const usingPosts = findPostsUsingImage(imageUrl);
-        return usingPosts.length === 0;
+      // クライアントサイドでフィルタ
+      let filtered = (allImages || []).filter((img) => {
+        const fileNameMatch = img.file_name.toLowerCase().includes(search.toLowerCase());
+        const urlMatch = urlArray.includes(img.url);
+        return fileNameMatch || urlMatch;
       });
+
+      // 未割当フィルタも適用
+      if (filter === "unassigned" && usedImageUrls) {
+        filtered = filtered.filter((img) => !img.post_id && !usedImageUrls.has(img.url));
+      }
+
+      const total = filtered.length;
+      const offset = (page - 1) * IMAGES_PER_PAGE;
+      const images = filtered.slice(offset, offset + IMAGES_PER_PAGE);
+
+      return { images, total };
     }
+  }
 
-    // 検索クエリフィルター
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((img) => {
-        const imageUrl = getImageUrl(img.name);
+  // 通常のクエリ構築
+  let countQuery = supabase.from("images").select("*", { count: "exact", head: true });
+  let dataQuery = supabase.from("images").select("*");
 
-        // 1. 記事タイトルで検索
-        const usingPosts = findPostsUsingImage(imageUrl);
-        const titleMatch = usingPosts.some(post =>
-          post.title.toLowerCase().includes(query)
-        );
+  // 未割当フィルタ: post_idがnullで、コンテンツでも使われていない
+  if (filter === "unassigned" && usedImageUrls) {
+    countQuery = countQuery.is("post_id", null);
+    dataQuery = dataQuery.is("post_id", null);
 
-        // 2. スラッグで検索
-        const slugMatch = usingPosts.some(post =>
-          post.slug.toLowerCase().includes(query)
-        );
+    // usedImageUrlsに含まれないものを取得するため、全取得してフィルタ
+    if (usedImageUrls.size > 0) {
+      const { data: allImages, error: allError } = await supabase
+        .from("images")
+        .select("*")
+        .is("post_id", null)
+        .order("created_at", { ascending: false });
 
-        // 3. ファイル名でも検索（一応）
-        const fileNameMatch = img.name.toLowerCase().includes(query);
+      if (allError) {
+        console.error("Failed to load images:", allError);
+        return { images: [], total: 0 };
+      }
 
-        return titleMatch || slugMatch || fileNameMatch;
-      });
+      const filtered = (allImages || []).filter((img) => !usedImageUrls.has(img.url));
+      const total = filtered.length;
+      const offset = (page - 1) * IMAGES_PER_PAGE;
+      const images = filtered.slice(offset, offset + IMAGES_PER_PAGE);
+
+      return { images, total };
     }
+  }
 
-    // 作成日時でソート（新しい順）
-    filtered = filtered.sort((a, b) => {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+  // ファイル名のみで検索
+  if (search) {
+    countQuery = countQuery.ilike("file_name", `%${search}%`);
+    dataQuery = dataQuery.ilike("file_name", `%${search}%`);
+  }
 
-    setFilteredImages(filtered);
-  }, [images, filterMode, searchQuery, posts]);
+  // 総数を取得
+  const { count, error: countError } = await countQuery;
 
-  const getImageUrl = (fileName: string) => {
-    const supabase = createClient();
-    const {
-      data: { publicUrl },
-    } = supabase.storage
-      .from("blog-images")
-      .getPublicUrl(`content/${fileName}`);
-    return publicUrl;
-  };
+  if (countError) {
+    console.error("Failed to count images:", countError);
+    return { images: [], total: 0 };
+  }
 
-  const copyToClipboard = async (url: string) => {
-    await navigator.clipboard.writeText(url);
-    setCopiedUrl(url);
-    setTimeout(() => setCopiedUrl(null), 2000);
-  };
+  const total = count || 0;
+  const offset = (page - 1) * IMAGES_PER_PAGE;
 
-  const deleteImage = async (fileName: string) => {
-    if (!confirm("この画像を削除しますか？")) return;
+  // ページネーション付きで取得
+  const { data, error } = await dataQuery
+    .order("created_at", { ascending: false })
+    .range(offset, offset + IMAGES_PER_PAGE - 1);
 
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.storage
-        .from("blog-images")
-        .remove([`content/${fileName}`]);
+  if (error) {
+    console.error("Failed to load images:", error);
+    return { images: [], total: 0 };
+  }
 
-      if (error) throw error;
+  return { images: data || [], total };
+}
 
-      // リストを更新
-      await loadImages();
-    } catch (err) {
-      console.error("Failed to delete image:", err);
-      alert("削除に失敗しました");
-    }
-  };
+async function getPosts(): Promise<Post[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, title, slug, content")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to load posts:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+async function MediaContent({
+  page,
+  filter,
+  search
+}: {
+  page: number;
+  filter: "all" | "unassigned";
+  search: string;
+}) {
+  // postsを先に取得（フィルタリングに必要）
+  const posts = await getPosts();
+  const { images, total } = await getImages({ page, filter, search, posts });
+  const totalPages = Math.ceil(total / IMAGES_PER_PAGE);
+
+  return (
+    <>
+      <MediaGallery
+        images={images}
+        total={total}
+        currentFilter={filter}
+        currentSearch={search}
+      />
+      {totalPages > 1 && (
+        <MediaPagination
+          currentPage={page}
+          totalPages={totalPages}
+          filter={filter}
+          search={search}
+        />
+      )}
+    </>
+  );
+}
+
+function MediaGallerySkeleton() {
+  return (
+    <>
+      {/* フィルター（静的表示） */}
+      <MediaFilterStatic />
+
+      {/* 画像グリッド */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <Card key={index} className="overflow-hidden py-0">
+            <Skeleton className="aspect-video w-full" />
+            <CardContent className="p-4">
+              <Skeleton className="mb-2 h-4 w-3/4" />
+              <Skeleton className="mb-3 h-3 w-1/2" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 flex-1" />
+                <Skeleton className="h-8 w-8" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default async function MediaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; filter?: string; search?: string }>;
+}) {
+  const params = await searchParams;
+  const currentPage = parseInt(params.page || "1", 10);
+  const filter = (params.filter === "unassigned" ? "unassigned" : "all") as "all" | "unassigned";
+  const search = params.search || "";
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <MobileMenuButton />
-          <div>
-            <h1 className="text-2xl font-bold sm:text-3xl">画像管理</h1>
-            <p className="text-sm text-muted-foreground sm:text-base">
-              記事で使用する画像を管理できます
-            </p>
-          </div>
-        </div>
-        <Button
-          onClick={() => setUploadDialogOpen(true)}
-          className="w-full sm:w-auto"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          画像をアップロード
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="画像管理"
+        description="記事で使用する画像を管理できます"
+      >
+        <MediaUploadButton />
+      </AdminPageHeader>
 
-      {/* フィルタリング */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="flex gap-2">
-          <Button
-            variant={filterMode === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterMode("all")}
-          >
-            すべて
-          </Button>
-          <Button
-            variant={filterMode === "unassigned" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterMode("unassigned")}
-          >
-            未割当
-          </Button>
-        </div>
-
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="記事タイトルまたはファイル名で検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-
-        <span className="text-sm text-muted-foreground whitespace-nowrap bg-secondary px-3 py-1 rounded-full">
-          {filteredImages.length}件
-        </span>
-      </div>
-
-      {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index} className="overflow-hidden py-0">
-              <Skeleton className="aspect-video w-full" />
-              <CardContent className="p-4">
-                <Skeleton className="mb-2 h-4 w-3/4" />
-                <Skeleton className="mb-3 h-3 w-1/2" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 flex-1" />
-                  <Skeleton className="h-8 w-8" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : filteredImages.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>画像がありません</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              {images.length === 0
-                ? "アップロードボタンから画像を追加してください"
-                : "この条件に一致する画像がありません"}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredImages.map((image) => {
-            const url = getImageUrl(image.name);
-            const isCopied = copiedUrl === url;
-
-            return (
-              <Card key={image.id} className="overflow-hidden py-0">
-                <div
-                  className="aspect-video relative bg-muted cursor-pointer hover:opacity-90 transition-opacity"
-                  onDoubleClick={() => {
-                    setSelectedImageForReupload({
-                      fileName: image.name,
-                      url,
-                    });
-                    setReuploadDialogOpen(true);
-                  }}
-                  title="ダブルクリックで再アップロード"
-                >
-                  <Image
-                    src={url}
-                    alt={image.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <p className="mb-2 truncate text-sm font-medium">
-                    {image.name}
-                  </p>
-                  <p className="mb-3 text-xs text-muted-foreground">
-                    {(image.metadata.size / 1024).toFixed(1)} KB
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => copyToClipboard(url)}
-                    >
-                      {isCopied ? (
-                        <>
-                          <Check className="mr-1 h-3 w-3" />
-                          コピー済み
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="mr-1 h-3 w-3" />
-                          URLコピー
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => deleteImage(image.name)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      <ImageUploadDialog
-        open={uploadDialogOpen}
-        onOpenChange={setUploadDialogOpen}
-        onUploadComplete={loadImages}
-      />
-
-      {selectedImageForReupload && (
-        <ImageReuploadDialog
-          open={reuploadDialogOpen}
-          onOpenChange={setReuploadDialogOpen}
-          onUploadComplete={loadImages}
-          imageFileName={selectedImageForReupload.fileName}
-          imageUrl={selectedImageForReupload.url}
-        />
-      )}
+      <Suspense key={`${currentPage}-${filter}-${search}`} fallback={<MediaGallerySkeleton />}>
+        <MediaContent page={currentPage} filter={filter} search={search} />
+      </Suspense>
     </div>
   );
 }

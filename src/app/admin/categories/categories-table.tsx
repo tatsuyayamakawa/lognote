@@ -93,8 +93,11 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
 
   return (
     <>
-      <Card>
-        <CardContent className="p-0">
+      <Card className="hidden xl:block pb-0">
+        <CardHeader className="pb-3">
+          <CardTitle>カテゴリ一覧</CardTitle>
+        </CardHeader>
+        <CardContent className="px-0">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b bg-muted/50">
@@ -114,7 +117,7 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
                   <th className="px-4 py-3 text-left text-sm font-medium">
                     表示順
                   </th>
-                  <th className="px-4 py-3 text-right text-sm font-medium">
+                  <th className="w-28 px-4 py-3 text-left text-sm font-medium">
                     操作
                   </th>
                 </tr>
@@ -174,6 +177,73 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* モバイル・タブレット: カード表示 */}
+      <div className="space-y-2 xl:hidden">
+        {categories.map((category) => (
+          <Card key={category.id} className="overflow-hidden py-0">
+            <div className="flex">
+              {/* 左側: カラーインジケーター */}
+              <div
+                className="w-1 shrink-0"
+                style={{
+                  backgroundColor: category.color || "#e5e7eb",
+                }}
+              />
+
+              {/* 右側: コンテンツ */}
+              <div className="flex-1 px-3 py-2.5">
+                {/* ヘッダー: カテゴリ名 + 記事数 */}
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium line-clamp-1 text-sm">
+                      {category.name}
+                    </h3>
+                  </div>
+                  <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground shrink-0">
+                    {category.post_count}件
+                  </span>
+                </div>
+
+                {/* 中段: スラッグ + 説明 */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mb-2">
+                  <span className="font-mono">{category.slug}</span>
+                  {category.description && (
+                    <>
+                      <span className="text-muted-foreground/30">|</span>
+                      <span className="line-clamp-1">{category.description}</span>
+                    </>
+                  )}
+                </div>
+
+                {/* フッター: 操作ボタン */}
+                <div className="flex items-center gap-0.5 -ml-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    asChild
+                  >
+                    <Link href={`/admin/categories/${category.id}/edit`}>
+                      <Edit className="h-3.5 w-3.5 mr-1" />
+                      編集
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleDeleteClick(category)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    削除
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
 
       {/* 削除確認ダイアログ */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
