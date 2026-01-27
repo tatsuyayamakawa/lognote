@@ -1,6 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -9,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -68,14 +66,11 @@ export function AnalyticsCharts({
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPeriod = searchParams.get("period") || "30";
-  const [isPending, startTransition] = useTransition();
 
   const handlePeriodChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("period", value);
-    startTransition(() => {
-      router.push(`?${params.toString()}`);
-    });
+    router.push(`?${params.toString()}`);
   };
 
   const chartConfig = {
@@ -143,10 +138,6 @@ export function AnalyticsCharts({
   const organicStatsTickInterval = getTickInterval(
     formattedOrganicStats.length
   );
-
-  if (isPending) {
-    return <AnalyticsChartsSkeleton currentPeriod={currentPeriod} />;
-  }
 
   return (
     <div className="space-y-6">
@@ -413,116 +404,6 @@ export function AnalyticsCharts({
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function AnalyticsChartsSkeleton({ currentPeriod }: { currentPeriod: string }) {
-  const getPeriodLabel = () => {
-    switch (currentPeriod) {
-      case "7":
-        return "過去7日間";
-      case "14":
-        return "過去14日間";
-      case "30":
-        return "過去30日間";
-      case "90":
-        return "過去90日間";
-      default:
-        return "過去30日間";
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* 期間選択 */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">アナリティクス</h2>
-          <p className="text-sm text-muted-foreground">
-            {getPeriodLabel()}のデータ
-          </p>
-        </div>
-        <Skeleton className="h-10 w-full sm:w-[180px]" />
-      </div>
-
-      {/* ページビューグラフ */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="mt-2 h-4 w-48" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[300px] w-full" />
-        </CardContent>
-      </Card>
-
-      {/* オーガニック検索統計 */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="mt-2 h-4 w-64" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[300px] w-full" />
-        </CardContent>
-      </Card>
-
-      <div className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-        {/* 人気ページ */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="mt-2 h-4 w-48" />
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between gap-3 pb-3 border-b last:border-0 last:pb-0 min-w-0"
-                >
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <Skeleton className="h-4 w-full max-w-[200px]" />
-                    <Skeleton className="h-3 w-3/4 max-w-[150px]" />
-                  </div>
-                  <div className="shrink-0 space-y-2 text-right">
-                    <Skeleton className="h-4 w-16 ml-auto" />
-                    <Skeleton className="h-3 w-12 ml-auto" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 流入キーワード */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="mt-2 h-4 w-56" />
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between gap-3 pb-3 border-b last:border-0 last:pb-0 min-w-0"
-                >
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <Skeleton className="h-4 w-full max-w-[200px]" />
-                    <Skeleton className="h-3 w-2/3 max-w-[150px]" />
-                  </div>
-                  <div className="shrink-0 space-y-2 text-right">
-                    <Skeleton className="h-4 w-12 ml-auto" />
-                    <Skeleton className="h-3 w-16 ml-auto" />
-                  </div>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </div>

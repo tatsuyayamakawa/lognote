@@ -1,8 +1,5 @@
 import { google } from "googleapis";
-import { unstable_cache } from "next/cache";
 import { getStoredTokens, createOAuth2Client, saveTokens, deleteTokens } from "./oauth";
-
-const CACHE_DURATION = 60 * 60; // 1時間
 
 type AdSenseTokens = {
   access_token: string;
@@ -109,13 +106,20 @@ export interface AdUnitRevenueData {
 }
 
 /**
- * AdSense収益データを取得（内部関数・キャッシュ対象）
+ * AdSense収益データを取得
+ * @param days 取得する日数（デフォルト: 30日）
  */
-async function fetchAdSenseRevenue(
-  tokens: AdSenseTokens,
-  accountId: string,
-  days: number
-): Promise<AdSenseRevenueData[]> {
+export async function getAdSenseRevenue(days: number = 30): Promise<AdSenseRevenueData[]> {
+  const tokens = await getAdSenseTokens();
+  if (!tokens) {
+    return [];
+  }
+
+  const accountId = await getAdSenseAccountIdWithTokens(tokens);
+  if (!accountId) {
+    return [];
+  }
+
   try {
     const client = createAdSenseClientFromTokens(tokens);
     const endDate = new Date();
@@ -158,39 +162,20 @@ async function fetchAdSenseRevenue(
 }
 
 /**
- * AdSense収益データを取得（キャッシュ付き）
+ * AdSense収益サマリーを取得
  * @param days 取得する日数（デフォルト: 30日）
  */
-export async function getAdSenseRevenue(days: number = 30): Promise<AdSenseRevenueData[]> {
-  // トークン取得はキャッシュの外で行う（cookies()を使用するため）
+export async function getAdSenseSummary(days: number = 30): Promise<AdSenseSummary | null> {
   const tokens = await getAdSenseTokens();
   if (!tokens) {
-    return [];
+    return null;
   }
 
   const accountId = await getAdSenseAccountIdWithTokens(tokens);
   if (!accountId) {
-    return [];
+    return null;
   }
 
-  // トークンとアカウントIDを引数として渡し、キャッシュ関数を呼び出す
-  const getCachedRevenue = unstable_cache(
-    async () => fetchAdSenseRevenue(tokens, accountId, days),
-    [`adsense-revenue-${accountId}-${days}`],
-    { revalidate: CACHE_DURATION }
-  );
-
-  return getCachedRevenue();
-}
-
-/**
- * AdSense収益サマリーを取得（内部関数・キャッシュ対象）
- */
-async function fetchAdSenseSummary(
-  tokens: AdSenseTokens,
-  accountId: string,
-  days: number
-): Promise<AdSenseSummary | null> {
   try {
     const client = createAdSenseClientFromTokens(tokens);
     const endDate = new Date();
@@ -235,37 +220,20 @@ async function fetchAdSenseSummary(
 }
 
 /**
- * AdSense収益サマリーを取得（キャッシュ付き）
+ * 広告ユニット別の収益データを取得
  * @param days 取得する日数（デフォルト: 30日）
  */
-export async function getAdSenseSummary(days: number = 30): Promise<AdSenseSummary | null> {
+export async function getAdUnitRevenue(days: number = 30): Promise<AdUnitRevenueData[]> {
   const tokens = await getAdSenseTokens();
   if (!tokens) {
-    return null;
+    return [];
   }
 
   const accountId = await getAdSenseAccountIdWithTokens(tokens);
   if (!accountId) {
-    return null;
+    return [];
   }
 
-  const getCachedSummary = unstable_cache(
-    async () => fetchAdSenseSummary(tokens, accountId, days),
-    [`adsense-summary-${accountId}-${days}`],
-    { revalidate: CACHE_DURATION }
-  );
-
-  return getCachedSummary();
-}
-
-/**
- * 広告ユニット別の収益データを取得（内部関数・キャッシュ対象）
- */
-async function fetchAdUnitRevenue(
-  tokens: AdSenseTokens,
-  accountId: string,
-  days: number
-): Promise<AdUnitRevenueData[]> {
   try {
     const client = createAdSenseClientFromTokens(tokens);
     const endDate = new Date();
@@ -306,28 +274,4 @@ async function fetchAdUnitRevenue(
     console.error("[AdSense] Error fetching ad unit revenue:", error);
     return [];
   }
-}
-
-/**
- * 広告ユニット別の収益データを取得（キャッシュ付き）
- * @param days 取得する日数（デフォルト: 30日）
- */
-export async function getAdUnitRevenue(days: number = 30): Promise<AdUnitRevenueData[]> {
-  const tokens = await getAdSenseTokens();
-  if (!tokens) {
-    return [];
-  }
-
-  const accountId = await getAdSenseAccountIdWithTokens(tokens);
-  if (!accountId) {
-    return [];
-  }
-
-  const getCachedAdUnitRevenue = unstable_cache(
-    async () => fetchAdUnitRevenue(tokens, accountId, days),
-    [`adsense-adunit-${accountId}-${days}`],
-    { revalidate: CACHE_DURATION }
-  );
-
-  return getCachedAdUnitRevenue();
 }

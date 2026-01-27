@@ -5,7 +5,7 @@ import {
   getOrganicSearchStats,
 } from "@/lib/google-analytics/analytics";
 import { getSearchKeywords } from "@/lib/google-analytics/search-console";
-import { AnalyticsCharts } from "../dashboard/analytics-charts";
+import { AnalyticsCharts } from "./_components/analytics-charts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSearchConsoleURL } from "@/lib/utils";
 import type { Metadata } from "next";

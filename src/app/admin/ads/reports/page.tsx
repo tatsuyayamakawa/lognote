@@ -1,5 +1,5 @@
-import { AdSenseRevenue } from "@/app/admin/dashboard/adsense-revenue";
-import { AdUnitRevenue } from "./ad-unit-revenue";
+import { AdSenseRevenue } from "../_components/adsense-revenue";
+import { AdUnitRevenue } from "../_components/ad-unit-revenue";
 import {
   getAdSenseRevenue,
   getAdSenseSummary,

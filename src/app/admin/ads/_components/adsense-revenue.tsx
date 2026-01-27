@@ -1,6 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -9,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -55,14 +53,11 @@ export function AdSenseRevenue({
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPeriod = searchParams.get("period") || "30";
-  const [isPending, startTransition] = useTransition();
 
   const handlePeriodChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("period", value);
-    startTransition(() => {
-      router.push(`?${params.toString()}`);
-    });
+    router.push(`?${params.toString()}`);
   };
 
   const chartConfig = {
@@ -129,10 +124,6 @@ export function AdSenseRevenue({
   };
 
   const tickInterval = getTickInterval(formattedData.length);
-
-  if (isPending) {
-    return <AdSenseRevenueSkeleton currentPeriod={currentPeriod} />;
-  }
 
   return (
     <div className="space-y-6">
@@ -353,95 +344,6 @@ export function AdSenseRevenue({
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
-  );
-}
-
-export function AdSenseRevenueSkeleton({ currentPeriod }: { currentPeriod: string }) {
-  const getPeriodLabel = () => {
-    switch (currentPeriod) {
-      case "7":
-        return "過去7日間";
-      case "14":
-        return "過去14日間";
-      case "30":
-        return "過去30日間";
-      case "90":
-        return "過去90日間";
-      default:
-        return "過去30日間";
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* 期間選択 */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">AdSense収益</h2>
-          <p className="text-sm text-muted-foreground">
-            {getPeriodLabel()}のデータ
-          </p>
-        </div>
-        <Skeleton className="h-10 w-full sm:w-[180px]" />
-      </div>
-
-      {/* Summary Cards Skeleton */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-32" />
-              {index === 3 && <Skeleton className="mt-2 h-3 w-24" />}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Revenue Chart Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="mt-2 h-4 w-48" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[300px] w-full" />
-        </CardContent>
-      </Card>
-
-      {/* Performance Metrics Skeleton */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, cardIndex) => (
-          <Card key={cardIndex}>
-            <CardHeader>
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="mt-2 h-4 w-56" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between gap-3 pb-3 border-b last:border-0 last:pb-0"
-                  >
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                    <div className="space-y-2 text-right">
-                      <Skeleton className="h-4 w-16 ml-auto" />
-                      <Skeleton className="h-3 w-12 ml-auto" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
     </div>
   );

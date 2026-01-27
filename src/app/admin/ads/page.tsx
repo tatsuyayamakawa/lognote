@@ -1,4 +1,4 @@
-import { AdSettingsForm } from "./ad-settings-form"
+import { AdSettingsForm } from "./_components/ad-settings-form"
 import { getAdSettings } from "@/lib/ad-settings"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"

@@ -1,8 +1,5 @@
 import { BetaAnalyticsDataClient } from "@google-analytics/data"
-import { unstable_cache } from "next/cache"
 import path from "path"
-
-const CACHE_DURATION = 60 * 60 // 1時間
 
 let analyticsDataClient: BetaAnalyticsDataClient | null = null
 
@@ -41,7 +38,7 @@ export function getAnalyticsClient() {
   return analyticsDataClient
 }
 
-async function fetchPageViews(days: number) {
+export async function getPageViews(days: number = 30) {
   const client = getAnalyticsClient()
   if (!client) {
     return []
@@ -81,16 +78,7 @@ async function fetchPageViews(days: number) {
   }
 }
 
-export async function getPageViews(days: number = 30) {
-  const getCachedPageViews = unstable_cache(
-    async () => fetchPageViews(days),
-    [`analytics-page-views-${days}`],
-    { revalidate: CACHE_DURATION }
-  )
-  return getCachedPageViews()
-}
-
-async function fetchTopPages(limit: number, days: number) {
+export async function getTopPages(limit: number = 10, days: number = 30) {
   const client = getAnalyticsClient()
   if (!client) {
     return []
@@ -171,15 +159,6 @@ async function fetchTopPages(limit: number, days: number) {
   }
 }
 
-export async function getTopPages(limit: number = 10, days: number = 30) {
-  const getCachedTopPages = unstable_cache(
-    async () => fetchTopPages(limit, days),
-    [`analytics-top-pages-${limit}-${days}`],
-    { revalidate: CACHE_DURATION }
-  )
-  return getCachedTopPages()
-}
-
 export async function getSearchQueries(limit: number = 20) {
   const client = getAnalyticsClient()
   if (!client) {
@@ -240,7 +219,7 @@ export async function getSearchQueries(limit: number = 20) {
   }
 }
 
-async function fetchOrganicSearchStats(days: number) {
+export async function getOrganicSearchStats(days: number = 30) {
   const client = getAnalyticsClient()
   if (!client) {
     return []
@@ -306,15 +285,6 @@ async function fetchOrganicSearchStats(days: number) {
     }
     return []
   }
-}
-
-export async function getOrganicSearchStats(days: number = 30) {
-  const getCachedOrganicSearchStats = unstable_cache(
-    async () => fetchOrganicSearchStats(days),
-    [`analytics-organic-search-stats-${days}`],
-    { revalidate: CACHE_DURATION }
-  )
-  return getCachedOrganicSearchStats()
 }
 
 /**

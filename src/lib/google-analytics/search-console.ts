@@ -1,8 +1,5 @@
 import { google } from "googleapis"
-import { unstable_cache } from "next/cache"
 import path from "path"
-
-const CACHE_DURATION = 60 * 60 // 1時間
 
 let searchConsoleClient: any = null
 
@@ -59,10 +56,10 @@ export interface SearchKeyword {
   position: number
 }
 
-async function fetchSearchKeywords(
+export async function getSearchKeywords(
   siteUrl: string,
-  days: number,
-  limit: number
+  days: number = 30,
+  limit: number = 20
 ): Promise<SearchKeyword[]> {
   const client = getSearchConsoleClient()
   if (!client) {
@@ -113,19 +110,6 @@ async function fetchSearchKeywords(
     }
     return []
   }
-}
-
-export async function getSearchKeywords(
-  siteUrl: string,
-  days: number = 30,
-  limit: number = 20
-): Promise<SearchKeyword[]> {
-  const getCachedSearchKeywords = unstable_cache(
-    async () => fetchSearchKeywords(siteUrl, days, limit),
-    [`search-console-keywords-${siteUrl}-${days}-${limit}`],
-    { revalidate: CACHE_DURATION }
-  )
-  return getCachedSearchKeywords()
 }
 
 export async function getSearchKeywordsByPage(
